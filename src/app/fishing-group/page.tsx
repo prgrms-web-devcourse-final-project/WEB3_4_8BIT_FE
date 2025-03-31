@@ -3,6 +3,7 @@
 import { HotPostsSection } from "./components/HotPostsSection";
 import { TabSection } from "./components/TabSection";
 import { SearchBar } from "./components/SearchBar";
+import { PostList } from "./components/PostList";
 
 // 테스트용 데이터
 const hotPosts = [
@@ -49,6 +50,7 @@ export default function FishingGroupPage() {
       <HotPostsSection posts={hotPosts} />
       <TabSection />
       <SearchBar />
+      <PostList />
     </div>
   );
 }
