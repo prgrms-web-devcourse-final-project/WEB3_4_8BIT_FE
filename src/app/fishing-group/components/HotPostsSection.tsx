@@ -19,7 +19,7 @@ export function HotPostsSection({ posts }: HotPostsSectionProps) {
     <section className="mb-12">
       <div className="text-center mb-8">
         <h2 className="text-3xl font-bold mb-2">
-          지금 <span className="text-[#2CD5D7]">HOT</span>한 동출 모집
+          지금 <span className="text-[#3795FF]">HOT</span>한 동출 모집
         </h2>
         <p className="text-gray-600 text-base">
           조회수와 좋아요가 높은 인기 동출 모집글을 모아봤어요
