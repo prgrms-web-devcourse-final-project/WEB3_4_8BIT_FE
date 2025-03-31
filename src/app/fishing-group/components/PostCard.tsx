@@ -28,7 +28,7 @@ export function PostCard({
   memberCount,
 }: PostCardProps) {
   return (
-    <div className="w-full mb-4 border border-gray-300 rounded-lg hover:bg-gray-50 px-4 md:px-6 py-4">
+    <div className="w-full mb-4 border border-gray-500 rounded-lg hover:bg-gray-50 px-4 md:px-6 py-4">
       <div className="flex flex-col md:flex-row items-start gap-4 md:gap-5">
         {/* 썸네일 이미지 */}
         <div className="w-full md:w-[180px] h-[120px] rounded-md overflow-hidden flex-shrink-0">
@@ -53,17 +53,16 @@ export function PostCard({
               >
                 {isRecruiting ? "모집중" : "모집완료"}
               </span>
-              <h3 className="text-lg font-medium text-gray-900">
-                <span className="text-gray-600">[{location}]</span> {title}
+              <h3 className="text-lg font-semibold text-gray-900">
+                <span style={{ color: "#3795FF" }}>[{location}]</span> {title}
               </h3>
             </div>
 
-            <p className="text-base text-gray-600 line-clamp-2">{content}</p>
+            <p className="text-base text-gray-900 line-clamp-2">{content}</p>
           </div>
 
           {/* 하단 통계 영역 */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mt-4 pt-3">
-
             <div className="flex items-center gap-x-4 text-sm text-gray-500">
               <span className="flex items-center gap-1">
                 <Calendar size={16} />
