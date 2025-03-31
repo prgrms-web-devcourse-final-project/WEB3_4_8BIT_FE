@@ -11,9 +11,9 @@ import {
 
 export function SearchBar() {
   return (
-    <div className="flex gap-2 mt-8 mb-8 items-center max-w-4xl mx-auto">
+    <div className="flex gap-2 mt-10 mb-10 items-center max-w-4xl mx-auto">
       <Select defaultValue="all">
-        <SelectTrigger className="w-[180px] bg-white border-gray-200 text-base h-12">
+        <SelectTrigger className="w-[180px] bg-white border-gray-500 text-base h-12">
           <SelectValue placeholder="지역 선택하세요" />
         </SelectTrigger>
         <SelectContent>
@@ -38,7 +38,7 @@ export function SearchBar() {
         <Input
           type="search"
           placeholder="검색어를 입력하세요"
-          className="w-full pl-10 pr-4 py-2 border-gray-200 rounded-md text-base h-12"
+          className="w-full pl-10 pr-4 py-2 border-gray-500 rounded-md text-base h-12"
         />
         <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
           <svg
