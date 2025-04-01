@@ -167,6 +167,18 @@
   .box-shadow-1 {
     box-shadow: 0px 0px 8px 1px rgba(175, 175, 175, 0.25);
   }
+
+  .paperlogy-5medium {
+    font-family: "Paperlogy-5Medium", sans-serif;
+  }
+
+  .paperlogy-6semibold {
+    font-family: "Paperlogy-6SemiBold", sans-serif;
+  }
+
+  .paperlogy-7bold {
+    font-family: "Paperlogy-7Bold", sans-serif;
+  }
 }
 
 .dark {
