@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { HotPostsSection } from "./components/HotPostsSection";
 import { TabSection } from "./components/TabSection";
 import { SearchBar } from "./components/SearchBar";
@@ -46,11 +47,24 @@ const hotPosts = [
 
 export default function FishingGroupPage() {
   return (
-    <div className="container mx-auto px-4 py-8">
-      <HotPostsSection posts={hotPosts} />
-      <TabSection />
-      <SearchBar />
-      <PostList />
-    </div>
+    <>
+      <div className="w-full h-[350px] relative">
+        <Image
+          src="/images/banner.jpg"
+          alt="낚시 배너"
+          fill
+          className="object-cover"
+          priority
+          sizes="100vw"
+        />
+      </div>
+
+      <div className="container mx-auto px-4 py-8">
+        <HotPostsSection posts={hotPosts} />
+        <TabSection />
+        <SearchBar />
+        <PostList />
+      </div>
+    </>
   );
 }
