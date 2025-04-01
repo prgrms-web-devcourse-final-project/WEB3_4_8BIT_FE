@@ -1,0 +1,998 @@
+[
+  {
+    "id": "SO_0732",
+    "name": "남애항",
+    "latitude": 37.944,
+    "longitude": 128.788
+  },
+  {
+    "id": "SO_0733",
+    "name": "강릉항",
+    "latitude": 37.772,
+    "longitude": 128.951
+  },
+  {
+    "id": "SO_0734",
+    "name": "궁촌항",
+    "latitude": 37.327,
+    "longitude": 129.27
+  },
+  {
+    "id": "SO_0735",
+    "name": "죽변항",
+    "latitude": 37.054,
+    "longitude": 129.423
+  },
+  {
+    "id": "SO_0736",
+    "name": "축산항",
+    "latitude": 36.509,
+    "longitude": 129.448
+  },
+  {
+    "id": "SO_0737",
+    "name": "강구항",
+    "latitude": 36.358,
+    "longitude": 129.391
+  },
+  {
+    "id": "SO_0555",
+    "name": "서망항",
+    "latitude": 34.366,
+    "longitude": 126.134
+  },
+  {
+    "id": "DT_0054",
+    "name": "진해",
+    "latitude": 35.147,
+    "longitude": 128.643
+  },
+  {
+    "id": "SO_0739",
+    "name": "도장항",
+    "latitude": 34.367,
+    "longitude": 127.011
+  },
+  {
+    "id": "SO_0740",
+    "name": "보옥항",
+    "latitude": 34.129,
+    "longitude": 126.513
+  },
+  {
+    "id": "SO_0699",
+    "name": "천리포항",
+    "latitude": 36.803,
+    "longitude": 126.146
+  },
+  {
+    "id": "SO_0562",
+    "name": "승봉도",
+    "latitude": 37.169,
+    "longitude": 126.29
+  },
+  {
+    "id": "SO_0573",
+    "name": "양포항",
+    "latitude": 35.881,
+    "longitude": 129.527
+  },
+  {
+    "id": "SO_0581",
+    "name": "강양항",
+    "latitude": 35.39,
+    "longitude": 129.344
+  },
+  {
+    "id": "SO_0571",
+    "name": "거제외포",
+    "latitude": 34.939,
+    "longitude": 128.718
+  },
+  {
+    "id": "SO_0578",
+    "name": "소매물도",
+    "latitude": 34.621,
+    "longitude": 128.548
+  },
+  {
+    "id": "SO_0567",
+    "name": "쉬미항",
+    "latitude": 34.504,
+    "longitude": 126.183
+  },
+  {
+    "id": "SO_0576",
+    "name": "화봉리",
+    "latitude": 34.661,
+    "longitude": 126.256
+  },
+  {
+    "id": "SO_0564",
+    "name": "국화도",
+    "latitude": 37.06,
+    "longitude": 126.56
+  },
+  {
+    "id": "SO_0563",
+    "name": "울도",
+    "latitude": 37.035,
+    "longitude": 125.995
+  },
+  {
+    "id": "SO_0706",
+    "name": "청산도",
+    "latitude": 34.18,
+    "longitude": 126.856
+  },
+  {
+    "id": "SO_0708",
+    "name": "안도항",
+    "latitude": 34.479,
+    "longitude": 127.797
+  },
+  {
+    "id": "SO_0712",
+    "name": "능양항",
+    "latitude": 34.812,
+    "longitude": 128.245
+  },
+  {
+    "id": "SO_0701",
+    "name": "홍도항",
+    "latitude": 34.681,
+    "longitude": 125.195
+  },
+  {
+    "id": "SO_0702",
+    "name": "진도옥도",
+    "latitude": 34.35,
+    "longitude": 126.018
+  },
+  {
+    "id": "SO_0703",
+    "name": "땅끝항",
+    "latitude": 34.298,
+    "longitude": 126.531
+  },
+  {
+    "id": "SO_0704",
+    "name": "소안항",
+    "latitude": 34.15,
+    "longitude": 126.631
+  },
+  {
+    "id": "DT_0040",
+    "name": "독도",
+    "latitude": 37.238,
+    "longitude": 131.867
+  },
+  {
+    "id": "DT_0002",
+    "name": "평택",
+    "latitude": 36.966,
+    "longitude": 126.822
+  },
+  {
+    "id": "DT_0003",
+    "name": "영광",
+    "latitude": 35.426,
+    "longitude": 126.42
+  },
+  {
+    "id": "DT_0004",
+    "name": "제주",
+    "latitude": 33.527,
+    "longitude": 126.543
+  },
+  {
+    "id": "DT_0005",
+    "name": "부산",
+    "latitude": 35.096,
+    "longitude": 129.035
+  },
+  {
+    "id": "DT_0006",
+    "name": "묵호",
+    "latitude": 37.55,
+    "longitude": 129.116
+  },
+  {
+    "id": "DT_0007",
+    "name": "목포",
+    "latitude": 34.779,
+    "longitude": 126.375
+  },
+  {
+    "id": "DT_0008",
+    "name": "안산",
+    "latitude": 37.192,
+    "longitude": 126.647
+  },
+  {
+    "id": "DT_0010",
+    "name": "서귀포",
+    "latitude": 33.24,
+    "longitude": 126.561
+  },
+  {
+    "id": "DT_0011",
+    "name": "후포",
+    "latitude": 36.677,
+    "longitude": 129.453
+  },
+  {
+    "id": "DT_0012",
+    "name": "속초",
+    "latitude": 38.207,
+    "longitude": 128.594
+  },
+  {
+    "id": "DT_0013",
+    "name": "울릉도",
+    "latitude": 37.491,
+    "longitude": 130.913
+  },
+  {
+    "id": "DT_0016",
+    "name": "여수",
+    "latitude": 34.747,
+    "longitude": 127.765
+  },
+  {
+    "id": "DT_0017",
+    "name": "대산",
+    "latitude": 37.007,
+    "longitude": 126.352
+  },
+  {
+    "id": "DT_0018",
+    "name": "군산",
+    "latitude": 35.975,
+    "longitude": 126.563
+  },
+  {
+    "id": "DT_0021",
+    "name": "추자도",
+    "latitude": 33.961,
+    "longitude": 126.3
+  },
+  {
+    "id": "DT_0023",
+    "name": "모슬포",
+    "latitude": 33.214,
+    "longitude": 126.251
+  },
+  {
+    "id": "DT_0028",
+    "name": "진도",
+    "latitude": 34.377,
+    "longitude": 126.308
+  },
+  {
+    "id": "DT_0032",
+    "name": "강화대교",
+    "latitude": 37.731,
+    "longitude": 126.522
+  },
+  {
+    "id": "DT_0036",
+    "name": "대청도",
+    "latitude": 37.825,
+    "longitude": 124.718
+  },
+  {
+    "id": "SO_0553",
+    "name": "해운대",
+    "latitude": 35.16,
+    "longitude": 129.191
+  },
+  {
+    "id": "SO_0540",
+    "name": "호산항",
+    "latitude": 37.176,
+    "longitude": 129.342
+  },
+  {
+    "id": "DT_0020",
+    "name": "울산",
+    "latitude": 35.501,
+    "longitude": 129.387
+  },
+  {
+    "id": "DT_0022",
+    "name": "성산포",
+    "latitude": 33.474,
+    "longitude": 126.927
+  },
+  {
+    "id": "DT_0024",
+    "name": "장항",
+    "latitude": 36.006,
+    "longitude": 126.687
+  },
+  {
+    "id": "DT_0026",
+    "name": "고흥발포",
+    "latitude": 34.481,
+    "longitude": 127.342
+  },
+  {
+    "id": "DT_0027",
+    "name": "완도",
+    "latitude": 34.315,
+    "longitude": 126.759
+  },
+  {
+    "id": "DT_0029",
+    "name": "거제도",
+    "latitude": 34.801,
+    "longitude": 128.699
+  },
+  {
+    "id": "DT_0031",
+    "name": "거문도",
+    "latitude": 34.028,
+    "longitude": 127.308
+  },
+  {
+    "id": "DT_0035",
+    "name": "흑산도",
+    "latitude": 34.684,
+    "longitude": 125.435
+  },
+  {
+    "id": "DT_0044",
+    "name": "영종대교",
+    "latitude": 37.545,
+    "longitude": 126.584
+  },
+  {
+    "id": "DT_0047",
+    "name": "도농탄",
+    "latitude": 33.158,
+    "longitude": 126.274
+  },
+  {
+    "id": "DT_0050",
+    "name": "태안",
+    "latitude": 36.913,
+    "longitude": 126.238
+  },
+  {
+    "id": "DT_0048",
+    "name": "속초등표",
+    "latitude": 38.199,
+    "longitude": 128.613
+  },
+  {
+    "id": "DT_0051",
+    "name": "서천마량",
+    "latitude": 36.128,
+    "longitude": 126.495
+  },
+  {
+    "id": "SO_0549",
+    "name": "초도",
+    "latitude": 34.24,
+    "longitude": 127.245
+  },
+  {
+    "id": "DT_0049",
+    "name": "광양",
+    "latitude": 34.903,
+    "longitude": 127.754
+  },
+  {
+    "id": "DT_0056",
+    "name": "부산항신항",
+    "latitude": 35.077,
+    "longitude": 128.784
+  },
+  {
+    "id": "DT_0057",
+    "name": "동해항",
+    "latitude": 37.494,
+    "longitude": 129.143
+  },
+  {
+    "id": "SO_0538",
+    "name": "안마도",
+    "latitude": 35.345,
+    "longitude": 126.016
+  },
+  {
+    "id": "SO_0539",
+    "name": "강화외포",
+    "latitude": 37.7,
+    "longitude": 126.372
+  },
+  {
+    "id": "DT_0058",
+    "name": "경인항",
+    "latitude": 37.56,
+    "longitude": 126.601
+  },
+  {
+    "id": "SO_0554",
+    "name": "영종왕산",
+    "latitude": 37.458,
+    "longitude": 126.358
+  },
+  {
+    "id": "SO_0326",
+    "name": "미조항",
+    "latitude": 34.706,
+    "longitude": 128.048
+  },
+  {
+    "id": "IE_0060",
+    "name": "이어도",
+    "latitude": 32.122,
+    "longitude": 125.182
+  },
+  {
+    "id": "DT_0038",
+    "name": "굴업도",
+    "latitude": 37.194,
+    "longitude": 125.995
+  },
+  {
+    "id": "DT_0025",
+    "name": "보령",
+    "latitude": 36.406,
+    "longitude": 126.486
+  },
+  {
+    "id": "DT_0001",
+    "name": "인천",
+    "latitude": 37.451,
+    "longitude": 126.592
+  },
+  {
+    "id": "DT_0052",
+    "name": "인천송도",
+    "latitude": 37.338,
+    "longitude": 126.586
+  },
+  {
+    "id": "DT_0014",
+    "name": "통영",
+    "latitude": 34.827,
+    "longitude": 128.434
+  },
+  {
+    "id": "DT_0037",
+    "name": "어청도",
+    "latitude": 36.117,
+    "longitude": 125.984
+  },
+  {
+    "id": "DT_0046",
+    "name": "쌍정초",
+    "latitude": 37.556,
+    "longitude": 130.939
+  },
+  {
+    "id": "DT_0039",
+    "name": "왕돌초",
+    "latitude": 36.719,
+    "longitude": 129.732
+  },
+  {
+    "id": "DT_0041",
+    "name": "복사초",
+    "latitude": 34.098,
+    "longitude": 126.168
+  },
+  {
+    "id": "DT_0042",
+    "name": "교본초",
+    "latitude": 34.704,
+    "longitude": 128.306
+  },
+  {
+    "id": "DT_0043",
+    "name": "영흥도",
+    "latitude": 37.238,
+    "longitude": 126.428
+  },
+  {
+    "id": "DT_0061",
+    "name": "삼천포",
+    "latitude": 34.924,
+    "longitude": 128.069
+  },
+  {
+    "id": "SO_0537",
+    "name": "벽파진",
+    "latitude": 34.539,
+    "longitude": 126.346
+  },
+  {
+    "id": "SO_0536",
+    "name": "덕적도",
+    "latitude": 37.227,
+    "longitude": 126.157
+  },
+  {
+    "id": "SO_0547",
+    "name": "말도",
+    "latitude": 35.855,
+    "longitude": 126.318
+  },
+  {
+    "id": "SO_0550",
+    "name": "나로도",
+    "latitude": 34.463,
+    "longitude": 127.453
+  },
+  {
+    "id": "SO_0705",
+    "name": "마량항",
+    "latitude": 34.448,
+    "longitude": 126.821
+  },
+  {
+    "id": "SO_0707",
+    "name": "시산항",
+    "latitude": 34.394,
+    "longitude": 127.261
+  },
+  {
+    "id": "SO_0709",
+    "name": "두문포",
+    "latitude": 34.643,
+    "longitude": 127.797
+  },
+  {
+    "id": "SO_0710",
+    "name": "봉우항",
+    "latitude": 34.932,
+    "longitude": 127.927
+  },
+  {
+    "id": "SO_0711",
+    "name": "창선도",
+    "latitude": 34.84,
+    "longitude": 128.019
+  },
+  {
+    "id": "SO_0700",
+    "name": "호도",
+    "latitude": 36.303,
+    "longitude": 126.264
+  },
+  {
+    "id": "DT_0059",
+    "name": "백령도",
+    "latitude": 37.955,
+    "longitude": 124.736
+  },
+  {
+    "id": "DT_0060",
+    "name": "연평도",
+    "latitude": 37.657,
+    "longitude": 125.714
+  },
+  {
+    "id": "SO_0551",
+    "name": "여서도",
+    "latitude": 33.988,
+    "longitude": 126.923
+  },
+  {
+    "id": "SO_0552",
+    "name": "고현항",
+    "latitude": 34.901,
+    "longitude": 128.622
+  },
+  {
+    "id": "IE_0062",
+    "name": "옹진소청초",
+    "latitude": 37.423,
+    "longitude": 124.738
+  },
+  {
+    "id": "IE_0061",
+    "name": "신안가거초",
+    "latitude": 33.941,
+    "longitude": 124.592
+  },
+  {
+    "id": "SO_0543",
+    "name": "서거차도",
+    "latitude": 34.253,
+    "longitude": 125.917
+  },
+  {
+    "id": "SO_0548",
+    "name": "우이도",
+    "latitude": 34.62,
+    "longitude": 125.856
+  },
+  {
+    "id": "SO_0572",
+    "name": "읍천항",
+    "latitude": 35.69,
+    "longitude": 129.475
+  },
+  {
+    "id": "SO_0569",
+    "name": "남포항",
+    "latitude": 34.957,
+    "longitude": 128.321
+  },
+  {
+    "id": "SO_0570",
+    "name": "광암항",
+    "latitude": 35.102,
+    "longitude": 128.498
+  },
+  {
+    "id": "SO_0568",
+    "name": "백야도",
+    "latitude": 34.624,
+    "longitude": 127.632
+  },
+  {
+    "id": "SO_0577",
+    "name": "가거도",
+    "latitude": 34.05,
+    "longitude": 125.128
+  },
+  {
+    "id": "SO_0566",
+    "name": "송공항",
+    "latitude": 34.848,
+    "longitude": 126.225
+  },
+  {
+    "id": "SO_0565",
+    "name": "향화도항",
+    "latitude": 35.167,
+    "longitude": 126.359
+  },
+  {
+    "id": "SO_0574",
+    "name": "백사장항",
+    "latitude": 36.586,
+    "longitude": 126.315
+  },
+  {
+    "id": "SO_0731",
+    "name": "대진항",
+    "latitude": 38.501,
+    "longitude": 128.426
+  },
+  {
+    "id": "SO_1251",
+    "name": "낙월도",
+    "latitude": 35.2,
+    "longitude": 126.145
+  },
+  {
+    "id": "SO_1252",
+    "name": "외연도항",
+    "latitude": 36.225,
+    "longitude": 126.081
+  },
+  {
+    "id": "SO_0757",
+    "name": "안남리",
+    "latitude": 34.73,
+    "longitude": 127.264
+  },
+  {
+    "id": "SO_0755",
+    "name": "원동항",
+    "latitude": 34.393,
+    "longitude": 126.648
+  },
+  {
+    "id": "SO_0754",
+    "name": "평호리",
+    "latitude": 34.448,
+    "longitude": 126.455
+  },
+  {
+    "id": "SO_1256",
+    "name": "어류정항",
+    "latitude": 37.643,
+    "longitude": 126.342
+  },
+  {
+    "id": "DT_0064",
+    "name": "교동대교",
+    "latitude": 37.789,
+    "longitude": 126.339
+  },
+  {
+    "id": "SO_1249",
+    "name": "독거도",
+    "latitude": 34.256,
+    "longitude": 126.178
+  },
+  {
+    "id": "SO_1250",
+    "name": "평도",
+    "latitude": 34.245,
+    "longitude": 127.447
+  },
+  {
+    "id": "SO_1253",
+    "name": "상왕등도",
+    "latitude": 35.658,
+    "longitude": 126.11
+  },
+  {
+    "id": "SO_1254",
+    "name": "만재도",
+    "latitude": 34.21,
+    "longitude": 125.472
+  },
+  {
+    "id": "SO_1248",
+    "name": "신안옥도",
+    "latitude": 34.683,
+    "longitude": 126.064
+  },
+  {
+    "id": "SO_0759",
+    "name": "장문리",
+    "latitude": 34.873,
+    "longitude": 128.424
+  },
+  {
+    "id": "DT_0068",
+    "name": "위도",
+    "latitude": 35.618,
+    "longitude": 126.301
+  },
+  {
+    "id": "SO_0760",
+    "name": "오산항",
+    "latitude": 36.888,
+    "longitude": 129.416
+  },
+  {
+    "id": "SO_0753",
+    "name": "하의도웅곡",
+    "latitude": 34.608,
+    "longitude": 126.038
+  },
+  {
+    "id": "SO_0631",
+    "name": "암태도",
+    "latitude": 34.853,
+    "longitude": 126.071
+  },
+  {
+    "id": "SO_0752",
+    "name": "검산항",
+    "latitude": 35.0,
+    "longitude": 126.107
+  },
+  {
+    "id": "SO_0761",
+    "name": "녹동항",
+    "latitude": 34.527,
+    "longitude": 127.134
+  },
+  {
+    "id": "DT_0067",
+    "name": "안흥",
+    "latitude": 36.674,
+    "longitude": 126.129
+  },
+  {
+    "id": "DT_0091",
+    "name": "포항",
+    "latitude": 36.051,
+    "longitude": 129.376
+  },
+  {
+    "id": "SO_1255",
+    "name": "상태도",
+    "latitude": 34.435,
+    "longitude": 125.285
+  },
+  {
+    "id": "SO_0758",
+    "name": "달천도",
+    "latitude": 34.761,
+    "longitude": 127.563
+  },
+  {
+    "id": "SO_0756",
+    "name": "사초항",
+    "latitude": 34.47,
+    "longitude": 126.761
+  },
+  {
+    "id": "DT_0063",
+    "name": "가덕도",
+    "latitude": 35.024,
+    "longitude": 128.81
+  },
+  {
+    "id": "DT_0062",
+    "name": "마산",
+    "latitude": 35.197,
+    "longitude": 128.576
+  },
+  {
+    "id": "SO_1257",
+    "name": "강화하리",
+    "latitude": 37.728,
+    "longitude": 126.286
+  },
+  {
+    "id": "DT_0092",
+    "name": "여호항",
+    "latitude": 34.661,
+    "longitude": 127.469
+  },
+  {
+    "id": "SO_1258",
+    "name": "잠진도",
+    "latitude": 37.415,
+    "longitude": 126.415
+  },
+  {
+    "id": "SO_1259",
+    "name": "자월도",
+    "latitude": 37.243,
+    "longitude": 126.318
+  },
+  {
+    "id": "SO_1260",
+    "name": "방포항",
+    "latitude": 36.502,
+    "longitude": 126.325
+  },
+  {
+    "id": "SO_1261",
+    "name": "무창포항",
+    "latitude": 36.249,
+    "longitude": 126.534
+  },
+  {
+    "id": "SO_1262",
+    "name": "격포항",
+    "latitude": 35.62,
+    "longitude": 126.463
+  },
+  {
+    "id": "SO_1263",
+    "name": "구시포항",
+    "latitude": 35.447,
+    "longitude": 126.425
+  },
+  {
+    "id": "SO_1264",
+    "name": "계마항",
+    "latitude": 35.39,
+    "longitude": 126.401
+  },
+  {
+    "id": "SO_1265",
+    "name": "송이도",
+    "latitude": 35.271,
+    "longitude": 126.15
+  },
+  {
+    "id": "SO_1266",
+    "name": "남열항",
+    "latitude": 34.576,
+    "longitude": 127.48
+  },
+  {
+    "id": "SO_1267",
+    "name": "구룡포항",
+    "latitude": 35.99,
+    "longitude": 129.555
+  },
+  {
+    "id": "DT_0093",
+    "name": "소무의도",
+    "latitude": 37.373,
+    "longitude": 126.44
+  },
+  {
+    "id": "SO_1268",
+    "name": "궁평항",
+    "latitude": 37.117,
+    "longitude": 126.68
+  },
+  {
+    "id": "SO_1270",
+    "name": "삼길포항",
+    "latitude": 37.004,
+    "longitude": 126.452
+  },
+  {
+    "id": "SO_1271",
+    "name": "어은돌항",
+    "latitude": 36.748,
+    "longitude": 126.129
+  },
+  {
+    "id": "SO_1269",
+    "name": "연도항",
+    "latitude": 36.081,
+    "longitude": 126.442
+  },
+  {
+    "id": "SO_1272",
+    "name": "다대포항",
+    "latitude": 35.054,
+    "longitude": 128.972
+  },
+  {
+    "id": "SO_1277",
+    "name": "화순항",
+    "latitude": 33.237,
+    "longitude": 126.334
+  },
+  {
+    "id": "SO_1274",
+    "name": "거진항",
+    "latitude": 38.446,
+    "longitude": 128.456
+  },
+  {
+    "id": "SO_1275",
+    "name": "공현진항",
+    "latitude": 38.355,
+    "longitude": 128.513
+  },
+  {
+    "id": "SO_1276",
+    "name": "아야진항",
+    "latitude": 38.27,
+    "longitude": 128.557
+  },
+  {
+    "id": "SO_1273",
+    "name": "장호항",
+    "latitude": 37.288,
+    "longitude": 129.317
+  },
+  {
+    "id": "SO_1283",
+    "name": "사천진항",
+    "latitude": 37.253,
+    "longitude": 126.509
+  },
+  {
+    "id": "SO_1279",
+    "name": "어란진항",
+    "latitude": 34.781,
+    "longitude": 125.908
+  },
+  {
+    "id": "SO_1280",
+    "name": "덕산항",
+    "latitude": 34.348,
+    "longitude": 126.475
+  },
+  {
+    "id": "SO_1281",
+    "name": "임원항",
+    "latitude": 37.377,
+    "longitude": 129.253
+  },
+  {
+    "id": "SO_1282",
+    "name": "선재도",
+    "latitude": 37.228,
+    "longitude": 129.343
+  },
+  {
+    "id": "SO_1278",
+    "name": "원평항",
+    "latitude": 34.781,
+    "longitude": 125.908
+  }
+]
