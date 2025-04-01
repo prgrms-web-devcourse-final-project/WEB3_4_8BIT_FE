@@ -1,20 +1,31 @@
 "use client";
 
 import PostImages from "../components/PostImage";
+import PostInfo from "../components/PostInfo";
 
 export default function PostDetailPage({ params }: { params: { id: string } }) {
-  // 예시용 데이터
+  // 이미지 예시 데이터
   const post = {
     id: params.id,
-    title: "낚시 동출 예시 게시글",
     images: ["/images/test.png", "/images/test.png"],
+  };
+
+  // PostInfo 예시 데이터
+  const postInfoData = {
+    placeName: "부산 기장군 기장읍 연화리 방파제",
+    date: "2025.11.18",
+    time: "05:00",
+    currentMembers: 3,
+    maxMembers: 6,
   };
 
   return (
     <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-2xl font-bold mb-4">{post.title}</h1>
         <PostImages images={post.images} />
+        <div className="mt-6">
+          <PostInfo {...postInfoData} />
+        </div>
       </div>
     </div>
   );
