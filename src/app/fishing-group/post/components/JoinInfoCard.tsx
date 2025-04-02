@@ -7,7 +7,7 @@ import { Slider } from "@/components/ui/slider";
 interface Member {
   id: string;
   name: string;
-  avatarUrl: string;
+  profileImageUrl: string;
   isAuthor?: boolean;
 }
 
@@ -17,7 +17,7 @@ interface JoinInfoCardProps {
   members: Member[];
   author: {
     name: string;
-    avatarUrl: string;
+    profileImageUrl: string;
   };
 }
 
@@ -35,7 +35,7 @@ export default function JoinInfoCard({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow p-4 space-y-4">
+    <div className="bg-white rounded-lg shadow p-4 border border-gray-70 space-y-4">
       {/* 참여 현황 */}
       <div className="flex justify-between items-center">
         <span className="text-lg font-bold mb-2">참여 현황</span>
@@ -76,15 +76,17 @@ export default function JoinInfoCard({
           {members.map((member) => (
             <div key={member.id} className="flex items-center space-x-3">
               <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200">
-                {member.avatarUrl ? (
+                {member.profileImageUrl ? (
                   <Image
-                    src={member.avatarUrl}
+                    src={member.profileImageUrl}
                     alt={member.name}
                     width={32}
                     height={32}
                     className="object-cover"
                   />
-                ) : null}
+                ) : (
+                  <div className="w-full h-full bg-gray-400 rounded-full" />
+                )}
               </div>
               {/* 이름 + 모집자 표시 */}
               <div className="flex items-center gap-2">
@@ -105,15 +107,17 @@ export default function JoinInfoCard({
         <h4 className="font-medium text-base mb-2 mt-4">작성자 정보</h4>
         <div className="flex items-center space-x-3 mb-4">
           <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200">
-            {author.avatarUrl ? (
+            {author.profileImageUrl ? (
               <Image
-                src={author.avatarUrl}
+                src={author.profileImageUrl}
                 alt={author.name}
                 width={32}
                 height={32}
                 className="object-cover"
               />
-            ) : null}
+            ) : (
+              <div className="w-full h-full bg-gray-400 rounded-full" />
+            )}
           </div>
           <div>
             <p className="font-medium text-base text-gray-700">{author.name}</p>
