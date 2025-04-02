@@ -1,3 +1,5 @@
+import FishingPoint from "@/components/FishingPoint";
+
 export default function Home() {
   return (
     <main>
@@ -16,6 +18,9 @@ export default function Home() {
           </p>
         </div>
       </section>
+
+      {/* 여기서 FishingPoint 컴포넌트를 추가 */}
+      <FishingPoint />
     </main>
   );
 }
