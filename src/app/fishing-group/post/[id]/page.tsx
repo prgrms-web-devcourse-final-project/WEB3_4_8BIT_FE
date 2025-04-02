@@ -8,6 +8,7 @@ import PostContent from "../components/PostContent";
 import JoinInfoCard from "../components/JoinInfoCard";
 import CommentSection, { Comment } from "../components/CommentSection";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function PostDetailPage({ params }: { params: { id: string } }) {
   // PostImage 예시 데이터
@@ -79,82 +80,104 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
   ];
 
   return (
-    <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-6xl mx-auto space-y-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* 왼쪽 섹션: 게시글 내용 */}
-          <div className="lg:col-span-2 shadow border border-gray-70 p-4 rounded-lg space-y-6">
-            <div className="flex items-center justify-between gap-4 flex-wrap">
-              <div className="flex items-center gap-3">
-                {/* 모집 상태 */}
-                <span
-                  className={`px-3 py-2 text-base rounded-lg ${
-                    postInfoData.isRecruiting
-                      ? "bg-[#2CD5D7] text-white"
-                      : "bg-gray-500 text-white"
-                  }`}
-                >
-                  {postInfoData.isRecruiting ? "모집중" : "모집완료"}
-                </span>
-                {/* 게시글 제목 */}
-                <h2 className="text-xl font-bold w-96 whitespace-nowrap">
-                  {postInfoData.title}
-                </h2>
+    <div className="min-h-screen">
+      {/* 배너 추가 */}
+      <div className="w-full h-[350px] relative mb-8">
+        <Image
+          src="/images/banner.jpg"
+          alt="낚시 배너"
+          fill
+          className="object-cover"
+          priority
+          sizes="100vw"
+        />
+      </div>
+
+      <div className="min-h-screen py-6 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto space-y-8">
+          <div className="mb-5">
+            <Link
+              href="/fishing-group"
+              className="text-primary hover:text-[#2773CC] font-medium"
+            >
+              ← 목록으로 돌아가기
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* 왼쪽 섹션: 게시글 내용 */}
+            <div className="lg:col-span-2 shadow border border-gray-70 p-4 rounded-lg space-y-6">
+              <div className="flex items-center justify-between gap-4 flex-wrap">
+                <div className="flex items-center gap-3">
+                  {/* 모집 상태 */}
+                  <span
+                    className={`px-3 py-2 text-base rounded-lg ${
+                      postInfoData.isRecruiting
+                        ? "bg-[#2CD5D7] text-white"
+                        : "bg-gray-500 text-white"
+                    }`}
+                  >
+                    {postInfoData.isRecruiting ? "모집중" : "모집완료"}
+                  </span>
+                  {/* 게시글 제목 */}
+                  <h2 className="text-xl font-bold w-96 whitespace-nowrap">
+                    {postInfoData.title}
+                  </h2>
+                </div>
+                <div className="flex items-center gap-3 mt-2 lg:mt-0">
+                  {/* 좋아요 */}
+                  <button
+                    onClick={handleLikeClick}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-lg ${
+                      isLiked ? "bg-sub-1 text-white" : "bg-gray-200"
+                    }`}
+                  >
+                    <ThumbsUp size={20} />
+                    <span>{likes}</span>
+                  </button>
+                </div>
               </div>
-              <div className="flex items-center gap-3 mt-2 lg:mt-0">
-                {/* 좋아요 */}
-                <button
-                  onClick={handleLikeClick}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg ${
-                    isLiked ? "bg-sub-1 text-white" : "bg-gray-200"
-                  }`}
-                >
-                  <ThumbsUp size={20} />
-                  <span>{likes}</span>
-                </button>
+              {/* 작성자 프로필 이미지, 이름, 작성일 */}
+              <div className="flex items-center gap-3 mt-4">
+                <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200">
+                  <Image
+                    src={joinAuthor.profileImageUrl}
+                    alt={joinAuthor.name}
+                    width={32}
+                    height={32}
+                    className="object-cover w-full h-full"
+                  />
+                </div>
+                <div>
+                  <p className="font-medium text-lg">{joinAuthor.name}</p>
+                  <p className="text-xs text-gray-400">{postInfoData.date}</p>
+                </div>
               </div>
-            </div>
-            {/* 작성자 프로필 이미지, 이름, 작성일 */}
-            <div className="flex items-center gap-3 mt-4">
-              <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200">
-                <Image
-                  src={joinAuthor.profileImageUrl}
-                  alt={joinAuthor.name}
-                  width={32}
-                  height={32}
-                  className="object-cover w-full h-full"
-                />
-              </div>
-              <div>
-                <p className="font-medium text-lg">{joinAuthor.name}</p>
-                <p className="text-xs text-gray-400">{postInfoData.date}</p>
-              </div>
+
+              <PostImages images={post.images} />
+              <PostInfo {...postInfoData} />
+              <PostContent content={postContentData} />
             </div>
 
-            <PostImages images={post.images} />
-            <PostInfo {...postInfoData} />
-            <PostContent content={postContentData} />
-          </div>
-
-          {/* 오른쪽 섹션*/}
-          <div className="lg:col-span-1 space-y-6">
-            <JoinInfoCard
-              currentMembers={postInfoData.currentMembers}
-              maxMembers={postInfoData.maxMembers}
-              members={joinMembers}
-              author={joinAuthor}
-            />
-            <div className="bg-white rounded-lg shadow border border-gray-70 p-4">
-              <h3 className="text-lg font-bold mb-2">지도</h3>
-              <div className="w-full h-40 bg-gray-100 flex items-center justify-center text-gray-500">
-                지도 정보가 여기에 표시됩니다.
+            {/* 오른쪽 섹션*/}
+            <div className="lg:col-span-1 space-y-6">
+              <JoinInfoCard
+                currentMembers={postInfoData.currentMembers}
+                maxMembers={postInfoData.maxMembers}
+                members={joinMembers}
+                author={joinAuthor}
+              />
+              <div className="bg-white rounded-lg shadow border border-gray-70 p-4">
+                <h3 className="text-lg font-bold mb-2">지도</h3>
+                <div className="w-full h-40 bg-gray-100 flex items-center justify-center text-gray-500">
+                  지도 정보가 여기에 표시됩니다.
+                </div>
               </div>
             </div>
           </div>
+
+          {/* 댓글 섹션 */}
+          <CommentSection comments={comments} />
         </div>
-
-        {/* 댓글 섹션 */}
-        <CommentSection comments={comments} />
       </div>
     </div>
   );
