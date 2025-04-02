@@ -36,7 +36,7 @@ export default function ImageGallery(){
           <Button
             variant="outline"
             size="icon"
-            className="rounded-full bg-white/80 hover:bg-white"
+            className="rounded-full bg-white/80 hover:bg-white cursor-pointer"
             onClick={prevImage}
           >
             <ChevronLeft className="h-6 w-6" />
@@ -44,7 +44,7 @@ export default function ImageGallery(){
           <Button
             variant="outline"
             size="icon"
-            className="rounded-full bg-white/80 hover:bg-white"
+            className="rounded-full bg-white/80 hover:bg-white cursor-pointer"
             onClick={nextImage}
           >
             <ChevronRight className="h-6 w-6" />
@@ -54,7 +54,7 @@ export default function ImageGallery(){
           {images.map((_, index) => (
             <button
               key={index}
-              className={`w-2 h-2 rounded-full ${index === currentImageIndex ? "bg-white" : "bg-white/50"}`}
+              className={`w-2 h-2 rounded-full cursor-pointer ${index === currentImageIndex ? "bg-white" : "bg-white/50"}`}
               onClick={() => setCurrentImageIndex(index)}
             />
           ))}
@@ -66,7 +66,7 @@ export default function ImageGallery(){
         {images.map((image, index) => (
           <button
             key={index}
-            className={`flex-shrink-0 w-20 h-20 rounded-md overflow-hidden ${
+            className={`flex-shrink-0 w-20 h-20 cursor-pointer rounded-md overflow-hidden ${
               index === currentImageIndex ? "ring-2 ring-cyan-500" : ""
             }`}
             onClick={() => setCurrentImageIndex(index)}

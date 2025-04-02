@@ -1,5 +1,6 @@
 import {Card, CardContent} from "@/components/ui/card";
-import {Star} from "lucide-react";
+import { Button } from "@/components/ui/button"
+import {Star, Trash2} from "lucide-react";
 import type React from "react";
 import Image from "next/image";
 
@@ -9,12 +10,14 @@ export default function ReviewCard({
   content,
   images,
   rating,
+  enableDelete
 }: {
   user : string
   date : string
   content : string
   images : string[]
   rating : number
+  enableDelete? : boolean;
 }) {
   return (
     <Card>
@@ -25,20 +28,25 @@ export default function ReviewCard({
               {user.charAt(0)}
             </div>
             <div className="ml-3">
-              <p className="font-medium">{user}</p>
+              <div className="flex">
+                <p className="font-medium mr-3">{user}</p>
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Star
+                    key={i}
+                    className={`h-5 w-5 ${
+                      i < rating ? "fill-amber-400 text-amber-400" : "text-gray-300"
+                    }`}
+                  />
+                ))}
+              </div>
               <p className="text-sm text-gray-500">{date}</p>
             </div>
           </div>
-          <div className="flex">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Star
-                key={i}
-                className={`h-5 w-5 ${
-                  i < rating ? "fill-amber-400 text-amber-400" : "text-gray-300"
-                }`}
-              />
-            ))}
-          </div>
+          {enableDelete && (
+            <Button variant="outline" className="gap-1 text-red-600 hover:text-red-700 hover:bg-red-50">
+              <Trash2 className="h-4 w-4" /> 삭제
+            </Button>
+          )}
         </div>
 
         <p className="mt-4 text-gray-700">{content}</p>

@@ -32,7 +32,7 @@ export default function BoatCard({
           <div>
             <CardTitle className="text-xl flex gap-1.5 items-center">
               {name}
-              <Heart className="text-red-500"/>
+              <Heart className="text-red-500 cursor-pointer"/>
             </CardTitle>
             <CardDescription className="flex items-center mt-1">
               <MapPin className="h-4 w-4 mr-1" /> {location}
@@ -59,7 +59,7 @@ export default function BoatCard({
             <p className="text-xl font-bold text-primary-color">{price.toLocaleString()}원</p>
           </div>
           <Link href={`/boat-reservation/${id}`}>
-            <Button className="bg-primary hover:bg-sub-1">예약하기</Button>
+            <Button className="bg-primary hover:bg-sub-1 cursor-pointer">예약하기</Button>
           </Link>
         </div>
       </CardContent>
