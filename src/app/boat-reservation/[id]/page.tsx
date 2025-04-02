@@ -18,7 +18,7 @@ import TabWater from "@/app/boat-reservation/[id]/components/TabWater";
 import ReviewCard from "@/components/ReviewCard";
 import ImageGallery from "@/app/boat-reservation/[id]/components/ImageGallery";
 
-export default function BoatReservationDetail({ params }: { params: { id: string } }) {
+export default function BoatReservationDetail() {
   // 리뷰 데이터
   const reviews = [
     {
@@ -58,6 +58,10 @@ export default function BoatReservationDetail({ params }: { params: { id: string
           </Link>
         </div>
 
+        <div className="mb-6 font-bold text-4xl">
+          즐거운 선상 낚시
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-8">
             {/* 이미지 갤러리 */}
@@ -66,9 +70,9 @@ export default function BoatReservationDetail({ params }: { params: { id: string
             {/* 상세 정보 탭 */}
             <Tabs defaultValue="info" className="w-full">
               <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="info">상세 정보</TabsTrigger>
-                <TabsTrigger value="fish">어종 정보</TabsTrigger>
-                <TabsTrigger value="tide">물때 정보</TabsTrigger>
+                <TabsTrigger value="info" className="cursor-pointer">상세 정보</TabsTrigger>
+                <TabsTrigger value="fish" className="cursor-pointer">어종 정보</TabsTrigger>
+                <TabsTrigger value="tide" className="cursor-pointer">물때 정보</TabsTrigger>
               </TabsList>
               <TabsContent value="info" className="mt-6">
                 <TabDetail />
@@ -85,10 +89,10 @@ export default function BoatReservationDetail({ params }: { params: { id: string
             <div className="space-y-6">
               <div className="flex justify-between items-center">
                 <h2 className="text-2xl font-bold">리뷰 및 평점</h2>
-                <div className="flex items-center bg-cyan-50 text-cyan-800 px-3 py-1 rounded-full">
+                <div className="flex items-center bg-sub-2 text-gray-30 px-3 py-1 rounded-full">
                   <Star className="h-5 w-5 fill-amber-400 text-amber-400 mr-1" />
-                  <span className="font-medium">3.8</span>
-                  <span className="text-sm text-gray-500 ml-1">({reviews.length})</span>
+                  <span className="font-semibold">3.8</span>
+                  <span className="text-sm font-medium text-gray-500 ml-1">({reviews.length})</span>
                 </div>
               </div>
 

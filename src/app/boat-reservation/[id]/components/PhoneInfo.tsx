@@ -10,7 +10,7 @@ export default function PhoneInfo() {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex items-center">
-          <div className="bg-cyan-100 text-cyan-800 p-2 rounded-full mr-3">
+          <div className="bg-sub-2 text-primary p-2 rounded-full mr-3">
             <Phone size={24} />
           </div>
           <div>

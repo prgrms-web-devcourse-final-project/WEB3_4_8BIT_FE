@@ -72,7 +72,7 @@ export default function TabDetail(){
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {amenities.map((amenity, index) => (
             <div key={index} className="flex items-start space-x-4">
-              <div className="bg-cyan-100 text-cyan-800 p-3 rounded-full">{amenity.icon}</div>
+              <div className="bg-sub-2 text-primary p-3 rounded-full">{amenity.icon}</div>
               <div>
                 <h4 className="font-medium">{amenity.name}</h4>
                 <p className="text-gray-600 text-sm mt-1">{amenity.description}</p>

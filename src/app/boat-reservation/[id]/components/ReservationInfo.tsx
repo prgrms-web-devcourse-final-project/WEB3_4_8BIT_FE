@@ -35,7 +35,7 @@ export default function ReservationInfo(){
           <h3 className="font-medium mb-3">날짜 선택</h3>
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" className="w-full justify-start text-left font-normal">
+              <Button variant="outline" className="w-full cursor-pointer justify-start text-left font-normal">
                 <CalendarIcon className="mr-2 h-4 w-4" />
                 {date ? format(date, "PPP", { locale: ko }) : "날짜를 선택하세요"}
               </Button>
@@ -52,6 +52,7 @@ export default function ReservationInfo(){
             <Button
               variant="outline"
               size="icon"
+              className="cursor-pointer"
               onClick={() => setSelectedPeople(Math.max(1, selectedPeople - 1))}
             >
               -
@@ -60,6 +61,7 @@ export default function ReservationInfo(){
             <Button
               variant="outline"
               size="icon"
+              className="cursor-pointer"
               onClick={() => setSelectedPeople(Math.min(10, selectedPeople + 1))}
             >
               +
@@ -87,7 +89,7 @@ export default function ReservationInfo(){
           </div>
         </div>
 
-        <Button className="w-full bg-cyan-600 hover:bg-cyan-700 text-lg py-6" disabled={!date}>
+        <Button className="w-full bg-primary hover:bg-cyan-700 text-lg py-6" disabled={!date}>
           {date ? "예약하기" : "날짜를 선택해주세요"}
         </Button>
 

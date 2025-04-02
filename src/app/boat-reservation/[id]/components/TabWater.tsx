@@ -63,12 +63,12 @@ export default function TabWater() {
                 <div key={index} className="w-full flex-shrink-0 px-1">
                   <div className="border rounded-lg p-4 bg-white">
                     <div className="flex justify-between items-center mb-4">
-                      <h3 className="text-lg font-medium">
+                      <h3 className="text-lg font-medium flex items-center">
                         {info.date}
                         {index === 0 && (
                           <span className="ml-2 text-sm bg-cyan-100 text-cyan-800 px-2 py-0.5 rounded-full">
-                                        오늘
-                                      </span>
+                            오늘
+                          </span>
                         )}
                       </h3>
                       <div className="flex space-x-4">
@@ -172,12 +172,12 @@ export default function TabWater() {
             </div>
           </div>
 
-          {/* Carousel Controls */}
+          {/* 캐러셀 조작 버튼 */}
           <div className="absolute top-1/2 left-0 right-0 flex justify-between items-center -mt-6 px-2">
             <Button
               variant="outline"
               size="icon"
-              className="rounded-full bg-white shadow-md h-10 w-10"
+              className="rounded-full cursor-pointer bg-white shadow-md h-10 w-10"
               onClick={() => setCurrentTideIndex(Math.max(0, currentTideIndex - 1))}
               disabled={currentTideIndex === 0}
             >
@@ -186,7 +186,7 @@ export default function TabWater() {
             <Button
               variant="outline"
               size="icon"
-              className="rounded-full bg-white shadow-md h-10 w-10"
+              className="rounded-full cursor-pointer bg-white shadow-md h-10 w-10"
               onClick={() => setCurrentTideIndex(Math.min(tideInfo.length - 1, currentTideIndex + 1))}
               disabled={currentTideIndex === tideInfo.length - 1}
             >
@@ -194,13 +194,13 @@ export default function TabWater() {
             </Button>
           </div>
 
-          {/* Carousel Indicators */}
+          {/* 캐러셀 */}
           <div className="flex justify-center mt-4 space-x-2">
             {tideInfo.map((_, index) => (
               <button
                 key={index}
-                className={`h-2 w-2 rounded-full ${
-                  index === currentTideIndex ? "bg-cyan-600" : "bg-gray-300"
+                className={`h-2 w-2 rounded-full cursor-pointer ${
+                  index === currentTideIndex ? "bg-primary" : "bg-gray-300"
                 }`}
                 onClick={() => setCurrentTideIndex(index)}
               />
