@@ -6,10 +6,10 @@ import FishCard from "@/components/FishCard";
 export default function TabFish(){
   // 물고기 정보
   const fishTypes = [
-    { name: "참돔", season: "봄-가을", probability: "높음", image: "/placeholder.svg?height=100&width=100" },
-    { name: "감성돔", season: "봄-가을", probability: "높음", image: "/placeholder.svg?height=100&width=100" },
-    { name: "농어", season: "여름-가을", probability: "중간", image: "/placeholder.svg?height=100&width=100" },
-    { name: "볼락", season: "가을-겨울", probability: "높음", image: "/placeholder.svg?height=100&width=100" },
+    { name: "참돔", season: "봄-가을", image: "/placeholder.svg?height=100&width=100" },
+    { name: "감성돔", season: "봄-가을", image: "/placeholder.svg?height=100&width=100" },
+    { name: "농어", season: "여름-가을", image: "/placeholder.svg?height=100&width=100" },
+    { name: "볼락", season: "가을-겨울", image: "/placeholder.svg?height=100&width=100" },
   ]
 
   return (
@@ -21,7 +21,11 @@ export default function TabFish(){
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {fishTypes.map((fish, index) => (
-            <FishCard />
+            <FishCard
+              key={index}
+              name={fish.name}
+              season={fish.season}
+            />
           ))}
         </div>
 
