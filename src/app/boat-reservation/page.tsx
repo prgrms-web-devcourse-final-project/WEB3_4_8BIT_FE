@@ -22,22 +22,6 @@ export default function BoatReservation() {
         <div className="bg-white border-[1px] rounded-xl shadow-lg p-6 mb-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-              <Label htmlFor="location" className="mb-2 block">
-                지역
-              </Label>
-              <Select>
-                <SelectTrigger id="location">
-                  <SelectValue placeholder="지역 선택" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="east">동해</SelectItem>
-                  <SelectItem value="west">서해</SelectItem>
-                  <SelectItem value="south">남해</SelectItem>
-                  <SelectItem value="jeju">제주도</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
               <Label htmlFor="date" className="mb-2 block">
                 날짜
               </Label>
@@ -47,19 +31,28 @@ export default function BoatReservation() {
               </div>
             </div>
             <div>
+              <Label htmlFor="search" className="mb-2 block">
+                검색어
+              </Label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                <Input id="search" type="search" className="pl-10" />
+              </div>
+            </div>
+            <div>
               <Label htmlFor="fish-type" className="mb-2 block">
-                어종
+                인원수
               </Label>
               <Select>
-                <SelectTrigger id="fish-type">
-                  <SelectValue placeholder="어종 선택" />
+                <SelectTrigger>
+                  <SelectValue placeholder="인원 수 선택" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">전체</SelectItem>
-                  <SelectItem value="red-seabream">참돔</SelectItem>
-                  <SelectItem value="sea-bass">농어</SelectItem>
-                  <SelectItem value="flounder">광어</SelectItem>
-                  <SelectItem value="squid">갑오징어</SelectItem>
+                  {Array.from({ length: 8 }, (_, i) => (
+                    <SelectItem key={i} value={String(i + 1)}>
+                      {i + 1}명
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
