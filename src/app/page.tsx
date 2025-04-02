@@ -1,4 +1,5 @@
 import FishingPoint from "@/components/FishingPoint";
+import FishingPointCard from "@/components/FishingPointCard";
 
 export default function Home() {
   return (
@@ -19,8 +20,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 여기서 FishingPoint 컴포넌트를 추가 */}
       <FishingPoint />
+      <FishingPointCard />
     </main>
   );
 }
