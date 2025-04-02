@@ -1,5 +1,7 @@
+import ActiveChatPointCard from "@/components/ActiveChatPointCard";
 import FishingPoint from "@/components/FishingPoint";
 import FishingPointCard from "@/components/FishingPointCard";
+import NearbyFishingPointCard from "@/components/NearbyFishingPointCard";
 
 export default function Home() {
   return (
@@ -22,6 +24,8 @@ export default function Home() {
 
       <FishingPoint />
       <FishingPointCard />
+      <NearbyFishingPointCard />
+      <ActiveChatPointCard />
     </main>
   );
 }
