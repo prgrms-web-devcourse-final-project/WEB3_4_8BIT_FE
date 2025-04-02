@@ -3,6 +3,7 @@
 import PostImages from "../components/PostImage";
 import PostInfo from "../components/PostInfo";
 import PostContent from "../components/PostContent";
+import JoinInfoCard from "../components/JoinInfoCard";
 
 export default function PostDetailPage({ params }: { params: { id: string } }) {
   // PostImage 예시 데이터
@@ -35,15 +36,43 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
 식사는 현장에서 각자 해결하거나 근처 식당에서 함께 할 예정입니다.  
 날씨가 좋지 않을 경우 일정이 변경될 수 있으니 참고해주세요.`;
 
+  // JoinInfoCard 예시 데이터
+  const joinMembers = [
+    {
+      id: "1",
+      name: "바다사랑",
+      avatarUrl: "/images/avatar1.png",
+      isAuthor: true,
+    },
+    { id: "2", name: "낚시초보", avatarUrl: "/images/avatar2.png" },
+    { id: "3", name: "물고기사냥꾼", avatarUrl: "/images/avatar3.png" },
+  ];
+  const joinAuthor = { name: "바다사랑", avatarUrl: "/images/avatar1.png" };
+
   return (
     <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
-        <PostImages images={post.images} />
-        <div className="mt-6">
+      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* 왼쪽 섹션: 게시글 내용 */}
+        <div className="lg:col-span-2 border border-gray-70 p-4 rounded-lg space-y-6">
+          <PostImages images={post.images} />
           <PostInfo {...postInfoData} />
-        </div>
-        <div className="mt-6">
           <PostContent content={postContentData} />
+        </div>
+
+        {/* 오른쪽 섹션: 참여 정보, 지도 */}
+        <div className="lg:col-span-1 space-y-6">
+          <JoinInfoCard
+            currentMembers={postInfoData.currentMembers}
+            maxMembers={postInfoData.maxMembers}
+            members={joinMembers}
+            author={joinAuthor}
+          />
+          <div className="bg-white rounded-lg shadow p-4">
+            <h3 className="text-lg font-bold mb-2">지도</h3>
+            <div className="w-full h-40 bg-gray-100 flex items-center justify-center text-gray-500">
+              지도 정보가 여기에 표시됩니다.
+            </div>
+          </div>
         </div>
       </div>
     </div>
