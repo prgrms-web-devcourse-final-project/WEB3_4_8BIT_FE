@@ -208,7 +208,9 @@ export default function WritePostForm() {
             <p className="font-medium">이미지 첨부 (선택사항)</p>
             <div className="border border-dashed border-gray-60 rounded-lg p-6 text-center">
               <p className="text-gray-500">
-                이미지를 드래그하여 업로드하거나 클릭하여 파일을 선택하세요.
+                이미지를 업로드하세요.
+                <br />
+                (최대 10장까지 업로드 가능)
               </p>
               <Button variant="outline" className="mt-4">
                 파일 선택
