@@ -64,13 +64,12 @@ const CustomOverlay = ({
           position: "absolute",
           bottom: "-8px",
           left: "50%",
-          transform: "translateX(-50%)",
+          transform: "translateX(-50%) rotate(45deg)",
           width: "16px",
           height: "16px",
           backgroundColor: "white",
           borderRight: "1px solid #e5e7eb",
           borderBottom: "1px solid #e5e7eb",
-          transform: "translateX(-50%) rotate(45deg)",
         }}
       />
       <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
