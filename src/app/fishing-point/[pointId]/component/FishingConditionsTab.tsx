@@ -7,6 +7,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { getSeaTemperature } from "@/lib/api/getSeaTemperatureAPI";
 import {
   getCurrentWeatherData,
   getDayAfterTomorrowWeatherData,
@@ -72,6 +73,12 @@ export default function FishingConditionsTab({
     enabled: !!pointDataProp,
   });
 
+  const { data: seaTemperatureData } = useQuery({
+    queryKey: ["seaTemperatureData", pointDataProp?.title],
+    queryFn: () => getSeaTemperature(pointDataProp!.lat, pointDataProp!.lng),
+    enabled: !!pointDataProp,
+  });
+
   if (!pointDataProp) {
     return <div>데이터를 불러오는 중입니다...</div>;
   }
@@ -93,6 +100,7 @@ export default function FishingConditionsTab({
           tomorrowData={tomorrowData}
           dayAfterTomorrowData={dayAfterTomorrowData}
           tideData={tideData}
+          seaTemperatureData={seaTemperatureData}
         />
       </TabsContent>
       <TabsContent value="tide">
@@ -108,12 +116,14 @@ function WeatherInfo({
   tomorrowData,
   dayAfterTomorrowData,
   tideData,
+  seaTemperatureData,
 }: {
   data: any;
   todayData: any;
   tomorrowData: any;
   dayAfterTomorrowData: any;
   tideData: any;
+  seaTemperatureData: any;
 }) {
   return (
     <article className="w-full p-[16px] mt-[46px]">
@@ -139,7 +149,7 @@ function WeatherInfo({
           <div className="flex items-center gap-[8px]">
             <ThermometerSun className="w-[20x] h-[20px] text-[#EF4444]" />
             <span className="text-primary paperlogy-6semibold text-body-1">
-              {data?.currentTemp}℃
+              {seaTemperatureData?.air_temp}℃
             </span>
           </div>
         </div>
@@ -149,7 +159,7 @@ function WeatherInfo({
           <div className="flex items-center gap-[8px]">
             <ThermometerSnowflake className="w-[20x] h-[20px] text-primary" />
             <span className="text-primary paperlogy-6semibold text-body-1">
-              18.2℃
+              {seaTemperatureData?.water_temp}℃
             </span>
           </div>
         </div>
@@ -177,7 +187,7 @@ function WeatherInfo({
                   : "text-warning"
               }`}
             >
-              {data?.windSpeed}m/s
+              {seaTemperatureData?.wind_speed}m/s
             </span>
           </div>
         </div>
