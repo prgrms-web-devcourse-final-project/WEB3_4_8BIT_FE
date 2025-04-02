@@ -1,5 +1,28 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
+
+@font-face {
+  font-family: "Paperlogy-5Medium";
+  src: url("https://fastly.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-5Medium.woff2")
+    format("woff2");
+  font-weight: 500;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Paperlogy-6SemiBold";
+  src: url("https://fastly.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-6SemiBold.woff2")
+    format("woff2");
+  font-weight: 500;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Paperlogy-7Bold";
+  src: url("https://fastly.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-7Bold.woff2")
+    format("woff2");
+  font-weight: 500;
+  font-style: normal;
+}
 
 @custom-variant dark (&:is(.dark *));
 
@@ -39,18 +62,18 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
   --color-gray-10: #101112;
-  --color-gray-20: #2C2D30;
-  --color-gray-30: #4C4D51;
-  --color-gray-40: #6E6F75;
-  --color-gray-50: #92949A;
-  --color-gray-60: #B9BABE;
-  --color-gray-70: #E2E2E4;
-  --color-gray-80: #F1F1EF;
-  --color-gray-100: #FFFFFF;
-  --color-primary: #3795FF;
-  --color-sub-1: #96BBFF;
-  --color-sub-2: #D6E2FF;
-  --color-sub-3: #FFD6BD;
+  --color-gray-20: #2c2d30;
+  --color-gray-30: #4c4d51;
+  --color-gray-40: #6e6f75;
+  --color-gray-50: #92949a;
+  --color-gray-60: #b9babe;
+  --color-gray-70: #e2e2e4;
+  --color-gray-80: #f1f1ef;
+  --color-gray-100: #ffffff;
+  --color-primary: #3795ff;
+  --color-sub-1: #96bbff;
+  --color-sub-2: #d6e2ff;
+  --color-sub-3: #ffd6bd;
 }
 
 :root {
@@ -86,6 +109,76 @@
   --sidebar-accent-foreground: oklch(0.21 0.034 264.665);
   --sidebar-border: oklch(0.928 0.006 264.531);
   --sidebar-ring: oklch(0.707 0.022 261.325);
+  --text-title-1: 48px;
+  --text-title-2: 32px;
+  --text-title-3: 24px;
+  --text-title-4: 20px;
+  --text-title-5: 18px;
+  --text-body-1: 20px;
+  --text-body-2: 18px;
+  --text-body-3: 16px;
+  --text-body-4: 14px;
+  --text-body-5: 12px;
+}
+
+@layer utilities {
+  .text-title-1 {
+    font-size: var(--text-title-1);
+    font-weight: 700;
+  }
+  .text-title-2 {
+    font-size: var(--text-title-2);
+    font-weight: 700;
+  }
+  .text-title-3 {
+    font-size: var(--text-title-3);
+    font-weight: 700;
+  }
+  .text-title-4 {
+    font-size: var(--text-title-4);
+    font-weight: 700;
+  }
+  .text-title-5 {
+    font-size: var(--text-title-5);
+    font-weight: 700;
+  }
+
+  .text-body-1 {
+    font-size: var(--text-body-1);
+    font-weight: 400;
+  }
+  .text-body-2 {
+    font-size: var(--text-body-2);
+    font-weight: 400;
+  }
+  .text-body-3 {
+    font-size: var(--text-body-3);
+    font-weight: 400;
+  }
+  .text-body-4 {
+    font-size: var(--text-body-4);
+    font-weight: 400;
+  }
+  .text-body-5 {
+    font-size: var(--text-body-5);
+    font-weight: 400;
+  }
+
+  .box-shadow-1 {
+    box-shadow: 0px 0px 8px 1px rgba(175, 175, 175, 0.25);
+  }
+
+  .paperlogy-5medium {
+    font-family: "Paperlogy-5Medium", sans-serif;
+  }
+
+  .paperlogy-6semibold {
+    font-family: "Paperlogy-6SemiBold", sans-serif;
+  }
+
+  .paperlogy-7bold {
+    font-family: "Paperlogy-7Bold", sans-serif;
+  }
 }
 
 .dark {
@@ -125,7 +218,9 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    font-family: "Pretendard", "Paperlogy-5Medium", sans-serif;
   }
+
   body {
     @apply bg-background text-foreground;
   }
