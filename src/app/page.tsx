@@ -23,9 +23,17 @@ export default function Home() {
       </section>
 
       <FishingPoint />
-      <FishingPointCard />
-      <NearbyFishingPointCard />
-      <ActiveChatPointCard />
+
+      {/* 3개의 카드 섹션 */}
+      <section className="py-12">
+        <div className="mx-auto max-w-7xl px-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <FishingPointCard />
+            <NearbyFishingPointCard />
+            <ActiveChatPointCard />
+          </div>
+        </div>
+      </section>
     </main>
   );
 }

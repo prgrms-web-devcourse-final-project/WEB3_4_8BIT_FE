@@ -1,16 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card";
+
 import { Badge } from "@/components/ui/badge";
-import { MapPin, ChevronRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 
 // 임시 데이터 구조
@@ -20,6 +13,19 @@ interface FishingPointData {
   distance: string;
 }
 
+const getSpeciesColor = (species: string) => {
+  switch (species) {
+    case "광어":
+      return "bg-blue-50 text-blue-700 border-blue-200";
+    case "도미":
+      return "bg-red-50 text-red-700 border-red-200";
+    case "고등어":
+      return "bg-indigo-50 text-indigo-700 border-indigo-200";
+    default:
+      return "bg-gray-50 text-gray-700 border-gray-200";
+  }
+};
+
 const NearbyFishingPointCard = () => {
   // 상태를 이용하여 API에서 가져온 데이터를 저장
   const [fishingPoints, setFishingPoints] = useState<FishingPointData[]>([]);
@@ -27,18 +33,18 @@ const NearbyFishingPointCard = () => {
   // 임시 목 데이터 (나중에 API로 대체)
   const mockFishingPoints: FishingPointData[] = [
     {
-      title: "해운대 미포 갯바위",
-      species: "볼락",
+      title: "해운대 마린 갤러리",
+      species: "광어",
       distance: "5km",
     },
     {
       title: "기장 이동항 방파제",
-      species: "감성돔",
+      species: "도미",
       distance: "8km",
     },
     {
-      title: "기장 월내 갯바위",
-      species: "우럭",
+      title: "기장 월대 갯바위",
+      species: "고등어",
       distance: "12km",
     },
   ];
@@ -54,50 +60,56 @@ const NearbyFishingPointCard = () => {
   }, []);
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
-      {fishingPoints.length > 0 && (
-        <Card className="shadow-xl border border-gray-200 hover:shadow-xl transition-shadow p-5">
-          <CardHeader className="pb-1">
-            <CardTitle className="flex items-center text-xl font-semibold text-primary">
-              <MapPin className="h-6 w-6 text-primary mr-2" />내 주변 낚시
-              포인트
-            </CardTitle>
-            <CardDescription className="text-base text-gray-30">
-              현재 위치 기준 가까운 낚시 포인트
-            </CardDescription>
-          </CardHeader>
-
-          <CardContent>
-            {/* 포인트 리스트 */}
-            <ul className="space-y-4">
-              {fishingPoints.map((point, index) => (
-                <li key={index} className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <span className="font-medium text-gray-10">
-                      {point.title}
-                    </span>
-                    <Badge className="ml-2 bg-cyan-100 text-cyan-800">
-                      {point.species}
-                    </Badge>
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    <p>{point.distance}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-
-          <CardFooter className="pt-1">
-            <Link
-              href="/fishing-spot"
-              className="text-primary hover:text-cyan-800 text-sm font-medium"
-            >
-              지도에서 보기 <ChevronRight className="h-4 w-4 inline ml-1" />
-            </Link>
-          </CardFooter>
-        </Card>
-      )}
+    <div className="bg-white p-4 w-full shadow-lg rounded-lg">
+      <div className="flex items-center gap-2 mb-4">
+        <svg
+          className="w-5 h-5 text-primary"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+          />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+          />
+        </svg>
+        <h3 className="text-base font-medium text-primary">
+          내 주변 낚시 포인트
+        </h3>
+      </div>
+      <div className="space-y-3">
+        {fishingPoints.map((point, index) => (
+          <div key={index} className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-base">{point.title}</span>
+              <Badge
+                variant="outline"
+                className={`text-sm px-2 py-0 h-5 ${getSpeciesColor(
+                  point.species
+                )}`}
+              >
+                {point.species}
+              </Badge>
+            </div>
+            <span className="text-sm text-gray-500">{point.distance}</span>
+          </div>
+        ))}
+      </div>
+      <Link
+        href="/fishing-spot"
+        className="mt-4 text-sm text-blue-500 hover:text-blue-600 flex items-center"
+      >
+        지도에서 보기
+        <ChevronRight className="h-4 w-4 ml-1" />
+      </Link>
     </div>
   );
 };
