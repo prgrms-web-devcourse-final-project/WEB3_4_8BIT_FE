@@ -31,7 +31,7 @@ export default function SearchBox() {
             인원수
           </Label>
           <Select>
-            <SelectTrigger>
+            <SelectTrigger className="cursor-pointer">
               <SelectValue placeholder="인원 수 선택" />
             </SelectTrigger>
             <SelectContent>
