@@ -1,6 +1,11 @@
 "use client";
 
 import Image from "next/image";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, Autoplay } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/autoplay";
 
 interface PostImagesProps {
   images: string[];
@@ -10,20 +15,26 @@ export default function PostImages({ images }: PostImagesProps) {
   if (!images || images.length === 0) return null;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <Swiper
+      modules={[Navigation, Autoplay]}
+      navigation
+      autoplay={{ delay: 3000, disableOnInteraction: false }}
+      spaceBetween={10}
+      slidesPerView={1}
+      className="rounded-lg overflow-hidden"
+    >
       {images.map((image: string, index: number) => (
-        <div
-          key={index}
-          className="relative w-full h-[250px] rounded-lg overflow-hidden"
-        >
-          <Image
-            src={image || "/placeholder.svg"}
-            alt={`낚시 이미지 ${index + 1}`}
-            fill
-            className="object-cover"
-          />
-        </div>
+        <SwiperSlide key={index}>
+          <div className="relative w-full h-[250px]">
+            <Image
+              src={image || "/placeholder.svg"}
+              alt={`낚시 이미지 ${index + 1}`}
+              fill
+              className="object-cover"
+            />
+          </div>
+        </SwiperSlide>
       ))}
-    </div>
+    </Swiper>
   );
 }
