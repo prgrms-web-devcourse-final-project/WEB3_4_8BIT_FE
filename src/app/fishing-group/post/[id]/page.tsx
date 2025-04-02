@@ -8,6 +8,7 @@ import PostContent from "../components/PostContent";
 import JoinInfoCard from "../components/JoinInfoCard";
 import CommentSection, { Comment } from "../components/CommentSection";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function PostDetailPage({ params }: { params: { id: string } }) {
   // PostImage 예시 데이터
@@ -92,8 +93,16 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
         />
       </div>
 
-      <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen py-6 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto space-y-8">
+          <div className="mb-5">
+            <Link
+              href="/fishing-group"
+              className="text-primary hover:text-[#2773CC] font-medium"
+            >
+              ← 목록으로 돌아가기
+            </Link>
+          </div>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* 왼쪽 섹션: 게시글 내용 */}
             <div className="lg:col-span-2 shadow border border-gray-70 p-4 rounded-lg space-y-6">

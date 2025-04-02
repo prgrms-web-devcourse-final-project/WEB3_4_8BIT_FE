@@ -28,7 +28,7 @@ export function PostCard({
   memberCount,
 }: PostCardProps) {
   return (
-    <div className="w-full mb-4 border border-gray-300 rounded-lg hover:bg-gray-50 px-4 md:px-6 py-4">
+    <div className="w-full mb-4 border border-gray-300 rounded-lg hover:bg-gray-80 px-4 md:px-6 py-4">
       <div className="flex flex-col md:flex-row items-start gap-4 md:gap-5">
         {/* 썸네일 이미지 */}
         <div className="w-full md:w-[180px] h-[120px] rounded-md overflow-hidden flex-shrink-0">

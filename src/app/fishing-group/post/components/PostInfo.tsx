@@ -18,7 +18,7 @@ export default function PostInfo({
   maxMembers,
 }: PostInfoProps) {
   return (
-    <div className="bg-gray-70 rounded-lg p-4 grid grid-cols-2 gap-4">
+    <div className="bg-gray-80 rounded-lg p-4 grid grid-cols-2 gap-4">
       {/* 장소 */}
       <div className="flex items-center space-x-3">
         <MapPin className="w-5 h-5 text-gray-500" />
