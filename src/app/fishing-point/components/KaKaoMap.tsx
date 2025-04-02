@@ -1,6 +1,3 @@
-"use client";
-
-import { Button } from "@/components/ui/button";
 import { useEffect, useRef } from "react";
 import fishLocations from "@/constants/fish-location.json";
 
@@ -18,7 +15,7 @@ declare global {
   }
 }
 
-export default function KakaoMapSection() {
+export default function KaKaoMap() {
   const infowindowRef = useRef<any>(null);
   const mapRef = useRef<any>(null);
   const overlayRef = useRef<any>(null);
@@ -101,7 +98,7 @@ export default function KakaoMapSection() {
             ">${location.name}</p>
           </div>
           <button 
-            onclick="window.location.href='/fishing-point/${location.value}?pointId=${location.value}'"
+            onclick="window.location.href='/fishing-point/${location.value}'"
             style="
               background-color: #3b82f6;
               color: white;
@@ -184,18 +181,5 @@ export default function KakaoMapSection() {
       ],
     });
   };
-
-  return (
-    <section className="w-full mt-[34px]">
-      <div className="w-[1280px] mx-auto">
-        <div className="flex items-center justify-between mb-[16px]">
-          <div>서치바</div>
-          <Button className="text-body-3 text-white">
-            낚시 포인트 제보하기
-          </Button>
-        </div>
-        <div id="map" className="w-full h-[640px] rounded-lg shadow-lg"></div>
-      </div>
-    </section>
-  );
+  return <div id="map" className="w-full h-[640px] rounded-lg shadow-lg"></div>;
 }
