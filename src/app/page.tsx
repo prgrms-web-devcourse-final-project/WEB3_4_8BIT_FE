@@ -3,6 +3,7 @@ import FishingPoint from "@/components/FishingPoint";
 import FishingPointCard from "@/components/FishingPointCard";
 import NearbyFishingPointCard from "@/components/NearbyFishingPointCard";
 import BoatCard from "@/components/BoatCard";
+import FishSection from "@/components/FishSection";
 
 export default function Home() {
   return (
@@ -73,6 +74,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <FishSection />
     </main>
   );
 }
