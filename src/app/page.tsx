@@ -4,6 +4,7 @@ import FishingPointCard from "@/components/FishingPointCard";
 import NearbyFishingPointCard from "@/components/NearbyFishingPointCard";
 import BoatCard from "@/components/BoatCard";
 import FishSection from "@/components/FishSection";
+import BoatReservationSection from "@/components/BoatReservationSection";
 
 export default function Home() {
   return (
@@ -37,14 +38,14 @@ export default function Home() {
         </div>
       </section>
 
-      {/* BoatCard 컴포넌트 */}
+      {/* BoatCard 컴포넌트 섹션 */}
       <section className="py-12">
         <div className="mx-auto max-w-7xl px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <BoatCard
               id="1"
               image="images/test.png"
-              name="Luxury Yacht"
+              name="미끼미끼호1"
               location="서울시 강남구"
               rating={4.5}
               reviews={100}
@@ -54,7 +55,7 @@ export default function Home() {
             <BoatCard
               id="2"
               image="images/test.png"
-              name="Speed Boat"
+              name="미끼미끼호2"
               location="부산시 해운대구"
               rating={4.7}
               reviews={120}
@@ -64,7 +65,7 @@ export default function Home() {
             <BoatCard
               id="3"
               image="images/test.png"
-              name="Fishing Vessel"
+              name="미끼미끼호3"
               location="인천시 연수구"
               rating={4.8}
               reviews={80}
@@ -75,7 +76,14 @@ export default function Home() {
         </div>
       </section>
 
-      <FishSection />
+      <section className="py-12">
+        <div className="mx-auto max-w-7xl px-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <BoatReservationSection />
+            <FishSection />
+          </div>
+        </div>
+      </section>
     </main>
   );
 }
