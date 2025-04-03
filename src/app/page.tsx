@@ -2,6 +2,7 @@ import ActiveChatPointCard from "@/components/ActiveChatPointCard";
 import FishingPoint from "@/components/FishingPoint";
 import FishingPointCard from "@/components/FishingPointCard";
 import NearbyFishingPointCard from "@/components/NearbyFishingPointCard";
+import BoatCard from "@/components/BoatCard";
 
 export default function Home() {
   return (
@@ -31,6 +32,44 @@ export default function Home() {
             <FishingPointCard />
             <NearbyFishingPointCard />
             <ActiveChatPointCard />
+          </div>
+        </div>
+      </section>
+
+      {/* BoatCard 컴포넌트 */}
+      <section className="py-12">
+        <div className="mx-auto max-w-7xl px-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <BoatCard
+              id="1"
+              image="images/test.png"
+              name="Luxury Yacht"
+              location="서울시 강남구"
+              rating={4.5}
+              reviews={100}
+              price={50000}
+              fishTypes={["연어", "참치"]}
+            />
+            <BoatCard
+              id="2"
+              image="images/test.png"
+              name="Speed Boat"
+              location="부산시 해운대구"
+              rating={4.7}
+              reviews={120}
+              price={60000}
+              fishTypes={["광어", "우럭"]}
+            />
+            <BoatCard
+              id="3"
+              image="images/test.png"
+              name="Fishing Vessel"
+              location="인천시 연수구"
+              rating={4.8}
+              reviews={80}
+              price={70000}
+              fishTypes={["대구", "농어"]}
+            />
           </div>
         </div>
       </section>
