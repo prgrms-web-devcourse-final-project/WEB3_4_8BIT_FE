@@ -5,6 +5,7 @@ import type React from "react";
 import Image from "next/image";
 
 export default function ReviewCard({
+  id,
   user,
   date,
   content,
@@ -12,6 +13,7 @@ export default function ReviewCard({
   rating,
   enableDelete
 }: {
+  id: string;
   user : string
   date : string
   content : string
@@ -43,7 +45,7 @@ export default function ReviewCard({
             </div>
           </div>
           {enableDelete && (
-            <Button variant="outline" className="gap-1 text-red-600 hover:text-red-700 hover:bg-red-50">
+            <Button variant="outline" className="gap-1 text-red-600 hover:text-red-700 hover:bg-red-50 cursor-pointer">
               <Trash2 className="h-4 w-4" /> 삭제
             </Button>
           )}
