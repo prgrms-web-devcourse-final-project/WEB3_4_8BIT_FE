@@ -21,7 +21,7 @@ const navItems = [
   { name: "대시보드", href: "/captain/mypage", icon: LayoutDashboard },
   { name: "예약 관리", href: "/captain/mypage/reservation", icon: Calendar },
   { name: "게시글 관리", href: "/captain/mypage/post", icon: ClipboardList },
-  { name: "선박 정보", href: "/captain/ships", icon: Ship },
+  { name: "선박 정보", href: "/captain/mypage/ship-info", icon: Ship },
 ];
 
 export function CaptainSidebar() {

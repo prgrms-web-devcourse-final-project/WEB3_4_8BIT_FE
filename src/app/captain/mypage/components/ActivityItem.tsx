@@ -19,7 +19,7 @@ export default function ActivityItem({
     dashboard: "/captain/mypage",
     reservation: "/captain/mypage/reservation",
     post: "/captain/mypage/post",
-    shipinfo: "/captain/ship-info",
+    shipinfo: "/captain/mypage/ship-info",
   };
 
   return (
