@@ -53,7 +53,7 @@ export function CaptainSidebar() {
             <span>test@email.com</span>
           </div>
           <div className="mt-4 w-full">
-            <Link href="/captain/mypage/edit">
+            <Link href="/captain/mypage/profile-edit">
               <Button variant="outline" className="w-full cursor-pointer">
                 프로필 수정
               </Button>
