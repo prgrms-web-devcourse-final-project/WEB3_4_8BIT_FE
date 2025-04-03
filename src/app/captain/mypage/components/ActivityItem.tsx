@@ -17,8 +17,8 @@ export default function ActivityItem({
 }) {
   const linkType = {
     dashboard: "/captain/mypage",
-    reservation: "/captain/reservation",
-    post: "/captain/posts",
+    reservation: "/captain/mypage/reservation",
+    post: "/captain/mypage/post",
     shipinfo: "/captain/ship-info",
   };
 

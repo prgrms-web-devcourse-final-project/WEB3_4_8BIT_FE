@@ -60,7 +60,7 @@ export default function CaptainMyPage() {
               <CardTitle>최근 예약 신청</CardTitle>
               <CardDescription>최근 예약 신청 내역입니다.</CardDescription>
             </div>
-            <Link href="/captain/reservations">
+            <Link href="/captain/mypage/reservation">
               <Button variant="ghost" size="sm" className="gap-1">
                 전체보기 <ChevronRight className="h-4 w-4" />
               </Button>
