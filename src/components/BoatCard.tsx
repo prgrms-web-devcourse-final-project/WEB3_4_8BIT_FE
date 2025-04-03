@@ -2,6 +2,7 @@ import { MapPin, Star, Heart } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
+import Image from "next/image";
 
 export default function BoatCard({
   id,
@@ -23,9 +24,15 @@ export default function BoatCard({
   fishTypes: string[]
 }) {
   return (
-    <Card className="overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
+    <Card className="overflow-hidden shadow-lg hover:shadow-xl transition-shadow pt-0">
       <div className="h-48 overflow-hidden">
-        <img src={image || "/placeholder.svg"} alt={name} className="w-full h-full object-cover" />
+        <Image
+          src={image || "/placeholder.svg"}
+          alt={name}
+          className="w-full h-full object-cover"
+          height={195}
+          width={440}
+        />
       </div>
       <CardHeader>
         <div className="flex justify-between items-start">
