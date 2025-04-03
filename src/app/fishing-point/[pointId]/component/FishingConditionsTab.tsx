@@ -7,79 +7,88 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getSeaTemperature } from "@/lib/api/getSeaTemperatureAPI";
+import {
+  getSeaTemperature,
+  getWeeklyTideData,
+  DailyTideData,
+} from "@/lib/api/getSeaTemperatureAPI";
 import {
   getCurrentWeatherData,
-  getDayAfterTomorrowWeatherData,
-  getTideData,
-  getTodayWeatherData,
-  getTomorrowWeatherData,
+  getWeatherData,
 } from "@/lib/api/weatherDataAPI";
 import { useQuery } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import {
-  Cloud,
   Droplets,
+  Moon,
+  Radiation,
+  Sunrise,
+  Sunset,
   ThermometerSnowflake,
   ThermometerSun,
-  Umbrella,
+  Timer,
   Waves,
   Wind,
 } from "lucide-react";
-
-interface FishLocation {
-  value: number;
-  name: string;
-  title: string;
-  lat: number;
-  lng: number;
-}
+import TableContent from "./TableContent";
+import {
+  FishLocation,
+  CurrentWeatherData,
+  SeaTemperatureData,
+  WeatherResponse,
+} from "@/types/weatherTypes";
+import {
+  getWeatherIcon,
+  getWeatherText,
+  getUVIColor,
+  getUVIText,
+  formatTemperature,
+} from "@/utils/weatherStatusFormater";
+import { calculateMoonPhase } from "@/utils/moonPhaseCalculator";
+import SeaTimeDescription from "./seaTimeDescription";
 
 export default function FishingConditionsTab({
   pointDataProp,
 }: {
   pointDataProp: FishLocation | null;
 }) {
-  const { data } = useQuery({
-    queryKey: ["weatherData", pointDataProp?.title],
-    queryFn: () =>
-      getCurrentWeatherData(pointDataProp!.lat, pointDataProp!.lng),
-    enabled: !!pointDataProp,
-  });
+  const { data, isLoading: isCurrentWeatherDataLoading } =
+    useQuery<CurrentWeatherData>({
+      queryKey: ["Data", pointDataProp?.title],
+      queryFn: () =>
+        getCurrentWeatherData(pointDataProp!.lat, pointDataProp!.lng),
+      enabled: !!pointDataProp,
+    });
 
-  const { data: todayData } = useQuery({
-    queryKey: ["todayWeatherData", pointDataProp?.title],
-    queryFn: () => getTodayWeatherData(pointDataProp!.lat, pointDataProp!.lng),
-    enabled: !!pointDataProp,
-  });
+  const { data: seaTemperatureData, isLoading: isSeaTemperatureDataLoading } =
+    useQuery<SeaTemperatureData>({
+      queryKey: ["seaTemperatureData", pointDataProp?.title],
+      queryFn: () => getSeaTemperature(pointDataProp!.lat, pointDataProp!.lng),
+      enabled: !!pointDataProp,
+    });
 
-  const { data: tomorrowData } = useQuery({
-    queryKey: ["tomorrowWeatherData", pointDataProp?.title],
-    queryFn: () =>
-      getTomorrowWeatherData(pointDataProp!.lat, pointDataProp!.lng),
-    enabled: !!pointDataProp,
-  });
+  const { data: weatherData, isLoading: isWeatherDataLoading } =
+    useQuery<WeatherResponse>({
+      queryKey: ["weatherData", pointDataProp?.title],
+      queryFn: () => getWeatherData(pointDataProp!.lat, pointDataProp!.lng),
+      enabled: !!pointDataProp,
+    });
 
-  const { data: dayAfterTomorrowData } = useQuery({
-    queryKey: ["dayAfterTomorrowWeatherData", pointDataProp?.title],
-    queryFn: () =>
-      getDayAfterTomorrowWeatherData(pointDataProp!.lat, pointDataProp!.lng),
-    enabled: !!pointDataProp,
-  });
-
-  const { data: tideData } = useQuery({
+  const { data: tideData, isLoading: isTideDataLoading } = useQuery<
+    DailyTideData[]
+  >({
     queryKey: ["tideData", pointDataProp?.title],
-    queryFn: () => getTideData(pointDataProp!.lat, pointDataProp!.lng),
+    queryFn: () => getWeeklyTideData(pointDataProp!.lat, pointDataProp!.lng),
     enabled: !!pointDataProp,
   });
 
-  const { data: seaTemperatureData } = useQuery({
-    queryKey: ["seaTemperatureData", pointDataProp?.title],
-    queryFn: () => getSeaTemperature(pointDataProp!.lat, pointDataProp!.lng),
-    enabled: !!pointDataProp,
-  });
-
-  if (!pointDataProp) {
+  if (
+    !pointDataProp ||
+    isCurrentWeatherDataLoading ||
+    isSeaTemperatureDataLoading ||
+    isWeatherDataLoading ||
+    isTideDataLoading
+  ) {
     return <div>데이터를 불러오는 중입니다...</div>;
   }
 
@@ -96,15 +105,12 @@ export default function FishingConditionsTab({
       <TabsContent value="weather">
         <WeatherInfo
           data={data}
-          todayData={todayData}
-          tomorrowData={tomorrowData}
-          dayAfterTomorrowData={dayAfterTomorrowData}
-          tideData={tideData}
           seaTemperatureData={seaTemperatureData}
+          weatherData={weatherData}
         />
       </TabsContent>
       <TabsContent value="tide">
-        <TideInfo />
+        <TideInfo tideData={tideData} weatherData={weatherData} />
       </TabsContent>
     </Tabs>
   );
@@ -112,18 +118,12 @@ export default function FishingConditionsTab({
 
 function WeatherInfo({
   data,
-  todayData,
-  tomorrowData,
-  dayAfterTomorrowData,
-  tideData,
   seaTemperatureData,
+  weatherData,
 }: {
-  data: any;
-  todayData: any;
-  tomorrowData: any;
-  dayAfterTomorrowData: any;
-  tideData: any;
-  seaTemperatureData: any;
+  data: CurrentWeatherData | undefined;
+  seaTemperatureData: SeaTemperatureData | undefined;
+  weatherData: WeatherResponse | undefined;
 }) {
   return (
     <article className="w-full p-[16px] mt-[46px]">
@@ -137,9 +137,9 @@ function WeatherInfo({
         <div className="p-[12px] bg-[#F9FAFB] rounded-[8px] box-shadow-1">
           <p className="text-body-4 text-gray-40 mb-[4px]">날씨</p>
           <div className="flex items-center gap-[8px]">
-            <Cloud className="w-[20x] h-[20px] text-gray-40" />
+            {getWeatherIcon(weatherData?.current?.weather[0]?.main)}
             <span className="text-primary paperlogy-6semibold text-body-1">
-              {data?.skyStatus}
+              {getWeatherText(weatherData?.current?.weather[0]?.main)}
             </span>
           </div>
         </div>
@@ -149,7 +149,7 @@ function WeatherInfo({
           <div className="flex items-center gap-[8px]">
             <ThermometerSun className="w-[20x] h-[20px] text-[#EF4444]" />
             <span className="text-primary paperlogy-6semibold text-body-1">
-              {seaTemperatureData?.air_temp}℃
+              {formatTemperature(weatherData?.current?.temp ?? 0)}℃
             </span>
           </div>
         </div>
@@ -159,7 +159,7 @@ function WeatherInfo({
           <div className="flex items-center gap-[8px]">
             <ThermometerSnowflake className="w-[20x] h-[20px] text-primary" />
             <span className="text-primary paperlogy-6semibold text-body-1">
-              {seaTemperatureData?.water_temp}℃
+              {seaTemperatureData?.water_temp ?? "--"}℃
             </span>
           </div>
         </div>
@@ -169,7 +169,7 @@ function WeatherInfo({
           <div className="flex items-center gap-[8px]">
             <Droplets className="w-[20x] h-[20px] text-primary" />
             <span className="text-primary paperlogy-6semibold text-body-1">
-              {data?.humidity}%
+              {weatherData?.current.humidity ?? "--"}%
             </span>
           </div>
         </div>
@@ -180,14 +180,16 @@ function WeatherInfo({
             <Wind className="w-[20x] h-[20px] text-[#06B6D4]" />
             <span
               className={`paperlogy-6semibold text-body-1 ${
-                data?.windSpeedStatus === "약풍"
+                seaTemperatureData?.wind_speed &&
+                seaTemperatureData?.wind_speed < 4
                   ? "text-primary"
-                  : data?.windSpeedStatus === "중풍"
+                  : seaTemperatureData?.wind_speed &&
+                    seaTemperatureData?.wind_speed < 8
                   ? "text-normal"
                   : "text-warning"
               }`}
             >
-              {seaTemperatureData?.wind_speed}m/s
+              {seaTemperatureData?.wind_speed ?? "--"}m/s
             </span>
           </div>
         </div>
@@ -197,17 +199,25 @@ function WeatherInfo({
           <div className="flex items-center gap-[8px]">
             <Waves className="w-[20x] h-[20px] text-primary" />
             <span className="text-primary paperlogy-6semibold text-body-1">
-              {data?.waveHeight}m
+              {data?.waveHeight ?? "--"}m
             </span>
           </div>
         </div>
-        {/* 강수량 */}
+        {/* 자외선 */}
         <div className="p-[12px] bg-[#F9FAFB] rounded-[8px] box-shadow-1">
-          <p className="text-body-4 text-gray-40 mb-[4px]">강수량</p>
+          <p className="text-body-4 text-gray-40 mb-[4px]">자외선</p>
           <div className="flex items-center gap-[8px]">
-            <Umbrella className="w-[20x] h-[20px] text-primary" />
-            <span className="text-primary paperlogy-6semibold text-body-1">
-              {data?.precipitation === "강수없음" ? "0" : data?.precipitation}mm
+            <Radiation
+              className={`w-[20x] h-[20px] text-primary ${getUVIColor(
+                weatherData?.current?.uvi ?? 0
+              )}`}
+            />
+            <span
+              className={`text-primary paperlogy-6semibold text-body-1 ${getUVIColor(
+                weatherData?.current?.uvi ?? 0
+              )}`}
+            >
+              {getUVIText(weatherData?.current?.uvi ?? 0)}
             </span>
           </div>
         </div>
@@ -222,345 +232,171 @@ function WeatherInfo({
             <TableHead>기온</TableHead>
             <TableHead>강수확률</TableHead>
             <TableHead>풍속</TableHead>
-            <TableHead>파고</TableHead>
+            <TableHead>체감온도</TableHead>
             <TableHead>습도</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          <TableRow>
-            <TableCell>{dayjs().format("YYYY-MM-DD")}</TableCell>
-            <TableCell>
-              <div className="flex flex-col">
-                <Cloud className="w-[24px] h-[24px] text-gray-40" />
-                <p className="text-body-5">{todayData?.skyStatus}</p>
-              </div>
-            </TableCell>
-            <TableCell>
-              <div className="flex flex-col">
-                <p className="text-[#EF4444] text-body-3">
-                  {todayData?.maxTemp}°
-                </p>
-                <p className="text-primary text-body-3">
-                  {todayData?.minTemp ? todayData.minTemp : "--"}°
-                </p>
-              </div>
-            </TableCell>
-            <TableCell>
-              <div className="flex flex-col">
-                <p className="text-[#1D4ED8] text-body-3">
-                  {todayData?.precipitation}%
-                </p>
-              </div>
-            </TableCell>
-            <TableCell>
-              <div className="flex flex-col">
-                <p
-                  className={`text-[#F97316] text-body-3 ${
-                    todayData?.windSpeedStatus === "약풍"
-                      ? "text-primary"
-                      : todayData?.windSpeedStatus === "중풍"
-                      ? "text-normal"
-                      : "text-warning"
-                  }`}
-                >
-                  {todayData?.windSpeed} m/s
-                </p>
-              </div>
-            </TableCell>
-            <TableCell>
-              <div className="flex flex-col">
-                <p className="text-[#F97316] text-body-3">
-                  {todayData?.waveHeight} m
-                </p>
-              </div>
-            </TableCell>
-            <TableCell>
-              <div className="flex flex-col">
-                <p className="text-[#09090B] text-body-3">
-                  {todayData?.humidity}%
-                </p>
-              </div>
-            </TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell>{dayjs().add(1, "day").format("YYYY-MM-DD")}</TableCell>
-            <TableCell>
-              <div className="flex flex-col">
-                <Cloud className="w-[24px] h-[24px] text-gray-40" />
-                <p className="text-body-5">{tomorrowData?.skyStatus}</p>
-              </div>
-            </TableCell>
-            <TableCell>
-              <div className="flex flex-col">
-                <p className="text-[#EF4444] text-body-3">
-                  {tomorrowData?.maxTemp}°
-                </p>
-                <p className="text-primary text-body-3">
-                  {tomorrowData?.minTemp ? tomorrowData.minTemp : "--"}°
-                </p>
-              </div>
-            </TableCell>
-            <TableCell>
-              <div className="flex flex-col">
-                <p className="text-[#1D4ED8] text-body-3">
-                  {tomorrowData?.precipitation}%
-                </p>
-              </div>
-            </TableCell>
-            <TableCell>
-              <div className="flex flex-col">
-                <p
-                  className={`text-[#F97316] text-body-3 ${
-                    tomorrowData?.windSpeedStatus === "약풍"
-                      ? "text-primary"
-                      : tomorrowData?.windSpeedStatus === "중풍"
-                      ? "text-normal"
-                      : "text-warning"
-                  }`}
-                >
-                  {tomorrowData?.windSpeed} m/s
-                </p>
-              </div>
-            </TableCell>
-            <TableCell>
-              <div className="flex flex-col">
-                <p className="text-[#F97316] text-body-3">
-                  {tomorrowData?.waveHeight} m
-                </p>
-              </div>
-            </TableCell>
-            <TableCell>
-              <div className="flex flex-col">
-                <p className="text-[#09090B] text-body-3">
-                  {tomorrowData?.humidity}%
-                </p>
-              </div>
-            </TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell>{dayjs().add(2, "day").format("YYYY-MM-DD")}</TableCell>
-            <TableCell>
-              <div className="flex flex-col">
-                <Cloud className="w-[24px] h-[24px] text-gray-40" />
-                <p className="text-body-5">{dayAfterTomorrowData?.skyStatus}</p>
-              </div>
-            </TableCell>
-            <TableCell>
-              <div className="flex flex-col">
-                <p className="text-[#EF4444] text-body-3">
-                  {dayAfterTomorrowData?.maxTemp}°
-                </p>
-                <p className="text-primary text-body-3">
-                  {dayAfterTomorrowData?.minTemp
-                    ? dayAfterTomorrowData.minTemp
-                    : "--"}
-                  °
-                </p>
-              </div>
-            </TableCell>
-            <TableCell>
-              <div className="flex flex-col">
-                <p className="text-[#1D4ED8] text-body-3">
-                  {dayAfterTomorrowData?.precipitation}%
-                </p>
-              </div>
-            </TableCell>
-            <TableCell>
-              <div className="flex flex-col">
-                <p
-                  className={`text-[#F97316] text-body-3 ${
-                    dayAfterTomorrowData?.windSpeedStatus === "약풍"
-                      ? "text-primary"
-                      : dayAfterTomorrowData?.windSpeedStatus === "중풍"
-                      ? "text-normal"
-                      : "text-warning"
-                  }`}
-                >
-                  {dayAfterTomorrowData?.windSpeed} m/s
-                </p>
-              </div>
-            </TableCell>
-            <TableCell>
-              <div className="flex flex-col">
-                <p className="text-[#F97316] text-body-3">
-                  {dayAfterTomorrowData?.waveHeight} m
-                </p>
-              </div>
-            </TableCell>
-            <TableCell>
-              <div className="flex flex-col">
-                <p className="text-[#09090B] text-body-3">
-                  {dayAfterTomorrowData?.humidity}%
-                </p>
-              </div>
-            </TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell>{dayjs().add(3, "day").format("YYYY-MM-DD")}</TableCell>
-            <TableCell>
-              <div className="flex flex-col">
-                <Cloud className="w-[24px] h-[24px] text-gray-40" />
-                <p className="text-body-5">{tideData?.skyStatus}</p>
-              </div>
-            </TableCell>
-            <TableCell>
-              <div className="flex flex-col">
-                <p className="text-[#EF4444] text-body-3">
-                  {tideData?.maxTemp}°
-                </p>
-                <p className="text-primary text-body-3">
-                  {tideData?.minTemp ? tideData.minTemp : "--"}°
-                </p>
-              </div>
-            </TableCell>
-            <TableCell>
-              <div className="flex flex-col">
-                <p className="text-[#1D4ED8] text-body-3">
-                  {tideData?.precipitation}%
-                </p>
-              </div>
-            </TableCell>
-            <TableCell>
-              <div className="flex flex-col">
-                <p
-                  className={`text-[#F97316] text-body-3 ${
-                    tideData?.windSpeedStatus === "약풍"
-                      ? "text-primary"
-                      : tideData?.windSpeedStatus === "중풍"
-                      ? "text-normal"
-                      : "text-warning"
-                  }`}
-                >
-                  {tideData?.windSpeed} m/s
-                </p>
-              </div>
-            </TableCell>
-            <TableCell>
-              <div className="flex flex-col">
-                <p className="text-[#F97316] text-body-3">
-                  {tideData?.waveHeight} m
-                </p>
-              </div>
-            </TableCell>
-            <TableCell>
-              <div className="flex flex-col">
-                <p className="text-[#09090B] text-body-3">
-                  {tideData?.humidity}%
-                </p>
-              </div>
-            </TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell>{dayjs().add(4, "day").format("YYYY-MM-DD")}</TableCell>
-            <TableCell>
-              <div className="flex flex-col">
-                <Cloud className="w-[24px] h-[24px] text-gray-40" />
-                <p className="text-body-5">흐림</p>
-              </div>
-            </TableCell>
-            <TableCell>
-              <div className="flex flex-col">
-                <p className="text-[#EF4444] text-body-3">22°</p>
-                <p className="text-primary text-body-3">14°</p>
-              </div>
-            </TableCell>
-            <TableCell>
-              <div className="flex flex-col">
-                <p className="text-[#1D4ED8] text-body-3">70%</p>
-              </div>
-            </TableCell>
-            <TableCell>
-              <div className="flex flex-col">
-                <p className="text-[#F97316] text-body-3">5.8 m/s</p>
-              </div>
-            </TableCell>
-            <TableCell>
-              <div className="flex flex-col">
-                <p className="text-[#F97316] text-body-3">1.2 m</p>
-              </div>
-            </TableCell>
-            <TableCell>
-              <div className="flex flex-col">
-                <p className="text-[#09090B] text-body-3">75%</p>
-              </div>
-            </TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell>{dayjs().add(5, "day").format("YYYY-MM-DD")}</TableCell>
-            <TableCell>
-              <div className="flex flex-col">
-                <Cloud className="w-[24px] h-[24px] text-gray-40" />
-                <p className="text-body-5">흐림</p>
-              </div>
-            </TableCell>
-            <TableCell>
-              <div className="flex flex-col">
-                <p className="text-[#EF4444] text-body-3">22°</p>
-                <p className="text-primary text-body-3">14°</p>
-              </div>
-            </TableCell>
-            <TableCell>
-              <div className="flex flex-col">
-                <p className="text-[#1D4ED8] text-body-3">70%</p>
-              </div>
-            </TableCell>
-            <TableCell>
-              <div className="flex flex-col">
-                <p className="text-[#F97316] text-body-3">5.8 m/s</p>
-              </div>
-            </TableCell>
-            <TableCell>
-              <div className="flex flex-col">
-                <p className="text-[#F97316] text-body-3">1.2 m</p>
-              </div>
-            </TableCell>
-            <TableCell>
-              <div className="flex flex-col">
-                <p className="text-[#09090B] text-body-3">75%</p>
-              </div>
-            </TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell>{dayjs().add(6, "day").format("YYYY-MM-DD")}</TableCell>
-            <TableCell>
-              <div className="flex flex-col">
-                <Cloud className="w-[24px] h-[24px] text-gray-40" />
-                <p className="text-body-5">흐림</p>
-              </div>
-            </TableCell>
-            <TableCell>
-              <div className="flex flex-col">
-                <p className="text-[#EF4444] text-body-3">22°</p>
-                <p className="text-primary text-body-3">14°</p>
-              </div>
-            </TableCell>
-            <TableCell>
-              <div className="flex flex-col">
-                <p className="text-[#1D4ED8] text-body-3">70%</p>
-              </div>
-            </TableCell>
-            <TableCell>
-              <div className="flex flex-col">
-                <p className="text-[#F97316] text-body-3">5.8 m/s</p>
-              </div>
-            </TableCell>
-            <TableCell>
-              <div className="flex flex-col">
-                <p className="text-[#F97316] text-body-3">1.2 m</p>
-              </div>
-            </TableCell>
-            <TableCell>
-              <div className="flex flex-col">
-                <p className="text-[#09090B] text-body-3">75%</p>
-              </div>
-            </TableCell>
-          </TableRow>
+          {weatherData && weatherData.daily.length > 0 ? (
+            <>
+              <TableContent
+                day={dayjs().format("YYYY-MM-DD")}
+                dayData={weatherData.daily[0]}
+              />
+              <TableContent
+                day={dayjs().add(1, "day").format("YYYY-MM-DD")}
+                dayData={weatherData.daily[1]}
+              />
+              <TableContent
+                day={dayjs().add(2, "day").format("YYYY-MM-DD")}
+                dayData={weatherData.daily[2]}
+              />
+              <TableContent
+                day={dayjs().add(3, "day").format("YYYY-MM-DD")}
+                dayData={weatherData.daily[3]}
+              />
+              <TableContent
+                day={dayjs().add(4, "day").format("YYYY-MM-DD")}
+                dayData={weatherData.daily[4]}
+              />
+              <TableContent
+                day={dayjs().add(5, "day").format("YYYY-MM-DD")}
+                dayData={weatherData.daily[5]}
+              />
+              <TableContent
+                day={dayjs().add(6, "day").format("YYYY-MM-DD")}
+                dayData={weatherData.daily[6]}
+              />
+              <TableContent
+                day={dayjs().add(7, "day").format("YYYY-MM-DD")}
+                dayData={weatherData.daily[7]}
+              />
+            </>
+          ) : (
+            <TableRow>
+              <td colSpan={7} className="text-center py-4">
+                날씨 데이터가 없습니다.
+              </td>
+            </TableRow>
+          )}
         </TableBody>
       </Table>
     </article>
   );
 }
 
-function TideInfo() {
-  return <div>물때 정보</div>;
+function TideInfo({
+  tideData,
+  weatherData,
+}: {
+  tideData: DailyTideData[] | undefined;
+  weatherData: WeatherResponse | undefined;
+}) {
+  console.log(weatherData?.daily);
+  return (
+    <article className="w-full p-[16px] mt-[46px]">
+      <div className="mb-[12px]">
+        <h5 className="text-title-5 mb-[6px]">현재 물때 정보</h5>
+      </div>
+
+      {/* 현재 물때 정보 */}
+      <div className="grid grid-cols-3 gap-[30px] pb-[40px] mb-[40px] border-b border-gray-70">
+        <div className="p-[12px] bg-[#F9FAFB] rounded-[8px] box-shadow-1">
+          <p className="text-body-4 text-gray-40 mb-[4px]">현재 상태</p>
+          <div className="flex items-center gap-[8px]">
+            <Waves className="w-[20x] h-[20px] text-primary" />
+            <span>만조 진행중</span>
+          </div>
+        </div>
+        <div className="p-[12px] bg-[#F9FAFB] rounded-[8px] box-shadow-1">
+          <p className="text-body-4 text-gray-40 mb-[4px]">오늘 물때</p>
+          <div className="flex items-center gap-[8px]">
+            <Timer className="w-[20x] h-[20px] text-primary" />
+            <span>{calculateMoonPhase().tideName}</span>
+          </div>
+        </div>
+        <div className="p-[12px] bg-[#F9FAFB] rounded-[8px] box-shadow-1">
+          <p className="text-body-4 text-gray-40 mb-[4px]">달의 위상</p>
+          <div className="flex items-center gap-[8px]">
+            <Moon className="w-[20x] h-[20px] text-primary" />
+            <span>{calculateMoonPhase().moonPhase}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* 물때 설명 섹션 */}
+      <SeaTimeDescription />
+
+      <Table className="mt-[40px] text-body-4">
+        <TableHeader>
+          <TableRow>
+            <TableHead>날짜</TableHead>
+            <TableHead>물때</TableHead>
+            <TableHead>일출/일몰</TableHead>
+            <TableHead>만조</TableHead>
+            <TableHead>간조</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody className="text-[#09090B]">
+          {tideData?.map((data, index) => {
+            // 저조와 고조 데이터 분리
+            const lowTides = data.tides.filter(
+              (tide) => tide.hl_code === "저조"
+            );
+            const highTides = data.tides.filter(
+              (tide) => tide.hl_code === "고조"
+            );
+
+            // 시간만 추출 (HH:mm 형식)
+            const formatTime = (dateTime: string) => {
+              return dayjs(dateTime).format("HH:mm");
+            };
+
+            return (
+              <TableRow key={data.date}>
+                <TableCell>{data.date}</TableCell>
+                <TableCell className="text-body-3">
+                  {calculateMoonPhase(dayjs(data.date).toDate()).tideName}
+                </TableCell>
+                <TableCell>
+                  <div className="flex flex-col gap-[4px]">
+                    <div className="flex items-center gap-[4px]">
+                      <Sunrise className="text-[#D97706] w-[18px] h-[18px]" />
+                      <span>
+                        {dayjs(weatherData?.daily[index].sunrise).format(
+                          "HH:mm"
+                        )}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-[4px]">
+                      <Sunset className="w-[18px] h-[18px]" />
+                      <span>
+                        {dayjs(weatherData?.daily[index].sunset).format(
+                          "HH:mm"
+                        )}
+                      </span>
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="flex flex-col text-primary gap-[4px]">
+                    {highTides.map((tide, index) => (
+                      <span key={index}>{formatTime(tide.tph_time)}</span>
+                    ))}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="flex flex-col text-[#D97706] gap-[4px]">
+                    {lowTides.map((tide, index) => (
+                      <span key={index}>{formatTime(tide.tph_time)}</span>
+                    ))}
+                  </div>
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
+    </article>
+  );
 }
