@@ -11,7 +11,6 @@ import {
   ClipboardList,
   Ship,
   LogOut,
-  Settings,
   Phone,
   Mail,
   BadgeCheck,
@@ -98,13 +97,6 @@ export function CaptainSidebar() {
           >
             <LogOut className="h-5 w-5 mr-2" />
             로그아웃
-          </Button>
-          <Button
-            variant="ghost"
-            className="w-full cursor-pointer justify-start hover:bg-gray-80"
-          >
-            <Settings className="h-5 w-5 mr-2 text-gray-50" />
-            회원탈퇴
           </Button>
         </div>
       </Card>
