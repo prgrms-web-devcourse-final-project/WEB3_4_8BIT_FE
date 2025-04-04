@@ -27,7 +27,7 @@ export default function BoatCardSection() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <BoatCard
             id="1"
-            image="images/test.png"
+            image="/images/test.png"
             name="미끼미끼호1"
             location="서울시 강남구"
             rating={4.5}
@@ -37,7 +37,7 @@ export default function BoatCardSection() {
           />
           <BoatCard
             id="2"
-            image="images/test.png"
+            image="/images/test.png"
             name="미끼미끼호2"
             location="부산시 해운대구"
             rating={4.7}
@@ -47,7 +47,7 @@ export default function BoatCardSection() {
           />
           <BoatCard
             id="3"
-            image="images/test.png"
+            image="/images/test.png"
             name="미끼미끼호3"
             location="인천시 연수구"
             rating={4.8}
