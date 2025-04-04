@@ -1,9 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { CaptainSidebar } from "../components/SideBar";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Star, MapPin } from "lucide-react";
+import { Star, MapPin, PlusCircle } from "lucide-react";
 import Image from "next/image";
 
 interface PostItem {
@@ -34,7 +35,15 @@ export default function CaptainPostsPage() {
       <CaptainSidebar />
 
       <div className="md:col-span-3 space-y-6">
-        <h1 className="text-2xl font-bold">게시글 관리</h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold">게시글 관리</h1>
+          <Link href="/fishing-registration">
+            <Button className="cursor-pointer flex items-center gap-2">
+              <PlusCircle className="h-5 w-5" />
+              선상 낚시 게시글 작성하기
+            </Button>
+          </Link>
+        </div>
 
         {posts.map((post) => (
           <Card key={post.id} className="p-4 transition-colors space-y-2">
@@ -64,7 +73,11 @@ export default function CaptainPostsPage() {
                 >
                   상세보기
                 </Button>
-                <Button size="sm" className="cursor-pointer hover:bg-blue-500">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="text-blue-500 border-blue-500 cursor-pointer hover:bg-blue-500 hover:text-white"
+                >
                   수정
                 </Button>
                 <Button
