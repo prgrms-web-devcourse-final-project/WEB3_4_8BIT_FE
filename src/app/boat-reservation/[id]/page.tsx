@@ -100,6 +100,7 @@ export default function BoatReservationDetail() {
                 {reviews.map((review, index) => (
                   <ReviewCard
                     key={index}
+                    id={review.id}
                     user={review.user}
                     date={review.date}
                     content={review.content}

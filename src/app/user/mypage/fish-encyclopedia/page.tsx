@@ -11,43 +11,43 @@ export default function FishEncyclopedia() {
         </Badge>
       </div>
 
-      <div>잡은 물고기를 등록해 어류 도감에 추가해보세요.</div>
+      <div className="text-gray-30">잡은 물고기를 등록해 어류 도감에 추가해보세요.</div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <MyPageFishCard
           image="/placeholder.svg?height=150&width=150"
-          name="참돔"
-          count={3}
+          fishName="참돔"
+          count={0}
           largestSize={52}
         />
         <MyPageFishCard
           image="/placeholder.svg?height=150&width=150"
-          name="감성돔"
+          fishName="감성돔"
           count={5}
           largestSize={42}
         />
         <MyPageFishCard
           image="/placeholder.svg?height=150&width=150"
-          name="농어"
+          fishName="농어"
           count={2}
           largestSize={45}
         />
         <MyPageFishCard
           image="/placeholder.svg?height=150&width=150"
-          name="광어"
+          fishName="광어"
           count={4}
           largestSize={48}
         />
         <MyPageFishCard
           image="/placeholder.svg?height=150&width=150"
-          name="볼락"
+          fishName="볼락"
           count={6}
           largestSize={32}
         />
         <MyPageFishCard
           image="/placeholder.svg?height=150&width=150"
-          name="다금바리"
-          count={1}
+          fishName="다금바리"
+          count={0}
           largestSize={48}
         />
       </div>
