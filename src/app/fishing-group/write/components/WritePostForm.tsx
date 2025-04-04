@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -23,11 +24,41 @@ import {
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 export default function WritePostForm() {
   const [date, setDate] = useState<Date>();
   const [memberCount, setMemberCount] = useState(2);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+    const newFiles = Array.from(files);
+    const currentCount = selectedFiles.length;
+    const totalCount = currentCount + newFiles.length;
+
+    // 만약 전체 파일 개수가 10개를 초과하면 경고 띄우기
+    if (totalCount > 10) {
+      const allowedCount = 10 - currentCount;
+      alert(`최대 10장까지 업로드 가능합니다.`);
+      newFiles.splice(allowedCount);
+    }
+    const updatedFiles = [...selectedFiles, ...newFiles];
+    setSelectedFiles(updatedFiles);
+    // 기존 파일과 새로 추가된 파일 전체의 미리보기 URL 생성
+    const urls = updatedFiles.map((file) => URL.createObjectURL(file));
+    setPreviewUrls(urls);
+  };
+
+  const removeImage = (index: number) => {
+    const updatedFiles = selectedFiles.filter((_, i) => i !== index);
+    setSelectedFiles(updatedFiles);
+    const updatedUrls = updatedFiles.map((file) => URL.createObjectURL(file));
+    setPreviewUrls(updatedUrls);
+  };
 
   return (
     <>
@@ -69,6 +100,7 @@ export default function WritePostForm() {
             <Popover>
               <PopoverTrigger asChild>
                 <Button
+                  type="button"
                   variant="outline"
                   className={cn(
                     "w-full justify-start text-left font-normal h-12 text-base",
@@ -149,9 +181,9 @@ export default function WritePostForm() {
                 onChange={(e) => setMemberCount(Number(e.target.value))}
                 min={2}
                 className="w-20 h-12 text-base text-center
-    [appearance:textfield]
-  [&::-webkit-inner-spin-button]:appearance-none
-    [&::-webkit-outer-spin-button]:appearance-none"
+                  [appearance:textfield]
+                [&::-webkit-inner-spin-button]:appearance-none
+                  [&::-webkit-outer-spin-button]:appearance-none"
               />
               <Button
                 type="button"
@@ -212,18 +244,61 @@ export default function WritePostForm() {
                 <br />
                 (최대 10장까지 업로드 가능)
               </p>
-              <Button variant="outline" className="mt-4">
+              <input
+                id="file-upload"
+                type="file"
+                multiple
+                accept="image/*"
+                className="hidden"
+                ref={fileInputRef}
+                onChange={handleImageChange}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                className="mt-4"
+                onClick={() => fileInputRef.current?.click()}
+              >
                 파일 선택
               </Button>
             </div>
+            {/* 가로 스크롤 미리보기 */}
+            {previewUrls.length > 0 && (
+              <div className="flex gap-4 mt-4 overflow-x-auto">
+                {previewUrls.map((url, index) => (
+                  <div key={index} className="relative w-24 h-24 flex-shrink-0">
+                    <Image
+                      src={url}
+                      alt={`preview ${index}`}
+                      fill
+                      className="object-cover rounded"
+                    />
+                    <button
+                      type="button"
+                      className="absolute top-0 right-0 bg-white rounded-full p-1"
+                      onClick={() => removeImage(index)}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* 등록버튼 */}
           <div className="flex justify-end gap-2 pt-4">
-            <Button variant="outline" className="hover:bg-gray-100">
+            <Button
+              type="button"
+              variant="outline"
+              className="hover:bg-gray-100"
+            >
               취소
             </Button>
-            <Button className="bg-primary hover:bg-blue-600 text-white">
+            <Button
+              type="submit"
+              className="bg-primary hover:bg-blue-600 text-white"
+            >
               등록하기
             </Button>
           </div>
