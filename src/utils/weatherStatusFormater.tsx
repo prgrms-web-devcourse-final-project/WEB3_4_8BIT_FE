@@ -74,6 +74,6 @@ export const getWeatherIcon = (main: string | undefined): React.ReactNode => {
   }
 };
 
-export const formatTemperature = (temp: number): number => {
+export const formatRoundOne = (temp: number): number => {
   return Math.round(temp * 10) / 10;
 };

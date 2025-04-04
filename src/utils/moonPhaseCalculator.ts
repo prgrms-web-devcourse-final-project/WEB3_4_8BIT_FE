@@ -5,6 +5,11 @@ interface MoonPhase {
   moonPhase: string;
 }
 
+/**
+ * 음력 날짜와 물때를 계산하는 함수
+ * @param date 날짜
+ * @returns 음력 날짜, 물때, 달의 모양, 물때 이름
+ */
 export function calculateMoonPhase(date: Date = new Date()): MoonPhase {
   const knownNewMoon = new Date("1999-12-22");
 
@@ -43,15 +48,15 @@ export function calculateMoonPhase(date: Date = new Date()): MoonPhase {
     "무시",
   ];
 
-  const tideName = tideNames[tideNumber - 1] || "오류"; // 예외 방지
+  const tideName = tideNames[tideNumber - 1] || "오류";
 
   const moonPhase = getMoonPhaseDescription(lunarDay / lunarMonth);
 
   return {
-    lunarDay,
-    tide: tideNumber,
-    moonPhase,
-    tideName,
+    lunarDay, // 음력 날짜
+    tide: tideNumber, // 물때
+    moonPhase, // 달의 모양
+    tideName, // 물때 이름
   };
 }
 

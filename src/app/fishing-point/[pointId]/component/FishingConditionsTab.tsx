@@ -12,10 +12,7 @@ import {
   getWeeklyTideData,
   DailyTideData,
 } from "@/lib/api/getSeaTemperatureAPI";
-import {
-  getCurrentWeatherData,
-  getWeatherData,
-} from "@/lib/api/weatherDataAPI";
+import { getWeatherData } from "@/lib/api/weatherDataAPI";
 import { useQuery } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import {
@@ -33,7 +30,6 @@ import {
 import TableContent from "./TableContent";
 import {
   FishLocation,
-  CurrentWeatherData,
   SeaTemperatureData,
   WeatherResponse,
 } from "@/types/weatherTypes";
@@ -42,7 +38,7 @@ import {
   getWeatherText,
   getUVIColor,
   getUVIText,
-  formatTemperature,
+  formatRoundOne,
 } from "@/utils/weatherStatusFormater";
 import { calculateMoonPhase } from "@/utils/moonPhaseCalculator";
 import SeaTimeDescription from "./seaTimeDescription";
@@ -52,14 +48,6 @@ export default function FishingConditionsTab({
 }: {
   pointDataProp: FishLocation | null;
 }) {
-  const { data, isLoading: isCurrentWeatherDataLoading } =
-    useQuery<CurrentWeatherData>({
-      queryKey: ["Data", pointDataProp?.title],
-      queryFn: () =>
-        getCurrentWeatherData(pointDataProp!.lat, pointDataProp!.lng),
-      enabled: !!pointDataProp,
-    });
-
   const { data: seaTemperatureData, isLoading: isSeaTemperatureDataLoading } =
     useQuery<SeaTemperatureData>({
       queryKey: ["seaTemperatureData", pointDataProp?.title],
@@ -84,7 +72,6 @@ export default function FishingConditionsTab({
 
   if (
     !pointDataProp ||
-    isCurrentWeatherDataLoading ||
     isSeaTemperatureDataLoading ||
     isWeatherDataLoading ||
     isTideDataLoading
@@ -104,7 +91,6 @@ export default function FishingConditionsTab({
       </TabsList>
       <TabsContent value="weather">
         <WeatherInfo
-          data={data}
           seaTemperatureData={seaTemperatureData}
           weatherData={weatherData}
         />
@@ -117,14 +103,13 @@ export default function FishingConditionsTab({
 }
 
 function WeatherInfo({
-  data,
   seaTemperatureData,
   weatherData,
 }: {
-  data: CurrentWeatherData | undefined;
   seaTemperatureData: SeaTemperatureData | undefined;
   weatherData: WeatherResponse | undefined;
 }) {
+  console.log(weatherData?.current);
   return (
     <article className="w-full p-[16px] mt-[46px]">
       <div className="mb-[12px]">
@@ -149,7 +134,17 @@ function WeatherInfo({
           <div className="flex items-center gap-[8px]">
             <ThermometerSun className="w-[20x] h-[20px] text-[#EF4444]" />
             <span className="text-primary paperlogy-6semibold text-body-1">
-              {formatTemperature(weatherData?.current?.temp ?? 0)}℃
+              {formatRoundOne(weatherData?.current?.temp ?? 0)}℃
+            </span>
+          </div>
+        </div>
+        {/* 체감온도 */}
+        <div className="p-[12px] bg-[#F9FAFB] rounded-[8px] box-shadow-1">
+          <p className="text-body-4 text-gray-40 mb-[4px]">체감온도</p>
+          <div className="flex items-center gap-[8px]">
+            <ThermometerSun className="w-[20x] h-[20px] text-primary" />
+            <span className="text-primary paperlogy-6semibold text-body-1">
+              {formatRoundOne(weatherData!.current.feels_like)}℃
             </span>
           </div>
         </div>
@@ -193,16 +188,6 @@ function WeatherInfo({
             </span>
           </div>
         </div>
-        {/* 파고 */}
-        <div className="p-[12px] bg-[#F9FAFB] rounded-[8px] box-shadow-1">
-          <p className="text-body-4 text-gray-40 mb-[4px]">파고</p>
-          <div className="flex items-center gap-[8px]">
-            <Waves className="w-[20x] h-[20px] text-primary" />
-            <span className="text-primary paperlogy-6semibold text-body-1">
-              {data?.waveHeight ?? "--"}m
-            </span>
-          </div>
-        </div>
         {/* 자외선 */}
         <div className="p-[12px] bg-[#F9FAFB] rounded-[8px] box-shadow-1">
           <p className="text-body-4 text-gray-40 mb-[4px]">자외선</p>
@@ -233,7 +218,7 @@ function WeatherInfo({
             <TableHead>강수확률</TableHead>
             <TableHead>풍속</TableHead>
             <TableHead>체감온도</TableHead>
-            <TableHead>습도</TableHead>
+            <TableHead>자외선</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

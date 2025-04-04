@@ -4,7 +4,7 @@ import {
   getWeatherIcon,
   getWeatherText,
   getUVIColor,
-  formatTemperature,
+  formatRoundOne,
 } from "@/utils/weatherStatusFormater";
 
 export default function TableContent({
@@ -28,10 +28,10 @@ export default function TableContent({
       <TableCell>
         <div className="flex flex-col">
           <p className="text-[#EF4444] text-body-3">
-            {formatTemperature(dayData.temp.max)}°
+            {formatRoundOne(dayData.temp.max)}°
           </p>
           <p className="text-primary text-body-3">
-            {dayData.temp.min ? formatTemperature(dayData.temp.min) : "--"}°
+            {dayData.temp.min ? formatRoundOne(dayData.temp.min) : "--"}°
           </p>
         </div>
       </TableCell>
@@ -52,11 +52,11 @@ export default function TableContent({
       <TableCell>
         <div className="flex flex-col">
           <p className="text-[#EF4444] text-body-3">
-            {formatTemperature(dayData.feels_like.day)}°
+            {formatRoundOne(dayData.feels_like.day)}°
           </p>
           <p className="text-primary text-body-3">
             {dayData.feels_like.morn
-              ? formatTemperature(dayData.feels_like.morn)
+              ? formatRoundOne(dayData.feels_like.morn)
               : "--"}
             °
           </p>

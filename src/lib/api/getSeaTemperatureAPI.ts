@@ -12,6 +12,12 @@ export interface DailyTideData {
   tides: TideData[];
 }
 
+/**
+ * 바다누리 api를 통해 가장 가까운 관측소의 관측 데이터를 가져옴
+ * @param lat 위도
+ * @param lng 경도
+ * @returns 최근 관측 데이터
+ */
 export const getSeaTemperature = async (lat: number, lng: number) => {
   const stationId = findNearestStation(lat, lng);
 
@@ -28,6 +34,12 @@ export const getSeaTemperature = async (lat: number, lng: number) => {
   return data.result.data;
 };
 
+/**
+ * 바다누리 api를 통해 가장 가까운 관측소의 일별 조석 데이터를 가져옴
+ * @param lat 위도
+ * @param lng 경도
+ * @returns 일별 조석 데이터
+ */
 export const getWeeklyTideData = async (
   lat: number,
   lng: number
