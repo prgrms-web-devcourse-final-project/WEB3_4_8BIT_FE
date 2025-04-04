@@ -363,17 +363,17 @@ function TideInfo({
                     <div className="flex items-center gap-[4px]">
                       <Sunrise className="text-[#D97706] w-[18px] h-[18px]" />
                       <span>
-                        {dayjs(weatherData?.daily[index].sunrise).format(
-                          "HH:mm"
-                        )}
+                        {dayjs
+                          .unix(+weatherData!.daily[index].sunrise)
+                          .format("HH:mm")}
                       </span>
                     </div>
                     <div className="flex items-center gap-[4px]">
                       <Sunset className="w-[18px] h-[18px]" />
                       <span>
-                        {dayjs(weatherData?.daily[index].sunset).format(
-                          "HH:mm"
-                        )}
+                        {dayjs
+                          .unix(+weatherData!.daily[index].sunset)
+                          .format("HH:mm")}
                       </span>
                     </div>
                   </div>
