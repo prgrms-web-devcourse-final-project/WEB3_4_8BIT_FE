@@ -127,7 +127,7 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
                   {/* 좋아요 */}
                   <button
                     onClick={handleLikeClick}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-lg ${
+                    className={`flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer ${
                       isLiked ? "bg-sub-1 text-white" : "bg-gray-200"
                     }`}
                   >

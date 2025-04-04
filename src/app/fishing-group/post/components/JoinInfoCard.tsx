@@ -56,7 +56,7 @@ export default function JoinInfoCard({
       {/* 참여/취소 버튼 */}
       <button
         onClick={handleJoinToggle}
-        className={`w-full py-2 rounded-lg text-white ${
+        className={`w-full py-2 rounded-lg text-white cursor-pointer ${
           isJoined
             ? "bg-red-500 hover:bg-red-600"
             : "bg-primary hover:bg-[#2f8ae0]"
@@ -65,7 +65,7 @@ export default function JoinInfoCard({
         {isJoined ? "참여 취소하기" : "참여 신청하기"}
       </button>
 
-      <button className="w-full py-2 border border-gray-70 rounded-lg text-base hover:bg-gray-80">
+      <button className="w-full py-2 border border-gray-70 rounded-lg text-base hover:bg-gray-80 cursor-pointer">
         참여자 채팅방
       </button>
 
@@ -123,7 +123,7 @@ export default function JoinInfoCard({
             <p className="font-medium text-base text-gray-700">{author.name}</p>
           </div>
         </div>
-        <button className="w-full py-2 border border-gray-70 rounded-lg text-base hover:bg-gray-80">
+        <button className="w-full py-2 border border-gray-70 rounded-lg text-base hover:bg-gray-80 cursor-pointer">
           1:1 채팅 보내기
         </button>
       </div>
