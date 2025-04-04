@@ -67,7 +67,7 @@ export default function CommentSection({ comments }: CommentSectionProps) {
         />
         <button
           onClick={handleCommentSubmit}
-          className="mt-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-[#2f8ae0]"
+          className="mt-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-[#2f8ae0] cursor-pointer"
         >
           댓글 작성
         </button>
