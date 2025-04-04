@@ -74,6 +74,8 @@
   --color-sub-1: #96bbff;
   --color-sub-2: #d6e2ff;
   --color-sub-3: #ffd6bd;
+  --color-warning: #ef4444;
+  --color-normal: #eab308;
 }
 
 :root {
