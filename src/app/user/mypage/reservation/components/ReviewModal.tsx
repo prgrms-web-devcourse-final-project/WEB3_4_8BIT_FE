@@ -63,7 +63,7 @@ export default function ReviewModal({ setIsReviewModalOpen }: ReviewModalProps) 
           <div className="text-sm text-gray-30 ml-0.5">최대 5장까지 업로드 가능합니다.</div>
         </div>
         <div className="flex justify-end gap-2">
-          <Button variant="outline" className="cursor-pointer">
+          <Button variant="outline" className="cursor-pointer" onClick={() => setIsReviewModalOpen(false)}>
             취소
           </Button>
           <Button type="submit" className="cursor-pointer">
