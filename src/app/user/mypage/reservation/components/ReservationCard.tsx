@@ -1,9 +1,12 @@
+"use client"
+
 import {Card} from "@/components/ui/card";
 import {Calendar, Clock, FishSymbol, MapPin, Star, Trash2, Users} from "lucide-react";
 import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
-import type React from "react";
+import React, {useState} from "react";
 import Image from "next/image";
+import ReviewModal from "@/app/user/mypage/reservation/components/ReviewModal";
 
 export default function ReservationCard({
   title,
@@ -26,6 +29,8 @@ export default function ReservationCard({
   image: string
   cancellationReason?: string
 }) {
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false)
+
   const statusColors = {
     confirmed: "bg-green-100 text-green-800",
     completed: "bg-blue-100 text-blue-800",
@@ -91,7 +96,7 @@ export default function ReservationCard({
 
             {status === "completed" && (
               <>
-                <Button variant="outline" className="gap-2 cursor-pointer">
+                <Button variant="outline" className="gap-2 cursor-pointer" onClick={() => setIsReviewModalOpen(true)}>
                   <Star className="h-4 w-4 text-amber-500" /> 리뷰 작성
                 </Button>
                 <Button variant="outline" className="gap-2 cursor-pointer">
@@ -102,6 +107,13 @@ export default function ReservationCard({
           </div>
         </div>
       </div>
+
+      {isReviewModalOpen && (
+        <ReviewModal
+          setIsReviewModalOpen={setIsReviewModalOpen}
+        />
+      )}
+
     </Card>
   )
 }
