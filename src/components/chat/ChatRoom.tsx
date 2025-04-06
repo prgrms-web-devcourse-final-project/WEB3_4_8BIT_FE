@@ -99,11 +99,11 @@ export default function ChatRoom({
 
       <div className="p-4 border-t">
         <div className="flex items-center space-x-2">
-          <Button variant="ghost" size="icon" className="text-gray-500" onClick={() => fileInputRef.current?.click()}>
+          <Button variant="ghost" size="icon" className="text-gray-500 cursor-pointer" onClick={() => fileInputRef.current?.click()}>
             <ImagePlus className="h-5 w-5" />
             <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange} />
           </Button>
-          <Button variant="ghost" size="icon" className="text-gray-500">
+          <Button variant="ghost" size="icon" className="text-gray-500 cursor-pointer">
             <Smile className="h-5 w-5" />
           </Button>
           <div className="flex-1 relative">
@@ -123,7 +123,7 @@ export default function ChatRoom({
           <Button
             onClick={handleSendMessage}
             disabled={isUploading || (newMessage.trim() === "" && !previewImage)}
-            className="bg-cyan-600 hover:bg-cyan-700"
+            className="bg-primary cursor-pointer"
           >
             <Send className="h-4 w-4" />
           </Button>
