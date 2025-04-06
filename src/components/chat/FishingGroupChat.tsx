@@ -59,7 +59,7 @@ const communityRooms : ChatRoomFishingGroup[] = [
   },
 ]
 
-export function FishCommunityChat() {
+export function FishingGroupChat() {
   const [messages, setMessages] = useState<ChatMessageItem[]>(mockCommunityMessages)
   const [newMessage, setNewMessage] = useState("")
   const [isUploading, setIsUploading] = useState(false)
