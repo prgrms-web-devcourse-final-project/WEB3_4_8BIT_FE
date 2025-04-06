@@ -97,7 +97,7 @@ export function FishingSpotChat() {
     return (
       <div className="flex flex-col h-full">
         <div className="p-4 border-b">
-          <h3 className="font-medium mb-3">낚시터 채팅</h3>
+          <h3 className="font-bold mb-3">낚시 포인트 채팅</h3>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             <Input
@@ -109,13 +109,13 @@ export function FishingSpotChat() {
           </div>
         </div>
 
-        <ScrollArea className="flex-1">
+        <ScrollArea className="flex-1 overflow-scroll">
           <div className="p-2">
             {filteredSpots.length > 0 ? (
               filteredSpots.map((spot) => (
                 <button
                   key={spot.id}
-                  className="w-full p-3 flex items-center gap-3 hover:bg-gray-100 rounded-lg transition-colors text-left"
+                  className="w-full p-3 flex items-center gap-3 hover:bg-gray-80 rounded-lg transition-colors text-left cursor-pointer"
                   onClick={() => handleSelectSpot(spot.id)}
                 >
                   <div className="relative">
