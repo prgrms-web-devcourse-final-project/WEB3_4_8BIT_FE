@@ -28,7 +28,11 @@ export function FloatingChatButton() {
 
   return (
     <>
-     {isOpen && <ChatContainer />}
+     {isOpen &&
+       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+         <ChatContainer />
+       </div>
+     }
 
     <div className="fixed bottom-6 right-6 z-50">
       <Button
