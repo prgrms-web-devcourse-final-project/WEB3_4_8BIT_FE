@@ -11,6 +11,8 @@ import {
   getSeaTemperature,
   getWeeklyTideData,
   DailyTideData,
+  getTideChartData,
+  TideData,
 } from "@/lib/api/getSeaTemperatureAPI";
 import { getWeatherData } from "@/lib/api/weatherDataAPI";
 import { useQuery } from "@tanstack/react-query";
@@ -42,6 +44,7 @@ import {
 } from "@/utils/weatherStatusFormater";
 import { calculateMoonPhase } from "@/utils/moonPhaseCalculator";
 import SeaTimeDescription from "./seaTimeDescription";
+import TideChart from "./TideChart";
 
 export default function FishingConditionsTab({
   pointDataProp,
@@ -70,14 +73,36 @@ export default function FishingConditionsTab({
     enabled: !!pointDataProp,
   });
 
+  const { data: tideChartData, isLoading: isTideChartDataLoading } = useQuery<
+    DailyTideData[]
+  >({
+    queryKey: ["tideChartData", pointDataProp?.title],
+    queryFn: () => getTideChartData(pointDataProp!.lat, pointDataProp!.lng),
+    enabled: !!pointDataProp,
+  });
+
   if (
     !pointDataProp ||
     isSeaTemperatureDataLoading ||
     isWeatherDataLoading ||
-    isTideDataLoading
+    isTideDataLoading ||
+    isTideChartDataLoading
   ) {
     return <div>데이터를 불러오는 중입니다...</div>;
   }
+
+  const nextTide = () => {
+    const currentTime = dayjs();
+
+    // find를 사용하여 현재 시간 이후의 첫 번째 조석 찾기
+    const nextTide = tideData![0].tides.find((tide) =>
+      dayjs(tide.tph_time).isAfter(currentTime)
+    );
+
+    return nextTide;
+  };
+
+  const nextTideData = nextTide();
 
   return (
     <Tabs defaultValue="weather" className="w-full mx-auto">
@@ -96,7 +121,12 @@ export default function FishingConditionsTab({
         />
       </TabsContent>
       <TabsContent value="tide">
-        <TideInfo tideData={tideData} weatherData={weatherData} />
+        <TideInfo
+          tideData={tideData}
+          weatherData={weatherData}
+          tideChartData={tideChartData}
+          nextTideData={nextTideData}
+        />
       </TabsContent>
     </Tabs>
   );
@@ -109,7 +139,6 @@ function WeatherInfo({
   seaTemperatureData: SeaTemperatureData | undefined;
   weatherData: WeatherResponse | undefined;
 }) {
-  console.log(weatherData?.current);
   return (
     <article className="w-full p-[16px] mt-[46px]">
       <div className="mb-[12px]">
@@ -273,11 +302,59 @@ function WeatherInfo({
 function TideInfo({
   tideData,
   weatherData,
+  tideChartData,
+  nextTideData,
 }: {
   tideData: DailyTideData[] | undefined;
   weatherData: WeatherResponse | undefined;
+  tideChartData: DailyTideData[] | undefined;
+  nextTideData: TideData | undefined;
 }) {
-  console.log(weatherData?.daily);
+  console.log(nextTideData);
+
+  const getTideStatus = (tideData: { hl_code: string; tph_time: string }) => {
+    if (!tideData) return "알 수 없음";
+
+    const currentTime = dayjs();
+    const tideTime = dayjs(tideData.tph_time);
+
+    // 현재 시간과 조석 시간의 차이(시간)
+    const hoursDiff = tideTime.diff(currentTime, "hour", true);
+
+    // 고조인 경우
+    if (tideData.hl_code === "고조") {
+      if (hoursDiff >= 4 && hoursDiff <= 6) {
+        return "초들물";
+      } else if (hoursDiff >= 2 && hoursDiff < 4) {
+        return "중들물";
+      } else if (hoursDiff >= 0 && hoursDiff < 2) {
+        return "끝들물";
+      } else if (hoursDiff < 0) {
+        return "만조 후";
+      } else {
+        return "만조 예정";
+      }
+    }
+    // 저조인 경우
+    else if (tideData.hl_code === "저조") {
+      if (hoursDiff >= 4 && hoursDiff <= 6) {
+        return "초날물";
+      } else if (hoursDiff >= 2 && hoursDiff < 4) {
+        return "중날물";
+      } else if (hoursDiff >= 0 && hoursDiff < 2) {
+        return "끝날물";
+      } else if (hoursDiff < 0) {
+        return "간조 후";
+      } else {
+        return "간조 예정";
+      }
+    }
+
+    return "알 수 없음";
+  };
+
+  const tideStatus = getTideStatus(nextTideData!);
+
   return (
     <article className="w-full p-[16px] mt-[46px]">
       <div className="mb-[12px]">
@@ -290,7 +367,9 @@ function TideInfo({
           <p className="text-body-4 text-gray-40 mb-[4px]">현재 상태</p>
           <div className="flex items-center gap-[8px]">
             <Waves className="w-[20x] h-[20px] text-primary" />
-            <span>만조 진행중</span>
+            <span>
+              {nextTideData?.hl_code === "고조" ? "만조" : "간조"} 진행중
+            </span>
           </div>
         </div>
         <div className="p-[12px] bg-[#F9FAFB] rounded-[8px] box-shadow-1">
@@ -308,6 +387,14 @@ function TideInfo({
           </div>
         </div>
       </div>
+
+      <div className="flex items-center gap-[8px] ml-[24px]">
+        <Waves className="w-[20x] h-[20px] text-primary" />
+        <span className="text-body-2 text-primary">{tideStatus}</span>
+      </div>
+
+      {/* 물때 차트 */}
+      <TideChart tideChartData={tideChartData} />
 
       {/* 물때 설명 섹션 */}
       <SeaTimeDescription />

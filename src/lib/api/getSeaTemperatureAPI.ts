@@ -85,8 +85,6 @@ export const getTideChartData = async (
     })
   );
 
-  console.log(tideData);
-
   const formattedTideData = tideData.map((data, index) => {
     return {
       date: dayjs().add(index, "day").format("MM-DD"),
