@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dialog";
 import {Button} from "@/components/ui/button";
 import {useRouter} from "next/navigation";
+import CurrentLocationWeather from "@/components/CurrentLocationWeather";
 
 export default function Home() {
   const setUser = useUserStore(state => state.setUser);
@@ -70,6 +71,8 @@ export default function Home() {
           </p>
         </div>
       </section>
+
+      <CurrentLocationWeather />
 
       <FishingPoint />
 
