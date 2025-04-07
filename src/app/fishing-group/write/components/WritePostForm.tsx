@@ -26,6 +26,7 @@ import { ko } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { useState, useRef } from "react";
 import { uploadImagesToS3 } from "@/lib/api/uploadImageAPI";
+import { createFishingPost } from "@/lib/api/createFishingPostAPI";
 import { useRouter } from "next/navigation";
 
 export default function WritePostForm() {
@@ -66,39 +67,33 @@ export default function WritePostForm() {
     setIsSubmitting(true);
 
     try {
-      // 1. 이미지 S3 업로드
-      const imageFileIds = await uploadImagesToS3(selectedFiles, "post");
+      let imageFileIds: number[] = [];
+      if (selectedFiles.length > 0) {
+        console.log("✅ 선택된 이미지 수:", selectedFiles.length);
+        imageFileIds = await uploadImagesToS3(selectedFiles, "post");
+      }
 
-      // 2. 폼 데이터 수집
       const form = e.currentTarget;
-      const formData = {
-        title: (form.elements.namedItem("title") as HTMLInputElement).value,
-        fishingDate: date,
-        fishingSpot: (
-          form.elements.namedItem("fishingSpot") as HTMLInputElement
-        ).value,
-        location: (form.elements.namedItem("location") as HTMLInputElement)
-          .value,
-        memberCount,
-        isBoatFishing: (
-          form.elements.namedItem("isBoatFishing") as HTMLInputElement
-        ).checked,
+      const requestBody = {
+        subject: (form.elements.namedItem("title") as HTMLInputElement).value,
+        fishingDate: date?.toISOString() ?? new Date().toISOString(),
+        fishingPointId: 1, // TODO: 낚시 포인트 ID 지정 방식에 따라 수정
+        recruitmentCount: memberCount,
+        isShipFish:
+          (form.elements.namedItem("isBoatFishing") as HTMLInputElement)
+            ?.checked ?? false,
         content: (form.elements.namedItem("content") as HTMLTextAreaElement)
           .value,
-        imageFileIdList: imageFileIds,
+        fileIdList: imageFileIds,
       };
 
-      // 3. 게시글 등록 요청
-      await fetch("/api/posts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+      console.log("✅ 최종 전송 데이터:", requestBody);
+      await createFishingPost(requestBody);
 
       alert("게시글이 등록되었습니다!");
       router.push("/fishing-group");
     } catch (err) {
-      console.error("게시글 등록 실패:", err);
+      console.error("게시글 등록 중 오류:", err);
       alert("게시글 등록 중 오류가 발생했습니다.");
     } finally {
       setIsSubmitting(false);
