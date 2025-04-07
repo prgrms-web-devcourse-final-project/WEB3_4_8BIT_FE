@@ -21,7 +21,7 @@ import {
   MapPin,
 } from "lucide-react";
 
-import { format } from "date-fns";
+import { format, isBefore, startOfDay } from "date-fns";
 import { ko } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { useState, useRef } from "react";
@@ -100,6 +100,11 @@ export default function WritePostForm() {
     }
   };
 
+  // 오늘 이전 날짜를 비활성화하는 함수
+  const disablePastDates = (date: Date) => {
+    return isBefore(date, startOfDay(new Date()));
+  };
+
   return (
     <>
       <div className="mb-4">
@@ -152,6 +157,7 @@ export default function WritePostForm() {
                   initialFocus
                   locale={ko}
                   className="rounded-md border"
+                  disabled={disablePastDates}
                 />
               </PopoverContent>
             </Popover>
@@ -206,7 +212,7 @@ export default function WritePostForm() {
                 value={memberCount}
                 min={2}
                 onChange={(e) => setMemberCount(Number(e.target.value))}
-                className="w-20 text-center"
+                className="w-20 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
               <Button
                 type="button"
