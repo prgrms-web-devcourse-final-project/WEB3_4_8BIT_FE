@@ -1,4 +1,4 @@
-import { FishInfo } from "@/types/Fish.types";
+import { FishInfo } from "@/types/fish.interface";
 import Image from "next/image";
 import { Separator } from "@/components/ui/separator";
 import React from "react";
