@@ -9,6 +9,7 @@ import BoatCardSection from "@/components/BoatCardSection";
 import FishSection from "@/components/FishSection";
 import BoatReservationSection from "@/components/BoatReservationSection";
 import FishingGroupSection from "@/components/FishingGroupSection";
+import CurrentLocationWeather from "@/components/CurrentLocationWeather";
 
 export default function Home() {
   return (
@@ -28,6 +29,8 @@ export default function Home() {
           </p>
         </div>
       </section>
+
+      <CurrentLocationWeather />
 
       <FishingPoint />
 
