@@ -19,17 +19,11 @@ export default function UserRegistrationPage() {
   const [profileImage, setProfileImage] = useState<string | null>(null)
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0]
-      const reader = new FileReader()
-      reader.onload = (event) => {
-        if (event.target?.result) {
-          setProfileImage(event.target.result as string)
-        }
-      }
-      reader.readAsDataURL(file)
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      setProfileImage(URL.createObjectURL(file));
     }
-  }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -61,7 +55,7 @@ export default function UserRegistrationPage() {
                 <h3 className="text-lg font-medium">기본 정보</h3>
                 <div className="flex flex-col items-center">
                   <div className="relative mb-4">
-                    <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
+                    <div className="w-30 h-30 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
                       {profileImage ? (
                         <Image src={profileImage || "/placeholder.svg"} alt="Profile" fill className="object-cover" />
                       ) : (
@@ -72,7 +66,7 @@ export default function UserRegistrationPage() {
                       htmlFor="profile-image"
                       className="absolute bottom-0 right-0 bg-primary text-white p-1 rounded-full cursor-pointer"
                     >
-                      <Plus className="h-4 w-4" />
+                      <Plus className="h-6 w-6" />
                       <Input
                         id="profile-image"
                         type="file"

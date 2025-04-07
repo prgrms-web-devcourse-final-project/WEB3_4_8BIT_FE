@@ -42,10 +42,11 @@ export default function CaptainRegisterPage() {
   const [showShipForm, setShowShipForm] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
 
-  const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
       setPreview(URL.createObjectURL(file));
+      console.log(URL.createObjectURL(file));
     }
   };
 
@@ -64,7 +65,7 @@ export default function CaptainRegisterPage() {
           <h2 className="text-base font-semibold">기본 정보</h2>
 
           <div className="flex flex-col items-center gap-3">
-            <label className="w-30 h-30 rounded-full bg-gray-100 border overflow-hidden flex items-center justify-center text-sm text-gray-400 cursor-pointer relative">
+            <label className="w-30 h-30 rounded-full bg-gray-200 border overflow-hidden flex items-center justify-center text-sm text-gray-400 cursor-pointer relative">
               {preview ? (
                 <Image
                   src={preview}
@@ -74,13 +75,13 @@ export default function CaptainRegisterPage() {
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <Upload className="w-6 h-6" />
+                <Upload className="h-8 w-8 text-gray-400" />
               )}
               <input
                 type="file"
                 className="hidden"
                 accept="image/*"
-                onChange={handleProfileChange}
+                onChange={handleImageUpload}
               />
             </label>
             <p className="text-xs text-gray-400 mb-4">프로필 사진 업로드</p>
