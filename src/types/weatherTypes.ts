@@ -85,3 +85,14 @@ export type WeatherResponse = {
   current: CurrentWeather;
   daily: DailyWeather[];
 };
+
+export interface WeatherCardProps {
+  title: string;
+  value: number | string;
+  unit?: string;
+  icon: React.ReactNode;
+  iconColor: string;
+  currentTime: string;
+  currentDate: string;
+  valueColor?: string;
+}
