@@ -5,7 +5,7 @@ import {Ruler, Fish, Plus, Search} from "lucide-react";
 import Image from "next/image";
 import {Button} from "@/components/ui/button";
 import FishRegisterModal from "@/app/user/mypage/fish-encyclopedia/components/FishRegisterModal";
-import {FishInfo} from "@/types/Fish.types";
+import {FishInfo} from "@/types/fish.interface";
 import FishUpdateModal from "@/app/user/mypage/fish-encyclopedia/components/FishUpdateModal";
 import React, {useState} from "react";
 

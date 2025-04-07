@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, {useEffect} from "react";
 import ActiveChatPointCard from "@/components/ActiveChatPointCard";
 import FishingPoint from "@/components/FishingPoint";
 import FishingPointCard from "@/components/FishingPointCard";
@@ -9,9 +9,51 @@ import BoatCardSection from "@/components/BoatCardSection";
 import FishSection from "@/components/FishSection";
 import BoatReservationSection from "@/components/BoatReservationSection";
 import FishingGroupSection from "@/components/FishingGroupSection";
+import {useQuery} from "@tanstack/react-query";
+import {UserAPI} from "@/lib/api/userAPI";
+import {useUserStore} from "@/stores/userStore";
+import {User} from "@/types/user.interface";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {Button} from "@/components/ui/button";
+import {useRouter} from "next/navigation";
 import CurrentLocationWeather from "@/components/CurrentLocationWeather";
 
 export default function Home() {
+  const setUser = useUserStore(state => state.setUser);
+  const user = useUserStore(state => state.user);
+  const router = useRouter()
+
+  const { data, isError, isSuccess } = useQuery<User | null>({
+    queryKey: ['userInfo'],
+    queryFn: UserAPI.prototype.getMemberInfo,
+    staleTime : 1000 * 60 * 5,
+  })
+
+  const handleMoveRegister = () => {
+    router.push('/auth/register');
+  }
+
+  useEffect(function setUserDataZustand() {
+    if (isError) {
+      alert("error"); // TODO 추후 에러 처리 필요
+      return;
+    }
+
+    if(isSuccess && data) {
+      const tempData = {...data, isAddInfo : false};
+      console.log(tempData);
+      setUser(tempData);
+      return;
+    }
+  }, [isSuccess, setUser, data, isError])
+
   return (
     <main>
       <section className="relative w-full h-[550px] flex items-center justify-start">
@@ -56,6 +98,25 @@ export default function Home() {
         </div>
       </section>
       <FishingGroupSection />
+
+      {user?.isAddInfo === false && (
+        // TODO 추후 동현님 Modal 과 연동
+        <Dialog defaultOpen={true}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>추가 정보를 등록해주세요</DialogTitle>
+              <DialogDescription>
+                회원님의 추가 정보를 입력하고
+                <br/>
+                미끼미끼의 서비스를 더욱 알차게 이용해보세요!
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button className="cursor-pointer" onClick={handleMoveRegister}>Save changes</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </main>
   );
 }
