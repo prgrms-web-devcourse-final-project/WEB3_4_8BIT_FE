@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, {useEffect, useState} from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,8 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import Image from "next/image";
+import {useUserStore} from "@/stores/userStore";
+import {User} from "@/types/user.interface";
 
 interface CaptainInfo {
   email: string;
@@ -40,14 +42,21 @@ interface ShipInfo {
 
 export default function CaptainRegisterPage() {
   const [showShipForm, setShowShipForm] = useState(false);
-  const [preview, setPreview] = useState<string | null>(null);
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const user = useUserStore(state => state.user);
+  const [userInfo, setUserInfo] = useState<User | null>(null);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
-      setPreview(URL.createObjectURL(file));
+      setProfileImage(URL.createObjectURL(file));
     }
   };
+
+  useEffect(() => {
+    setUserInfo(user);
+    console.log("zustand 상태 확인:", useUserStore.getState());
+  },[user]);
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-10">
@@ -55,7 +64,7 @@ export default function CaptainRegisterPage() {
         <div className="text-center">
           <h1 className="text-xl font-bold">선장 회원 등록</h1>
           <p className="text-gray-500 text-sm mt-1">
-            선장님의 정보를 입력해주세요
+            선장님의 정보를 입력해주세요. 이메일, 전화번호, 이름은 수정이 불가합니다.
           </p>
         </div>
 
@@ -63,53 +72,71 @@ export default function CaptainRegisterPage() {
         <section className="space-y-6">
           <h2 className="text-base font-semibold">기본 정보</h2>
 
-          <div className="flex flex-col items-center gap-3">
-            <label className="w-30 h-30 rounded-full bg-gray-200 border overflow-hidden flex items-center justify-center text-sm text-gray-400 cursor-pointer relative">
-              {preview ? (
-                <Image
-                  src={preview}
-                  alt="preview"
-                  width={96}
-                  height={96}
-                  className="w-full h-full object-cover"
+          <div className="flex flex-col items-center">
+            <div className="relative mb-4">
+              <div className="w-30 h-30 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
+                {profileImage ? (
+                  <Image src={profileImage || "/placeholder.svg"} alt="Profile" fill className="object-cover" />
+                ) : (
+                  <Upload className="h-8 w-8 text-gray-400" />
+                )}
+              </div>
+              <Label
+                htmlFor="profile-image"
+                className="absolute bottom-0 right-0 bg-primary text-white p-1 rounded-full cursor-pointer"
+              >
+                <Plus className="h-6 w-6" />
+                <Input
+                  id="profile-image"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageUpload}
                 />
-              ) : (
-                <Upload className="h-8 w-8 text-gray-400" />
-              )}
-              <input
-                type="file"
-                className="hidden"
-                accept="image/*"
-                onChange={handleImageUpload}
-              />
-            </label>
-            <p className="text-xs text-gray-400 mb-4">프로필 사진 업로드</p>
+              </Label>
+            </div>
+            <p className="text-sm text-gray-500">프로필 사진 업로드</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <Label className="block mb-2 text-sm font-medium cursor-pointer">
-                이메일 *
+              <Label className="block mb-2 text-sm font-medium">
+                이메일
               </Label>
-              <Input placeholder="ex) user@example.com" />
+              <Input
+                id="email"
+                type="email"
+                placeholder=""
+                required
+                defaultValue={userInfo?.email}
+                disabled
+              />
             </div>
             <div>
-              <Label className="block mb-2 text-sm font-medium cursor-pointer">
-                전화번호 *
+              <Label className="block mb-2 text-sm font-medium">
+                전화번호
               </Label>
-              <Input placeholder="ex) 010-1234-5678" />
+              <Input
+                id="phone"
+                type="phone"
+                placeholder=""
+                required
+                defaultValue={userInfo?.phone}
+                disabled
+              />
             </div>
             <div>
-              <Label className="block mb-2 text-sm font-medium cursor-pointer">
-                이름 *
+              <Label className="block mb-2 text-sm font-medium">
+                이름
               </Label>
-              <Input placeholder="이름을 입력하세요" />
-            </div>
-            <div>
-              <Label className="block mb-2 text-sm font-medium cursor-pointer">
-                닉네임 *
-              </Label>
-              <Input placeholder="닉네임을 입력하세요" />
+              <Input
+                id="name"
+                type="name"
+                placeholder=""
+                required
+                defaultValue={userInfo?.name}
+                disabled
+              />
             </div>
           </div>
         </section>
@@ -119,7 +146,14 @@ export default function CaptainRegisterPage() {
         {/* 선장 정보 */}
         <section className="space-y-6">
           <h2 className="text-base font-semibold">선장 정보</h2>
-
+          <div>
+            <Label className="block mb-2 text-sm font-medium">
+              닉네임 <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              placeholder="닉네임을 입력하세요"
+            />
+          </div>
           <div>
             <Label className="block mb-2 text-sm font-medium cursor-pointer">
               선장 면허 번호 *
