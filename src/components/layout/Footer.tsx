@@ -17,7 +17,7 @@ export default function Footer() {
               서비스
             </h6>
             <ul className="space-y-2">
-              <li>오류 도감</li>
+              <li>어류 도감</li>
               <li>선상 낚시 예약</li>
               <li>낚시 포인트 지도</li>
               <li>커뮤니티</li>
