@@ -34,6 +34,7 @@
     "react-day-picker": "^8.10.1",
     "react-dom": "^19.0.0",
     "react-spinners": "^0.15.0",
+    "recharts": "^2.15.2",
     "swiper": "^11.2.6",
     "tailwind-merge": "^3.0.2",
     "tw-animate-css": "^1.2.4",

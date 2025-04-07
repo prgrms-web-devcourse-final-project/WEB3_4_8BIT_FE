@@ -48,11 +48,12 @@ export const getWeeklyTideData = async (
 
   // 현재부터 7일 후까지의 데이터를 가져옴
   const weeklyData = await Promise.all(
-    Array.from({ length: 8 }, (_, i) => {
+    Array.from({ length: 8 }, async (_, i) => {
       const forecastDate = dayjs().add(i, "day").format("YYYYMMDD");
-      return fetch(
+      const response = await fetch(
         `http://www.khoa.go.kr/api/oceangrid/tideObsPreTab/search.do?ServiceKey=${process.env.NEXT_PUBLIC_BADANORI_API_KEY}&ObsCode=${stationId}&Date=${forecastDate}&ResultType=json`
-      ).then((res) => res.json());
+      );
+      return response.json();
     })
   );
 
@@ -64,4 +65,32 @@ export const getWeeklyTideData = async (
       tides: data.result.data,
     };
   });
+};
+
+export const getTideChartData = async (
+  lat: number,
+  lng: number
+): Promise<DailyTideData[]> => {
+  const stationId = findNearestStation(lat, lng);
+
+  const tideData = await Promise.all(
+    Array.from({ length: 3 }, async (_, i) => {
+      const forecastDate = dayjs()
+        .add(i - 1, "day")
+        .format("YYYYMMDD");
+      const response = await fetch(
+        `http://www.khoa.go.kr/api/oceangrid/tideObsPreTab/search.do?ServiceKey=${process.env.NEXT_PUBLIC_BADANORI_API_KEY}&ObsCode=${stationId}&Date=${forecastDate}&ResultType=json`
+      );
+      return response.json();
+    })
+  );
+
+  const formattedTideData = tideData.map((data, index) => {
+    return {
+      date: dayjs().add(index, "day").format("MM-DD"),
+      tides: data.result.data,
+    };
+  });
+
+  return formattedTideData;
 };
