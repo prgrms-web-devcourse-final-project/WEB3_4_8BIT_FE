@@ -33,5 +33,26 @@ export class UserAPI {
       return null
     }
   }
+
+  public async postMemberInfo(data : unknown) {
+
+  }
+
+  public async patchMemberInfo(data : unknown) {
+
+  }
+
+  public async getCaptainMemberInfo(data : unknown) {
+
+  }
+
+  public async postCaptainMemberInfo(data : unknown) {
+
+  }
+
+  public async patchCaptainMemberInfo(data : unknown) {
+
+  }
+
 }
 
