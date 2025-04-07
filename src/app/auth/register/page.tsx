@@ -24,7 +24,7 @@ export default function RegisterPage() {
     <div className="min-h-screen flex justify-center">
       <Card className="max-w-md w-[476px] h-[400px] mt-20">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">회원 가입</CardTitle>
+          <CardTitle className="text-2xl font-bold">추가 정보 입력</CardTitle>
           <CardDescription>회원 유형을 선택해주세요</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
