@@ -32,7 +32,7 @@ export default function Home() {
 
   const { data, isError, isSuccess } = useQuery<User | null>({
     queryKey: ['userInfo'],
-    queryFn: UserAPI.prototype.getMemberInfo,
+    queryFn: UserAPI.getMemberInfo,
     staleTime : 1000 * 60 * 5,
   })
 
@@ -47,9 +47,7 @@ export default function Home() {
     }
 
     if(isSuccess && data) {
-      const tempData = {...data, isAddInfo : false};
-      console.log(tempData);
-      setUser(tempData);
+      setUser(data);
       return;
     }
   }, [isSuccess, setUser, data, isError])
