@@ -1,5 +1,3 @@
-"use client";
-
 import {
   Select,
   SelectContent,
@@ -10,102 +8,29 @@ import {
 import BoatCard from "@/components/BoatCard";
 import SearchBox from "@/app/boat-reservation/components/SearchBox";
 import FilterBox from "@/app/boat-reservation/components/FilterBox";
-import { useEffect, useState } from "react";
 import { PostType } from "@/types/boatPostType";
 
-// 더미 데이터
-const dummyBoats: PostType[] = [
-  {
-    subject: "빵빵이호 낚시 투어",
-    price: 80000,
-    location: "부산 기장군",
-    startTime: "15:00",
-    endTime: "17:30",
-    durationTime: "02:30",
-    shipFishingPostId: 1,
-    imageList: [
-      "/placeholder.svg?height=200&width=300",
-      "/placeholder.svg?height=200&width=300",
-    ],
-    fishList: [1, 2, 3],
-    reviewEverRate: 5.0,
-    reviewCount: 31,
-  },
-  {
-    subject: "옥지호 바다 낚시",
-    price: 120000,
-    location: "제주 서귀포시",
-    startTime: "09:00",
-    endTime: "12:00",
-    durationTime: "03:00",
-    shipFishingPostId: 2,
-    imageList: [
-      "/placeholder.svg?height=200&width=300",
-      "/placeholder.svg?height=200&width=300",
-    ],
-    fishList: [2, 4, 5],
-    reviewEverRate: 4.0,
-    reviewCount: 36,
-  },
-  {
-    subject: "김노엠호 낚시 투어",
-    price: 60000,
-    location: "인천 옹진군",
-    startTime: "13:00",
-    endTime: "16:00",
-    durationTime: "03:00",
-    shipFishingPostId: 3,
-    imageList: [
-      "/placeholder.svg?height=200&width=300",
-      "/placeholder.svg?height=200&width=300",
-    ],
-    fishList: [1, 3, 6],
-    reviewEverRate: 4.5,
-    reviewCount: 14,
-  },
-  {
-    subject: "제갈제니호 낚시",
-    price: 100000,
-    location: "강원 속초시",
-    startTime: "10:00",
-    endTime: "14:00",
-    durationTime: "04:00",
-    shipFishingPostId: 4,
-    imageList: [
-      "/placeholder.svg?height=200&width=300",
-      "/placeholder.svg?height=200&width=300",
-    ],
-    fishList: [2, 5, 7],
-    reviewEverRate: 2.5,
-    reviewCount: 32,
-  },
-];
-
 // 더미 API 함수
-const fetchBoats = async (): Promise<PostType[]> => {
-  // 실제 API 호출처럼 지연 시간 추가
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-  return dummyBoats;
-};
+async function getBoatPosts(): Promise<PostType[]> {
+  try {
+    const response = await fetch("http://localhost:3000/api/boatPostMock", {
+      cache: "no-store",
+    });
 
-export default function BoatReservation() {
-  const [boats, setBoats] = useState<PostType[]>([]);
-  const [loading, setLoading] = useState(true);
+    if (!response.ok) {
+      throw new Error("데이터를 불러오는데 실패했습니다");
+    }
 
-  useEffect(() => {
-    const loadBoats = async () => {
-      try {
-        const data = await fetchBoats();
-        setBoats(data);
-      } catch (err) {
-        console.error("선박 정보를 불러오는데 실패했습니다.", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("API 호출 에러:", error);
+    return []; // 에러 시 빈 배열 반환
+  }
+}
 
-    loadBoats();
-  }, []);
+export default async function BoatReservation() {
+  const boatPostsData = await getBoatPosts();
 
   return (
     <div className="min-h-screen">
@@ -124,7 +49,9 @@ export default function BoatReservation() {
           <FilterBox />
           <div className="lg:col-span-3 space-y-6">
             <div className="flex justify-between items-center">
-              <h2 className="text-xl font-bold">검색 결과 ({boats.length})</h2>
+              <h2 className="text-xl font-bold">
+                검색 결과 ({boatPostsData.length})
+              </h2>
               <Select defaultValue="recommended">
                 <SelectTrigger className="w-[180px] cursor-pointer">
                   <SelectValue placeholder="정렬 기준" />
@@ -138,15 +65,11 @@ export default function BoatReservation() {
               </Select>
             </div>
 
-            {loading ? (
-              <div className="text-center py-8">로딩 중...</div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {boats.map((boat) => (
-                  <BoatCard key={boat.shipFishingPostId} boatData={boat} />
-                ))}
-              </div>
-            )}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {boatPostsData.map((boat) => (
+                <BoatCard key={boat.shipFishingPostId} boatData={boat} />
+              ))}
+            </div>
           </div>
         </div>
       </div>

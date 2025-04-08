@@ -12,6 +12,11 @@ import Image from "next/image";
 import { PostType } from "@/types/boatPostType";
 
 export default function BoatCard({ boatData }: { boatData: PostType }) {
+  // 메인페이지에서 오류 발생
+  if (!boatData) {
+    return <div>데이터가 없습니다.</div>;
+  }
+
   return (
     <Card className="overflow-hidden shadow-lg hover:shadow-xl transition-shadow pt-0">
       <div className="h-48 overflow-hidden">
