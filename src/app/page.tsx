@@ -112,7 +112,7 @@ export default function Home() {
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>
-              <Button className="cursor-pointer" onClick={handleMoveRegister}>Save changes</Button>
+              <Button className="cursor-pointer" onClick={handleMoveRegister}>등록하기</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
