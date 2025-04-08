@@ -1,13 +1,10 @@
 import axios from "axios";
 
-const token = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIyIiwiYXV0aCI6IlVTRVIiLCJlbWFpbCI6ImNqMjE3NEBuYXZlci5jb20iLCJpYXQiOjE3NDQwOTEyMTksImV4cCI6MTc0NDE3NzYxOX0.mec6El5qKOJ2u3hkLEpCPZWORDAfzFw30mHJa0Z5JpmEuZUnoGwusaCDBN24HVbiOGESDeUGvd2HKy3p39X9mg";
-
 export const axiosInstance = axios.create({
   baseURL: "https://api.mikki.kr/api/v1",
   timeout: 5000,
   headers: {
     "Content-Type": "application/json",
-    Authorization: token,
   },
 });
 
@@ -18,3 +15,17 @@ axiosInstance.interceptors.request.use(function (config) {
   }
   return config;
 });
+
+// 응답 인터셉터
+axiosInstance.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  (error) => {
+    if (error.response) {
+      console.error("API Error Response:", error.response.data);
+      console.error("API Error Status:", error.response.status);
+    }
+    return Promise.reject(error);
+  }
+);

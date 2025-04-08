@@ -1,10 +1,18 @@
-import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
-import {ChevronLeft, ChevronRight, Droplets, Moon, Sun} from "lucide-react";
-import {Button} from "@/components/ui/button";
-import React, {useState} from "react";
+"use client";
+
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { ChevronLeft, ChevronRight, Droplets, Moon, Sun } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import React, { useState } from "react";
 
 export default function TabWater() {
-  const [currentTideIndex, setCurrentTideIndex] = useState(0)
+  const [currentTideIndex, setCurrentTideIndex] = useState(0);
 
   // 물때 정보
   const tideInfo = [
@@ -43,7 +51,7 @@ export default function TabWater() {
       highTide: ["12:15", "--:--"],
       lowTide: ["06:20", "18:50"],
     },
-  ]
+  ];
 
   return (
     <Card>
@@ -86,7 +94,10 @@ export default function TabWater() {
                       <div className="relative h-40 bg-gradient-to-b from-sky-50 to-blue-100 rounded-lg overflow-hidden">
                         {/* Tide Wave Visualization */}
                         <div className="absolute inset-0">
-                          <svg viewBox="0 0 1440 120" className="absolute bottom-0 w-full">
+                          <svg
+                            viewBox="0 0 1440 120"
+                            className="absolute bottom-0 w-full"
+                          >
                             <path
                               fill="rgba(59, 130, 246, 0.3)"
                               d="M0,64L48,80C96,96,192,128,288,128C384,128,480,96,576,85.3C672,75,768,85,864,96C960,107,1056,117,1152,112C1248,107,1344,85,1392,74.7L1440,64L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z"
@@ -99,9 +110,10 @@ export default function TabWater() {
                           .filter((time) => time !== "--:--")
                           .map((time, i) => {
                             // Calculate position based on time (simplified)
-                            const hour = Number.parseInt(time.split(":")[0])
-                            const minute = Number.parseInt(time.split(":")[1])
-                            const position = ((hour * 60 + minute) / (24 * 60)) * 100
+                            const hour = Number.parseInt(time.split(":")[0]);
+                            const minute = Number.parseInt(time.split(":")[1]);
+                            const position =
+                              ((hour * 60 + minute) / (24 * 60)) * 100;
 
                             return (
                               <div
@@ -115,15 +127,16 @@ export default function TabWater() {
                                   <div className="h-16 border-l border-dashed border-blue-400 mt-1"></div>
                                 </div>
                               </div>
-                            )
+                            );
                           })}
 
                         {/* Low Tide Markers */}
                         {info.lowTide.map((time, i) => {
                           // Calculate position based on time (simplified)
-                          const hour = Number.parseInt(time.split(":")[0])
-                          const minute = Number.parseInt(time.split(":")[1])
-                          const position = ((hour * 60 + minute) / (24 * 60)) * 100
+                          const hour = Number.parseInt(time.split(":")[0]);
+                          const minute = Number.parseInt(time.split(":")[1]);
+                          const position =
+                            ((hour * 60 + minute) / (24 * 60)) * 100;
 
                           return (
                             <div
@@ -137,7 +150,7 @@ export default function TabWater() {
                                 <span>{time}</span>
                               </div>
                             </div>
-                          )
+                          );
                         })}
                       </div>
                     </div>
@@ -178,7 +191,9 @@ export default function TabWater() {
               variant="outline"
               size="icon"
               className="rounded-full cursor-pointer bg-white shadow-md h-10 w-10"
-              onClick={() => setCurrentTideIndex(Math.max(0, currentTideIndex - 1))}
+              onClick={() =>
+                setCurrentTideIndex(Math.max(0, currentTideIndex - 1))
+              }
               disabled={currentTideIndex === 0}
             >
               <ChevronLeft className="h-5 w-5" />
@@ -187,7 +202,11 @@ export default function TabWater() {
               variant="outline"
               size="icon"
               className="rounded-full cursor-pointer bg-white shadow-md h-10 w-10"
-              onClick={() => setCurrentTideIndex(Math.min(tideInfo.length - 1, currentTideIndex + 1))}
+              onClick={() =>
+                setCurrentTideIndex(
+                  Math.min(tideInfo.length - 1, currentTideIndex + 1)
+                )
+              }
               disabled={currentTideIndex === tideInfo.length - 1}
             >
               <ChevronRight className="h-5 w-5" />
@@ -213,11 +232,12 @@ export default function TabWater() {
             <Droplets className="h-5 w-5 mr-2" /> 물때 팁
           </h4>
           <p className="mt-2 text-blue-800">
-            참돔과 감성돔은 주로 간조에서 만조로 바뀌는 창조류 때 활발하게 활동합니다. 특히 해 뜨기 직전과
-            해 질 무렵의 창조류 시간대가 가장 조황이 좋습니다.
+            참돔과 감성돔은 주로 간조에서 만조로 바뀌는 창조류 때 활발하게
+            활동합니다. 특히 해 뜨기 직전과 해 질 무렵의 창조류 시간대가 가장
+            조황이 좋습니다.
           </p>
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

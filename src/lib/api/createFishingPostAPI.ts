@@ -3,10 +3,10 @@ import { axiosInstance } from "./axiosInstance";
 interface CreateFishingPostParams {
   subject: string;
   content: string;
-  recruitmentCount: number;
-  isShipFish: boolean;
   fishingDate: string;
   fishingPointId: number;
+  recruitmentCount: number;
+  isShipFish: boolean;
   fileIdList: number[];
 }
 
@@ -15,7 +15,7 @@ export async function createFishingPost(postData: CreateFishingPostParams) {
     const response = await axiosInstance.post("/fishing-trip-post", postData);
     return response.data;
   } catch (error) {
-    console.error("요청 중 오류 발생:", error);
+    console.error("동출 모집 게시글 생성 중 오류:", error);
     throw error;
   }
 }

@@ -1,21 +1,40 @@
-import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
-import {CalendarIcon, MapPin, Star} from "lucide-react";
-import {Separator} from "@/components/ui/separator";
-import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
-import {Button} from "@/components/ui/button";
-import {format} from "date-fns";
-import {ko} from "date-fns/locale";
-import {Calendar} from "@/components/ui/calendar";
-import React, {useState} from "react";
+"use client";
 
-export default function ReservationInfo(){
-  const [date, setDate] = useState<Date | undefined>(undefined)
-  const [selectedPeople, setSelectedPeople] = useState(1)
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { CalendarIcon, MapPin, Star } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { format } from "date-fns";
+import { ko } from "date-fns/locale";
+import { Calendar } from "@/components/ui/calendar";
+import React, { useState } from "react";
+import { PostDetailPost } from "@/types/boatPostType";
+
+export default function ReservationInfo({
+  detailShipFishingPost,
+}: {
+  detailShipFishingPost: PostDetailPost;
+}) {
+  const [date, setDate] = useState<Date | undefined>(undefined);
+  const [selectedPeople, setSelectedPeople] = useState(1);
 
   return (
     <Card className="shadow-lg">
       <CardHeader>
-        <CardTitle className="text-2xl">해양호</CardTitle>
+        <CardTitle className="text-2xl">
+          {detailShipFishingPost.subject}
+        </CardTitle>
         <CardDescription className="flex items-center">
           <MapPin className="h-4 w-4 mr-1" /> 부산 기장군
         </CardDescription>
@@ -35,13 +54,24 @@ export default function ReservationInfo(){
           <h3 className="font-medium mb-3">날짜 선택</h3>
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" className="w-full cursor-pointer justify-start text-left font-normal">
+              <Button
+                variant="outline"
+                className="w-full cursor-pointer justify-start text-left font-normal"
+              >
                 <CalendarIcon className="mr-2 h-4 w-4" />
-                {date ? format(date, "PPP", { locale: ko }) : "날짜를 선택하세요"}
+                {date
+                  ? format(date, "PPP", { locale: ko })
+                  : "날짜를 선택하세요"}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0">
-              <Calendar mode="single" selected={date} onSelect={setDate} initialFocus locale={ko} />
+              <Calendar
+                mode="single"
+                selected={date}
+                onSelect={setDate}
+                initialFocus
+                locale={ko}
+              />
             </PopoverContent>
           </Popover>
         </div>
@@ -62,7 +92,9 @@ export default function ReservationInfo(){
               variant="outline"
               size="icon"
               className="cursor-pointer"
-              onClick={() => setSelectedPeople(Math.min(10, selectedPeople + 1))}
+              onClick={() =>
+                setSelectedPeople(Math.min(10, selectedPeople + 1))
+              }
             >
               +
             </Button>
@@ -74,22 +106,25 @@ export default function ReservationInfo(){
         <div className="space-y-2">
           <div className="flex justify-between">
             <span>기본 요금 (1인)</span>
-            <span>₩80,000</span>
+            <span>₩{detailShipFishingPost.price}</span>
           </div>
           {selectedPeople > 1 && (
             <div className="flex justify-between text-gray-600">
               <span>추가 인원 ({selectedPeople - 1}명)</span>
-              <span>₩{(selectedPeople - 1) * 80000}</span>
+              <span>₩{(selectedPeople - 1) * detailShipFishingPost.price}</span>
             </div>
           )}
           <Separator />
           <div className="flex justify-between font-bold text-lg">
             <span>총 금액</span>
-            <span>₩{selectedPeople * 80000}</span>
+            <span>₩{selectedPeople * detailShipFishingPost.price}</span>
           </div>
         </div>
 
-        <Button className="w-full bg-primary hover:bg-cyan-700 text-lg py-6" disabled={!date}>
+        <Button
+          className="w-full bg-primary hover:bg-cyan-700 text-lg py-6"
+          disabled={!date}
+        >
           {date ? "예약하기" : "날짜를 선택해주세요"}
         </Button>
 
@@ -98,5 +133,5 @@ export default function ReservationInfo(){
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

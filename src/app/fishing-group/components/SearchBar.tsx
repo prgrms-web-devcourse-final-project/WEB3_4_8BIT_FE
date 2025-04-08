@@ -8,19 +8,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export function SearchBar() {
-  const router = useRouter();
-
-  const handleWriteClick = () => {
-    router.push("/fishing-group/write"); // /write 페이지로 이동
-  };
-
   return (
     <div className="flex gap-2 mt-10 mb-10 items-center max-w-4xl mx-auto">
       <Select defaultValue="all">
-        <SelectTrigger className="w-[180px] bg-white border-gray-60 text-base h-full">
+        <SelectTrigger className="w-[180px] bg-white border-gray-60 text-base h-full cursor-pointer">
           <SelectValue placeholder="지역을 선택하세요" />
         </SelectTrigger>
         <SelectContent>
@@ -41,7 +35,7 @@ export function SearchBar() {
           </SelectItem>
         </SelectContent>
       </Select>
-      <div className="flex-1 relative max-w-lg">
+      <div className="relative flex-1">
         <Input
           type="search"
           placeholder="검색어를 입력하세요"
@@ -65,15 +59,15 @@ export function SearchBar() {
           </svg>
         </div>
       </div>
-      <button className="px-6 py-2 bg-primary text-white rounded-md hover:bg-blue-600 text-base">
+      <button className="px-6 py-2 bg-primary text-white rounded-md hover:bg-blue-500 text-base cursor-pointer">
         검색
       </button>
-      <button
-        onClick={handleWriteClick}
-        className="px-6 py-2 bg-primary text-white rounded-md hover:bg-blue-600 text-base"
+      <Link
+        href="/fishing-group/write"
+        className="px-6 py-2 bg-primary text-white rounded-md hover:bg-blue-500 text-base cursor-pointer"
       >
         + 글쓰기
-      </button>
+      </Link>
     </div>
   );
 }
