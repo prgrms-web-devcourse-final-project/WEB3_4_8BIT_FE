@@ -13,6 +13,7 @@ import {useUserStore} from "@/stores/userStore";
 import {BoatData, BoatInputData, User} from "@/types/user.interface";
 import BoatFormCard from "@/app/auth/register/captain/components/BoatFormCard";
 import {UserAPI} from "@/lib/api/userAPI";
+import {useRouter} from "next/navigation";
 
 export default function CaptainRegisterPage() {
   const user = useUserStore(state => state.user);
@@ -23,6 +24,7 @@ export default function CaptainRegisterPage() {
   const [description, setDescription] = useState("");
   const [boatsData, setBoatsData] = useState<BoatData[]>([]);
   const boatIndex = useRef(0);
+  const router = useRouter();
 
   const formData = {
     nickname,
@@ -93,23 +95,18 @@ export default function CaptainRegisterPage() {
     for (const item of savedBoats) {
       const { id, isSaved, ...newItem } = item;
       console.log(newItem);
-      const promise = UserAPI.prototype.postCaptainBoatInfo(newItem);
+      const promise = UserAPI.postCaptainBoatInfo(newItem);
       boatSavePromises.push(promise)
     }
 
-    const boatIds : number[] = [];
-    Promise.all(boatSavePromises).then(function(responses) {
-      responses.forEach((response, index) => {
-        boatIds.push(response['Location']);
-        console.log(`Boat ${index} location: ${response['Location']}`); // 또는 response.location
-      });
-    });
+    const responses = await Promise.all(boatSavePromises);
+    const boatIds: number[] = responses.map(response => response['Location']);
 
     console.log(boatIds);
 
     const newFormData : BoatInputData = {...formData, shipList : boatIds}
 
-    const response = await UserAPI.prototype.postCaptainMemberInfo(newFormData);
+    const response = await UserAPI.postCaptainMemberInfo(newFormData);
     console.log(response);
     if (response?.success) {
       alert('선장님의 추가 정보 입력이 완료되었습니다!')
