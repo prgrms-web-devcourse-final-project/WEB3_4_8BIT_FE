@@ -3,13 +3,13 @@ import { MapPin } from "lucide-react";
 
 export default function FishingSpotsSection() {
   return (
-    <section className="w-[1280px] mx-auto mt-[40px]">
+    <section className="xl:w-[1280px] w-[calc(100%-20px)] mx-auto mt-[40px]">
       <div className="mb-[13px]">
         <h3 className="text-title-4">인기 낚시 포인트</h3>
       </div>
 
-      <div className="flex justify-between items-center">
-        <div className="w-[408px] h-[275px] rounded-[8px] box-shadow-1">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="w-full h-[275px] rounded-[8px] box-shadow-1">
           <div className="w-full h-[185px] px-[16px] pt-[109px] rounded-t-[8px] bg-[url('/images/fishing-point-dummy.png')] bg-cover bg-center">
             <div>
               <h4 className="text-body-2 paperlogy-5medium text-white">
@@ -40,7 +40,7 @@ export default function FishingSpotsSection() {
             <Button className="bg-[#0891B2] text-white">상세보기</Button>
           </div>
         </div>
-        <div className="w-[408px] h-[275px] rounded-[8px] box-shadow-1">
+        <div className="w-full h-[275px] rounded-[8px] box-shadow-1">
           <div className="w-full h-[185px] px-[16px] pt-[109px] rounded-t-[8px] bg-[url('/images/fishing-point-dummy.png')] bg-cover bg-center">
             <div>
               <h4 className="text-body-2 paperlogy-5medium text-white">
@@ -71,7 +71,7 @@ export default function FishingSpotsSection() {
             <Button className="bg-[#0891B2] text-white">상세보기</Button>
           </div>
         </div>
-        <div className="w-[408px] h-[275px] rounded-[8px] box-shadow-1">
+        <div className="w-full h-[275px] rounded-[8px] box-shadow-1">
           <div className="w-full h-[185px] px-[16px] pt-[109px] rounded-t-[8px] bg-[url('/images/fishing-point-dummy.png')] bg-cover bg-center">
             <div>
               <h4 className="text-body-2 paperlogy-5medium text-white">

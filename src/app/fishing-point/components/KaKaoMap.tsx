@@ -239,7 +239,10 @@ export default function KaKaoMap() {
 
   return (
     <>
-      <div id="map" className="w-full h-[640px] rounded-lg shadow-lg" />
+      <div
+        id="map"
+        className="w-full h-[520px] md:h-[640px] rounded-lg shadow-lg"
+      />
       <div
         ref={overlayContainerRef}
         style={{

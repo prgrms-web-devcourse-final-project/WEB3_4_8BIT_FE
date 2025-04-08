@@ -39,7 +39,7 @@ export default function FishingPointPage({
   }, [pointId]);
 
   return (
-    <section className="w-[1280px] mx-auto">
+    <section className="xl:w-[1280px] w-[calc(100%-20px)] mx-auto">
       <div className="flex items-center gap-[8px]">
         <div
           onClick={goToBack}
@@ -69,9 +69,9 @@ export default function FishingPointPage({
           </p>
         </div>
 
-        <div className="flex items-center gap-[30px] justify-between">
-          <div className="flex items-center gap-[12px]">
-            <div className="w-[56px] h-[56px] rounded-full bg-gray-70 flex items-center justify-center">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="flex items-center gap-[12px] p-4 rounded-lg">
+            <div className="w-[56px] h-[56px] rounded-full bg-gray-70 flex items-center justify-center flex-shrink-0">
               <Image
                 src="/images/fish-dummy-img1.png"
                 alt="문어"
@@ -79,16 +79,16 @@ export default function FishingPointPage({
                 height={36}
               />
             </div>
-            <div>
-              <strong className="text-body-3">문어</strong>
+            <div className="min-w-0">
+              <strong className="text-body-3 block truncate">문어</strong>
               <p className="text-body-5 text-gray-50">제철: 봄-가을</p>
-              <div className="bg-[#EFF6FF] py-[4px] px-[8px]">
+              <div className="bg-[#EFF6FF] py-[4px] px-[8px] inline-block mt-1">
                 <span className="text-[#1E40AF] text-body-5">100 마리+</span>
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-[12px]">
-            <div className="w-[56px] h-[56px] rounded-full bg-gray-70 flex items-center justify-center">
+          <div className="flex items-center gap-[12px] p-4 rounded-lg">
+            <div className="w-[56px] h-[56px] rounded-full bg-gray-70 flex items-center justify-center flex-shrink-0">
               <Image
                 src="/images/fish-dummy-img1.png"
                 alt="문어"
@@ -96,16 +96,16 @@ export default function FishingPointPage({
                 height={36}
               />
             </div>
-            <div>
-              <strong className="text-body-3">문어</strong>
+            <div className="min-w-0">
+              <strong className="text-body-3 block truncate">문어</strong>
               <p className="text-body-5 text-gray-50">제철: 봄-가을</p>
-              <div className="bg-[#EFF6FF] py-[4px] px-[8px]">
+              <div className="bg-[#EFF6FF] py-[4px] px-[8px] inline-block mt-1">
                 <span className="text-[#1E40AF] text-body-5">100 마리+</span>
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-[12px]">
-            <div className="w-[56px] h-[56px] rounded-full bg-gray-70 flex items-center justify-center">
+          <div className="flex items-center gap-[12px] p-4 rounded-lg">
+            <div className="w-[56px] h-[56px] rounded-full bg-gray-70 flex items-center justify-center flex-shrink-0">
               <Image
                 src="/images/fish-dummy-img1.png"
                 alt="문어"
@@ -113,16 +113,16 @@ export default function FishingPointPage({
                 height={36}
               />
             </div>
-            <div>
-              <strong className="text-body-3">문어</strong>
+            <div className="min-w-0">
+              <strong className="text-body-3 block truncate">문어</strong>
               <p className="text-body-5 text-gray-50">제철: 봄-가을</p>
-              <div className="bg-[#EFF6FF] py-[4px] px-[8px]">
+              <div className="bg-[#EFF6FF] py-[4px] px-[8px] inline-block mt-1">
                 <span className="text-[#1E40AF] text-body-5">100 마리+</span>
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-[12px]">
-            <div className="w-[56px] h-[56px] rounded-full bg-gray-70 flex items-center justify-center">
+          <div className="flex items-center gap-[12px] p-4 rounded-lg">
+            <div className="w-[56px] h-[56px] rounded-full bg-gray-70 flex items-center justify-center flex-shrink-0">
               <Image
                 src="/images/fish-dummy-img1.png"
                 alt="문어"
@@ -130,10 +130,10 @@ export default function FishingPointPage({
                 height={36}
               />
             </div>
-            <div>
-              <strong className="text-body-3">문어</strong>
+            <div className="min-w-0">
+              <strong className="text-body-3 block truncate">문어</strong>
               <p className="text-body-5 text-gray-50">제철: 봄-가을</p>
-              <div className="bg-[#EFF6FF] py-[4px] px-[8px]">
+              <div className="bg-[#EFF6FF] py-[4px] px-[8px] inline-block mt-1">
                 <span className="text-[#1E40AF] text-body-5">100 마리+</span>
               </div>
             </div>
