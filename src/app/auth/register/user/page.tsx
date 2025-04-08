@@ -12,11 +12,19 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
+import {UserAPI} from "@/lib/api/userAPI";
 
 export default function UserRegistrationPage() {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [profileImage, setProfileImage] = useState<string | null>(null)
+  const [nickname, setNickname] = useState("");
+  const [description, setDescription] = useState("");
+
+  const formData = {
+    nickname,
+    description,
+  }
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -30,13 +38,14 @@ export default function UserRegistrationPage() {
     setIsSubmitting(true)
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-
-      router.push("/")
+      const response = await UserAPI.postMemberInfo(formData);
+      console.log(response)
+      setTimeout(() => {
+        alert('등록 완료!') // TODO 추후 모달 구현
+        router.push('/')
+      }, 500)
     } catch (error) {
       console.error("Registration failed:", error)
-    } finally {
-      setIsSubmitting(false)
     }
   }
 
@@ -129,7 +138,13 @@ export default function UserRegistrationPage() {
                   <Label htmlFor="nickname">
                     닉네임 <span className="text-red-500">*</span>
                   </Label>
-                  <Input id="nickname" placeholder="바다사랑" required />
+                  <Input
+                    id="nickname"
+                    placeholder="닉네임을 입력해주세요"
+                    required
+                    value={nickname}
+                    onChange={(e) => setNickname(e.target.value)}
+                  />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="introduction">자기 소개</Label>
@@ -137,6 +152,8 @@ export default function UserRegistrationPage() {
                     id="introduction"
                     placeholder="자기 소개와 낚시 경험에 대해 알려주세요"
                     className="min-h-[100px]"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
                   />
                 </div>
               </div>
@@ -159,4 +176,3 @@ export default function UserRegistrationPage() {
     </div>
   )
 }
-

@@ -1,5 +1,5 @@
-import axios, {InternalAxiosRequestConfig} from "axios";
-import {User} from "@/types/user.interface";
+import {BoatInfo, BoatInputData, NormalUserInputData, User} from "@/types/user.interface";
+import {apiInstance} from "@/lib/api/apiInstance";
 
 // 백엔드가 설정한 기본 API 응답
 interface APIDataResponse<T> {
@@ -8,23 +8,8 @@ interface APIDataResponse<T> {
   timestamp : string;
 }
 
-export const apiInstance = axios.create({
-  baseURL: 'https://api.mikki.kr/api/v1',
-  timeout: 5000,
-})
-
-apiInstance.interceptors.request.use(
-  function getAccessToken(config : InternalAxiosRequestConfig) : InternalAxiosRequestConfig {
-    const token = localStorage.getItem('accessToken');
-    if (token) {
-      config.headers.Authorization = token
-    }
-    return config;
-  }
-)
-
 export class UserAPI {
-  public async getMemberInfo() : Promise<User | null> {
+  public static async getMemberInfo() : Promise<User | null> {
     try {
       const response = await apiInstance.get<APIDataResponse<User | null>>('/members')
       return response.data.data
@@ -34,25 +19,46 @@ export class UserAPI {
     }
   }
 
-  public async postMemberInfo(data : unknown) {
+  public static async postMemberInfo(userInput : NormalUserInputData) : Promise<APIDataResponse<unknown> | null> {
+    try {
+      const response = await apiInstance.post('/members', userInput)
+      return response.data
+    } catch (error) {
+      console.log(error)
+      return null
+    }
+  }
+
+  public static async patchMemberInfo(data : unknown) {
 
   }
 
-  public async patchMemberInfo(data : unknown) {
+  public static async getCaptainMemberInfo(data : unknown) {
 
   }
 
-  public async getCaptainMemberInfo(data : unknown) {
+  public static async postCaptainMemberInfo(boatInput : BoatInputData) : Promise<APIDataResponse<unknown> | null> {
+    try {
+      const response = await apiInstance.post('/members/captains',boatInput);
+      return response.data
+    } catch (error) {
+      console.error('getMemberInfo error:', error)
+      return null
+    }
+  }
+
+  public static async patchCaptainMemberInfo(data : unknown) {
 
   }
 
-  public async postCaptainMemberInfo(data : unknown) {
-
+  public static async postCaptainBoatInfo(boat : BoatInfo) {
+    try {
+      const response = await apiInstance.post('/ship',boat);
+      return response.headers
+    } catch (error) {
+      console.error('getMemberInfo error:', error)
+      return null
+    }
   }
-
-  public async patchCaptainMemberInfo(data : unknown) {
-
-  }
-
 }
 
