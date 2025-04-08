@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
+import {UserAPI} from "@/lib/api/userAPI";
 
 export default function UserRegistrationPage() {
   const router = useRouter()
@@ -37,13 +38,14 @@ export default function UserRegistrationPage() {
     setIsSubmitting(true)
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-
-      router.push("/")
+      const response = await UserAPI.postMemberInfo(formData);
+      console.log(response)
+      setTimeout(() => {
+        alert('등록 완료!') // TODO 추후 모달 구현
+        router.push('/')
+      }, 500)
     } catch (error) {
       console.error("Registration failed:", error)
-    } finally {
-      setIsSubmitting(false)
     }
   }
 
