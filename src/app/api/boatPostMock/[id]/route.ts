@@ -25,7 +25,7 @@ export async function GET() {
         shipName: "빵빵이호",
         shipNumber: "SEA123",
         departurePort: "부산 기장군 기장읍 연화리 어촌계 선착장",
-        publicRestroom: true,
+        publicRestroom: true, //공용 화장실, 남/여 구분 화장실, 없음
         loungeArea: true,
         kitchenFacility: true,
         fishingChair: true,
