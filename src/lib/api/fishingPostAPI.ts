@@ -8,51 +8,29 @@ function checkPostStatus(fishingDate: string): "모집중" | "모집완료" {
   return fishingDateTime > now ? "모집중" : "모집완료";
 }
 
-// 게시글 상세 조회
-export async function getFishingPost(postId: number) {
-  try {
-    // 목업 데이터에서 해당 ID 게시글 찾기
-    const post = MOCK_POSTS.find((p) => p.fishingTripPostId === postId);
-    if (!post) {
-      throw new Error("게시글을 찾을 수 없습니다.");
-    }
-    // 날짜에 따라 상태 업데이트
-    post.postStatus = checkPostStatus(post.fishingDate);
-    return post;
-  } catch (error) {
-    console.error("게시글 조회 중 오류:", error);
-    throw error;
-  }
-}
-
-// 게시글 목록 조회
-export const getFishingPosts = async (
-  page = 0,
-  size = 10,
-  status = "모집중"
-) => {
-  try {
-    const response = await axiosInstance.get(
-      `/fishing-trip-post?page=${page}&size=${size}&status=${encodeURIComponent(
-        status
-      )}`
-    );
-    return response.data;
-  } catch (error) {
-    console.error("낚시 모임 목록 조회 중 오류:", error);
-    return MOCK_POSTS;
-  }
+// 게시글 목록 조회 (목업 데이터 사용)
+export const getFishingPosts = async () => {
+  return MOCK_POSTS;
 };
 
-// 핫포스트 목록 조회
+// 핫포스트 목록 조회 (목업 데이터 사용)
 export const getHotFishingPosts = async () => {
-  try {
-    const response = await axiosInstance.get("/fishing-trip-posts/hot");
-    return response.data;
-  } catch (error) {
-    console.error("인기 낚시 모임 목록 조회 중 오류:", error);
-    return MOCK_HOT_POSTS;
+  return MOCK_HOT_POSTS;
+};
+
+// 게시글 상세 조회 (목업 데이터 사용)
+export const getFishingPost = async (postId: number) => {
+  const post = MOCK_POSTS.find((p) => p.data.fishingTripPostId === postId);
+  if (!post) {
+    const hotPost = MOCK_HOT_POSTS.find(
+      (p) => p.data.fishingTripPostId === postId
+    );
+    if (!hotPost) {
+      throw new Error("게시글을 찾을 수 없습니다.");
+    }
+    return hotPost;
   }
+  return post;
 };
 
 // 게시글 작성 인터페이스

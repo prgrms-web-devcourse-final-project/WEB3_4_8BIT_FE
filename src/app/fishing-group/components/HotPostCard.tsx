@@ -1,23 +1,24 @@
 "use client";
 
-import { MapPin } from "lucide-react";
+import { MapPin, Users } from "lucide-react";
 import Link from "next/link";
 
 interface HotPostCardProps {
   post: {
     fishingTripPostId: number;
+    name: string;
     subject: string;
     content: string;
-    fishingDate: string;
-    fishPointName: string;
-    fishPointDetailName: string;
     currentCount: number;
     recruitmentCount: number;
+    createDate: string;
+    fishingDate: string;
+    fishPointDetailName: string;
+    fishPointName: string;
+    longitude: number;
+    latitude: number;
     fileUrlList: string[];
     postStatus: string;
-    views: number;
-    likes: number;
-    comments: number;
   };
 }
 
@@ -50,10 +51,11 @@ export function HotPostCard({ post }: HotPostCardProps) {
             <span>{post.fishPointDetailName}</span>
           </div>
           <h3 className="text-base font-medium line-clamp-2">{post.subject}</h3>
-          <div className="mt-2 flex items-center gap-4 text-sm text-gray-500">
-            <span>조회 {post.views}</span>
-            <span>좋아요 {post.likes}</span>
-            <span>댓글 {post.comments}</span>
+          <div className="mt-2 flex items-center gap-2 text-sm text-gray-500">
+            <Users className="h-4 w-4" />
+            <span>
+              {post.currentCount}/{post.recruitmentCount}명
+            </span>
           </div>
         </div>
       </div>

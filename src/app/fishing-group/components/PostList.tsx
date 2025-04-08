@@ -7,15 +7,25 @@ import { PostFilter } from "./TabSection";
 
 interface Post {
   fishingTripPostId: number;
+  name: string;
   subject: string;
   content: string;
-  fishingDate: string;
-  fishPointName: string;
-  fishPointDetailName: string;
   currentCount: number;
   recruitmentCount: number;
+  createDate: string;
+  fishingDate: string;
+  fishPointDetailName: string;
+  fishPointName: string;
+  longitude: number;
+  latitude: number;
   fileUrlList: string[];
   postStatus: string;
+}
+
+interface PostResponse {
+  timestamp: string;
+  data: Post;
+  success: boolean;
 }
 
 interface PostListProps {
@@ -31,22 +41,17 @@ export function PostList({ filter }: PostListProps) {
     const fetchPosts = async () => {
       try {
         setLoading(true);
-        setError(null);
-
-        console.log("게시글 목록 요청 시작");
-
-        // API 함수를 사용하여 게시글 목록 가져오기
-        const data = await getFishingPosts();
-
-        console.log("게시글 목록 응답:", data);
-        setPosts(Array.isArray(data) ? data : [data]); // 응답이 배열이 아닐 경우 배열로 변환
+        const response = await getFishingPosts();
+        if (Array.isArray(response)) {
+          setPosts(response.map((item) => item.data));
+        } else if (response.success) {
+          setPosts([response.data]);
+        } else {
+          setError("게시글을 불러오는데 실패했습니다.");
+        }
       } catch (err) {
         console.error("게시글 로딩 중 오류:", err);
-        setError(
-          err instanceof Error
-            ? `오류: ${err.message}`
-            : "알 수 없는 오류가 발생했습니다."
-        );
+        setError("게시글을 불러오는데 실패했습니다.");
       } finally {
         setLoading(false);
       }
@@ -54,14 +59,6 @@ export function PostList({ filter }: PostListProps) {
 
     fetchPosts();
   }, []);
-
-  // 필터링된 게시글 목록
-  const filteredPosts = posts.filter((post) => {
-    if (filter === "all") return true;
-    if (filter === "recruiting") return post.postStatus === "모집중";
-    if (filter === "completed") return post.postStatus === "모집완료";
-    return true;
-  });
 
   if (loading) {
     return <div className="text-center py-8">게시글을 불러오는 중...</div>;
@@ -78,6 +75,14 @@ export function PostList({ filter }: PostListProps) {
     );
   }
 
+  // 필터링된 게시글 목록
+  const filteredPosts = posts.filter((post) => {
+    if (filter === "all") return true;
+    if (filter === "recruiting") return post.postStatus === "모집중";
+    if (filter === "completed") return post.postStatus === "모집완료";
+    return true;
+  });
+
   if (filteredPosts.length === 0) {
     return <div className="text-center py-8">게시글이 없습니다.</div>;
   }
@@ -87,7 +92,7 @@ export function PostList({ filter }: PostListProps) {
       {filteredPosts.map((post) => (
         <PostCard
           key={post.fishingTripPostId}
-          id={post.fishingTripPostId}
+          fishingTripPostId={post.fishingTripPostId}
           title={post.subject}
           content={post.content}
           date={new Date(post.fishingDate).toLocaleDateString("ko-KR", {
@@ -96,11 +101,7 @@ export function PostList({ filter }: PostListProps) {
             day: "numeric",
           })}
           location={post.fishPointDetailName}
-          views={0}
-          likes={0}
-          comments={0}
           isRecruiting={post.postStatus === "모집중"}
-          memberCount={post.recruitmentCount}
           currentCount={post.currentCount}
           recruitmentCount={post.recruitmentCount}
           fishPointName={post.fishPointName}

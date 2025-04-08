@@ -1,39 +1,29 @@
 "use client";
 
-import { ThumbsUp, Eye, MessageCircle, Calendar, Users } from "lucide-react";
+import { Calendar, Users, MapPin } from "lucide-react";
 import Link from "next/link";
 
 interface PostCardProps {
-  id: number;
+  fishingTripPostId: number;
   title: string;
   content: string;
   date: string;
   location: string;
-  views: number;
-  likes: number;
-  comments: number;
-  thumbnail?: string;
   isRecruiting?: boolean;
-  memberCount: number;
-  currentCount?: number;
-  recruitmentCount?: number;
-  fishPointName?: string;
-  fileUrlList?: string[];
-  postStatus?: string;
+  currentCount: number;
+  recruitmentCount: number;
+  fishPointName: string;
+  fileUrlList: string[];
+  postStatus: string;
 }
 
 export function PostCard({
-  id,
+  fishingTripPostId,
   title,
   content,
   date,
   location,
-  views,
-  likes,
-  comments,
-  thumbnail,
   isRecruiting = true,
-  memberCount,
   currentCount = 0,
   recruitmentCount,
   fishPointName,
@@ -42,21 +32,10 @@ export function PostCard({
 }: PostCardProps) {
   // 썸네일 이미지 URL 결정
   const thumbnailUrl =
-    fileUrlList.length > 0
-      ? fileUrlList[0]
-      : thumbnail || "/images/default-thumbnail.jpg";
-
-  // 모집 상태 결정
-  const recruitmentStatus =
-    postStatus || (isRecruiting ? "모집중" : "모집완료");
-
-  // 모집 인원 표시
-  const memberDisplay = recruitmentCount
-    ? `${currentCount}/${recruitmentCount}명`
-    : `${memberCount}명`;
+    fileUrlList.length > 0 ? fileUrlList[0] : "/images/default-fishing.jpg";
 
   return (
-    <Link href={`/fishing-group/post/${id}`} className="block">
+    <Link href={`/fishing-group/post/${fishingTripPostId}`} className="block">
       <div className="w-full mb-4 border border-gray-300 rounded-lg hover:bg-gray-80 px-4 md:px-6 py-4 cursor-pointer transition-all duration-200">
         <div className="flex flex-col md:flex-row items-start gap-4 md:gap-5">
           {/* 썸네일 이미지 */}
@@ -75,17 +54,15 @@ export function PostCard({
               <div className="flex items-center gap-3">
                 <span
                   className={`px-2 py-1 text-sm rounded-full ${
-                    recruitmentStatus === "모집중"
+                    postStatus === "모집중"
                       ? "bg-[#2CD5D7] text-white"
                       : "bg-gray-500 text-white"
                   }`}
                 >
-                  {recruitmentStatus}
+                  {postStatus}
                 </span>
                 <h3 className="text-lg font-medium text-gray-900">
-                  <span className="text-gray-600">
-                    [{fishPointName || location}]
-                  </span>{" "}
+                  <span className="text-gray-600">[{fishPointName}]</span>{" "}
                   {title}
                 </h3>
               </div>
@@ -93,7 +70,7 @@ export function PostCard({
               <p className="text-base text-gray-600 line-clamp-2">{content}</p>
             </div>
 
-            {/* 하단 통계 영역 */}
+            {/* 하단 정보 영역 */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mt-4 pt-3">
               <div className="flex items-center gap-x-4 text-sm text-gray-500">
                 <span className="flex items-center gap-1">
@@ -102,22 +79,11 @@ export function PostCard({
                 </span>
                 <span className="flex items-center gap-1">
                   <Users size={16} />
-                  모집인원: {memberDisplay}
-                </span>
-              </div>
-
-              <div className="flex items-center gap-x-4 text-sm text-gray-500 mt-2 sm:mt-0">
-                <span className="flex items-center gap-1">
-                  <Eye size={16} />
-                  {views}
+                  모집인원: {currentCount}/{recruitmentCount}명
                 </span>
                 <span className="flex items-center gap-1">
-                  <ThumbsUp size={16} />
-                  {likes}
-                </span>
-                <span className="flex items-center gap-1">
-                  <MessageCircle size={16} />
-                  {comments}
+                  <MapPin size={16} />
+                  {location}
                 </span>
               </div>
             </div>

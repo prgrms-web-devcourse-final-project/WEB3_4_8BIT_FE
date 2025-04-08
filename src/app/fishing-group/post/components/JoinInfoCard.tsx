@@ -4,27 +4,27 @@ import { useState } from "react";
 import Image from "next/image";
 import { Slider } from "@/components/ui/slider";
 
-interface Member {
-  id: string;
-  name: string;
-  profileImageUrl: string;
-  isAuthor?: boolean;
-}
-
 interface JoinInfoCardProps {
-  currentMembers: number;
-  maxMembers: number;
-  members: Member[];
-  author: {
-    name: string;
-    profileImageUrl: string;
-  };
+  currentCount: number;
+  recruitmentCount: number;
+  fishingDate: string;
+  fishPointName: string;
+  fishPointDetailName: string;
+  postStatus: string;
+  longitude: number;
+  latitude: number;
+  author: string;
 }
 
 export default function JoinInfoCard({
-  currentMembers,
-  maxMembers,
-  members,
+  currentCount,
+  recruitmentCount,
+  fishingDate,
+  fishPointName,
+  fishPointDetailName,
+  postStatus,
+  longitude,
+  latitude,
   author,
 }: JoinInfoCardProps) {
   // 참여 여부 및 모달 오픈 상태 관리
@@ -60,14 +60,14 @@ export default function JoinInfoCard({
         <div className="flex justify-between items-center">
           <span className="text-lg font-bold mb-2">참여 현황</span>
           <span className="font-medium text-base">
-            {currentMembers}/{maxMembers}명
+            {currentCount}/{recruitmentCount}명
           </span>
         </div>
 
         <Slider
-          value={[currentMembers]}
+          value={[currentCount]}
           min={0}
-          max={maxMembers}
+          max={recruitmentCount}
           step={1}
           disabled
           className="w-full h-2 bg-gray-50 rounded-full accent-sub-1"
@@ -90,59 +90,15 @@ export default function JoinInfoCard({
           참여자 채팅방
         </button>
 
-        {/* 참여 멤버 목록 */}
-        <div>
-          <h4 className="font-medium text-base mb-3">참여 멤버</h4>
-          <div className="space-y-3">
-            {members.map((member) => (
-              <div key={member.id} className="flex items-center space-x-3">
-                <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200">
-                  {member.profileImageUrl ? (
-                    <Image
-                      src={member.profileImageUrl}
-                      alt={member.name}
-                      width={32}
-                      height={32}
-                      className="object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gray-400 rounded-full" />
-                  )}
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-base text-gray-700">{member.name}</span>
-                  {member.isAuthor && (
-                    <span className="text-xs bg-cyan-100 text-cyan-800 px-2 py-0.5 rounded-lg">
-                      모집자
-                    </span>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
         {/* 작성자 정보 */}
         <div>
           <h4 className="font-medium text-base mb-2 mt-4">작성자 정보</h4>
           <div className="flex items-center space-x-3 mb-4">
             <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200">
-              {author.profileImageUrl ? (
-                <Image
-                  src={author.profileImageUrl}
-                  alt={author.name}
-                  width={32}
-                  height={32}
-                  className="object-cover"
-                />
-              ) : (
-                <div className="w-full h-full bg-gray-400 rounded-full" />
-              )}
+              <div className="w-full h-full bg-gray-400 rounded-full" />
             </div>
             <div>
-              <p className="font-medium text-base text-gray-700">
-                {author.name}
-              </p>
+              <p className="font-medium text-base text-gray-700">{author}</p>
             </div>
           </div>
           <button className="w-full py-2 border border-gray-70 rounded-lg text-base hover:bg-gray-80 cursor-pointer">
