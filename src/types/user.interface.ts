@@ -21,9 +21,15 @@ export interface CaptainUser extends BaseUser {
 
 export type User = NormalUser | CaptainUser
 
+export interface NormalUserInputData {
+  nickname: string;
+  fileId? : number; // TODO 추후 fileUrl 로 수정 필요
+  description : string;
+}
+
 export interface BoatInputData {
   nickname : string;
-  fileId? : number;
+  fileId? : number; // TODO 추후 fileUrl 로 수정 필요
   description : string;
   shipLicenseNumber : string;
   shipList : number[];
