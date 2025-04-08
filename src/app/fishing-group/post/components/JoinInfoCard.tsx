@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
+import { applyFishingTripRecruitment } from "@/lib/api/fishingTripRecruitmentAPI";
 
 interface JoinInfoCardProps {
   currentCount: number;
@@ -54,32 +55,19 @@ export default function JoinInfoCard({
       return;
     }
 
-    const requestData = {
-      fishingTripPostId,
-      introduction: applicationText.trim(),
-      fishingLevel: experience,
-    };
-
-    console.log("참여 신청 요청 데이터:", requestData);
-
     try {
-      const response = await fetch("/api/v1/fishing-trip-recruitment", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(requestData),
+      const response = await applyFishingTripRecruitment({
+        fishingTripPostId,
+        introduction: applicationText.trim(),
+        fishingLevel: experience,
       });
 
-      const data = await response.json();
-      console.log("참여 신청 응답 데이터:", data);
-
-      if (data.success) {
-        toast.success(data.message || "참여 신청이 완료되었습니다.");
+      if (response.success) {
+        toast.success(response.message || "참여 신청이 완료되었습니다.");
         setIsJoined(true);
         setShowModal(false);
       } else {
-        toast.error(data.message || "참여 신청에 실패했습니다.");
+        toast.error(response.message || "참여 신청에 실패했습니다.");
       }
     } catch (error) {
       console.error("참여 신청 중 오류:", error);

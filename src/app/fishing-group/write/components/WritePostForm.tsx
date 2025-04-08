@@ -19,6 +19,7 @@ import {
   AlertCircle,
   Search,
   MapPin,
+  Clock,
 } from "lucide-react";
 
 import { format, isBefore, startOfDay } from "date-fns";
@@ -32,11 +33,19 @@ import { useRouter } from "next/navigation";
 export default function WritePostForm() {
   const router = useRouter();
   const [date, setDate] = useState<Date>();
+  const [selectedHour, setSelectedHour] = useState("09");
+  const [selectedMinute, setSelectedMinute] = useState("00");
   const [memberCount, setMemberCount] = useState(2);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // 시간 옵션 생성
+  const hours = Array.from({ length: 24 }, (_, i) =>
+    i.toString().padStart(2, "0")
+  );
+  const minutes = ["00", "15", "30", "45"];
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -66,6 +75,12 @@ export default function WritePostForm() {
     e.preventDefault();
     setIsSubmitting(true);
 
+    if (!date) {
+      alert("날짜를 선택해주세요.");
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
       let imageFileIds: number[] = [];
       if (selectedFiles.length > 0) {
@@ -73,11 +88,18 @@ export default function WritePostForm() {
         imageFileIds = await uploadImagesToS3(selectedFiles, "post");
       }
 
+      // 날짜와 시간 합치기
+      const fishingDateTime = new Date(date);
+      fishingDateTime.setHours(
+        parseInt(selectedHour),
+        parseInt(selectedMinute)
+      );
+
       const form = e.currentTarget;
       const requestBody = {
         subject: (form.elements.namedItem("title") as HTMLInputElement).value,
-        fishingDate: date?.toISOString() ?? new Date().toISOString(),
-        fishingPointId: 1, // TODO: 낚시 포인트 ID 지정 방식에 따라 수정
+        fishingDate: fishingDateTime.toISOString(),
+        fishingPointId: 1,
         recruitmentCount: memberCount,
         isShipFish:
           (form.elements.namedItem("isBoatFishing") as HTMLInputElement)
@@ -161,6 +183,41 @@ export default function WritePostForm() {
                 />
               </PopoverContent>
             </Popover>
+          </div>
+
+          <div className="space-y-2">
+            <label htmlFor="time" className="block font-medium">
+              낚시 시간
+            </label>
+            <div className="flex items-center gap-2">
+              <div className="relative flex-1">
+                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
+                <select
+                  value={selectedHour}
+                  onChange={(e) => setSelectedHour(e.target.value)}
+                  className="w-full h-12 pl-10 pr-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent appearance-none bg-white"
+                >
+                  {hours.map((hour) => (
+                    <option key={hour} value={hour}>
+                      {hour}시
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex-1">
+                <select
+                  value={selectedMinute}
+                  onChange={(e) => setSelectedMinute(e.target.value)}
+                  className="w-full h-12 px-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent appearance-none bg-white"
+                >
+                  {minutes.map((minute) => (
+                    <option key={minute} value={minute}>
+                      {minute}분
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
           </div>
 
           <div className="space-y-2">
