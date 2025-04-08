@@ -1,8 +1,4 @@
-interface FileMeta {
-  originalFileName: string;
-  fileSize: number;
-  contentType: string;
-}
+import { axiosInstance } from "./axiosInstance";
 
 interface PresignedUrl {
   fileId: number;
@@ -10,109 +6,82 @@ interface PresignedUrl {
   presignedUrl: string;
 }
 
-export async function uploadImagesToS3(
-  files: File[],
-  domain = "post"
-): Promise<number[]> {
-  const API_BASE_URL = "https://api.mikki.kr";
+interface PresignedUrlRequest {
+  domain: string;
+  uploadFileList: {
+    originalFileName: string;
+    fileSize: number;
+    contentType: string;
+  }[];
+}
 
-  const accessToken =
-    "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIyIiwiYXV0aCI6IlVTRVIiLCJlbWFpbCI6ImNqMjE3NEBuYXZlci5jb20iLCJpYXQiOjE3NDQwMzE3MzQsImV4cCI6MTc0NDAzNTMzNH0.aMe0XkalWqVNPV3DqObQcejL26oNRRmfwEIkDY1XXnC7PmqEfiERBZeYmWRfVK8JjcoeaR6MbV5GyS1VrvBkxw";
-
-  if (!accessToken) {
-    console.error("❌ accessToken이 존재하지 않습니다.");
-    throw new Error("accessToken이 없습니다. 로그인 후 다시 시도해주세요.");
-  }
-
-  const fileMetas: FileMeta[] = files.map((file) => ({
-    originalFileName: file.name,
-    fileSize: file.size,
-    contentType: file.type,
-  }));
-
-  console.log("✅ 요청 body:", { domain, uploadFileList: fileMetas });
-
+export const uploadImagesToS3 = async (files: File[], domain: string) => {
   try {
-    // Step 1: presigned URL 요청
-    const presignedRes = await fetch(
-      `${API_BASE_URL}/api/v1/storage/presigned-urls`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: accessToken,
-        },
-        body: JSON.stringify({ domain, uploadFileList: fileMetas }),
-      }
+    console.log("📤 이미지 업로드 시작");
+    console.log(
+      "업로드할 파일 목록:",
+      files.map((f) => ({ name: f.name, size: f.size, type: f.type }))
     );
 
-    if (!presignedRes.ok) {
-      const err = await presignedRes.text();
-      console.error("❌ presigned URL 요청 실패:", presignedRes.status, err);
-      throw new Error("presigned URL 요청 실패");
-    }
+    // 1. Presigned URL 요청
+    const presignedUrlRequest: PresignedUrlRequest = {
+      domain,
+      uploadFileList: files.map((file) => ({
+        originalFileName: file.name,
+        fileSize: file.size,
+        contentType: file.type,
+      })),
+    };
 
-    const json = await presignedRes.json();
+    console.log("1️⃣ Presigned URL 요청:", presignedUrlRequest);
+    const presignedResponse = await axiosInstance.post(
+      "/storage/presigned-urls",
+      presignedUrlRequest
+    );
+    console.log("✅ Presigned URL 응답:", presignedResponse.data);
 
-    if (!json?.data || !Array.isArray(json.data)) {
-      throw new Error("presigned URL 응답 오류: 예상치 못한 형식");
-    }
-
-    const presignedUrls: PresignedUrl[] = json.data;
+    const presignedUrls: PresignedUrl[] = presignedResponse.data.data;
     const uploadedFileIds: number[] = [];
 
-    // Step 2: S3에 이미지 PUT 업로드
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      const { fileId, presignedUrl } = presignedUrls[i];
+    // 2. 각 파일을 Presigned URL에 업로드
+    console.log("2️⃣ S3 업로드 시작");
+    const uploadPromises = files.map(async (file, index) => {
+      const { fileId, presignedUrl } = presignedUrls[index];
+      console.log(`📁 파일 업로드 중: ${file.name}`);
 
-      console.log(`🔄 S3 업로드 시작: ${file.name}`);
-      try {
-        const uploadRes = await fetch(presignedUrl, {
-          method: "PUT",
-          headers: {
-            "Content-Type": file.type,
-          },
-          body: file,
-          mode: "cors",
-        });
-
-        if (uploadRes.ok) {
-          console.log(`✅ ${file.name} 업로드 성공`);
-          uploadedFileIds.push(fileId);
-        } else {
-          const errMsg = await uploadRes.text();
-          console.warn(`⚠️ ${file.name} 업로드 실패:`, errMsg);
-        }
-      } catch (err) {
-        console.error(`❌ ${file.name} 업로드 중 오류:`, err);
-        console.warn("➡️ S3 CORS 정책 문제일 수 있습니다.");
-      }
-    }
-
-    // Step 3: 업로드 완료 처리
-    const completeRes = await fetch(
-      `${API_BASE_URL}/api/v1/storage/presigned-urls/complete`,
-      {
-        method: "POST",
+      // 파일 업로드
+      const response = await fetch(presignedUrl, {
+        method: "PUT",
+        body: file,
         headers: {
-          "Content-Type": "application/json",
-          Authorization: accessToken,
+          "Content-Type": file.type,
+          "Content-Length": file.size.toString(),
         },
-        body: JSON.stringify({ fileIdList: uploadedFileIds }),
+      });
+
+      if (!response.ok) {
+        throw new Error(
+          `파일 업로드 실패: ${file.name}, 상태: ${response.status}`
+        );
       }
-    );
 
-    if (!completeRes.ok) {
-      const err = await completeRes.text();
-      console.error("❌ 업로드 완료 처리 실패:", completeRes.status, err);
-      throw new Error("업로드 완료 처리 실패");
-    }
+      console.log(`✅ 파일 업로드 완료: ${file.name}, ID: ${fileId}`);
+      uploadedFileIds.push(fileId);
+    });
 
-    console.log("🎉 업로드 완료 처리 성공");
+    await Promise.all(uploadPromises);
+    console.log("✅ 모든 파일 업로드 완료");
+
+    // 3. 업로드 완료 처리
+    console.log("3️⃣ 업로드 완료 처리 요청", { fileIdList: uploadedFileIds });
+    await axiosInstance.post("/storage/presigned-urls/complete", {
+      fileIdList: uploadedFileIds,
+    });
+    console.log("✅ 업로드 완료 처리 성공");
+
     return uploadedFileIds;
   } catch (error) {
-    console.error("❌ 이미지 업로드 중 전체 오류:", error);
+    console.error("❌ 이미지 업로드 중 오류:", error);
     throw error;
   }
-}
+};

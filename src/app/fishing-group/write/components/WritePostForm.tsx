@@ -39,6 +39,9 @@ export default function WritePostForm() {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [isBoatFishing, setIsBoatFishing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // 시간 옵션 생성
@@ -88,24 +91,18 @@ export default function WritePostForm() {
         imageFileIds = await uploadImagesToS3(selectedFiles, "post");
       }
 
-      // 날짜와 시간 합치기
+      // 선택된 날짜와 시간을 합쳐서 fishingDate 생성
       const fishingDateTime = new Date(date);
-      fishingDateTime.setHours(
-        parseInt(selectedHour),
-        parseInt(selectedMinute)
-      );
+      fishingDateTime.setHours(parseInt(selectedHour, 10));
+      fishingDateTime.setMinutes(parseInt(selectedMinute, 10));
 
-      const form = e.currentTarget;
       const requestBody = {
-        subject: (form.elements.namedItem("title") as HTMLInputElement).value,
+        subject: title,
         fishingDate: fishingDateTime.toISOString(),
         fishingPointId: 1,
         recruitmentCount: memberCount,
-        isShipFish:
-          (form.elements.namedItem("isBoatFishing") as HTMLInputElement)
-            ?.checked ?? false,
-        content: (form.elements.namedItem("content") as HTMLTextAreaElement)
-          .value,
+        isShipFish: isBoatFishing,
+        content: content,
         fileIdList: imageFileIds,
       };
 
@@ -148,41 +145,79 @@ export default function WritePostForm() {
             <label htmlFor="title" className="block font-medium">
               제목
             </label>
-            <Input id="title" required placeholder="제목을 입력하세요" />
+            <Input
+              id="title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+              placeholder="제목을 입력하세요"
+            />
           </div>
 
           <div className="space-y-2">
             <label htmlFor="date" className="block font-medium">
-              낚시 날짜
+              낚시 날짜/시간
             </label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className={cn(
-                    "w-full justify-start text-left font-normal h-12",
-                    !date && "text-muted-foreground"
-                  )}
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal h-12",
+                        !date && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {date
+                        ? format(date, "PPP", { locale: ko })
+                        : "날짜를 선택하세요"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 bg-white" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={date}
+                      onSelect={setDate}
+                      initialFocus
+                      locale={ko}
+                      className="rounded-md border"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <div className="flex gap-2 items-center relative">
+                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
+                <select
+                  value={selectedHour}
+                  onChange={(e) => setSelectedHour(e.target.value)}
+                  className="h-12 rounded-md border border-input bg-background pl-10 pr-3"
                 >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {date
-                    ? format(date, "PPP", { locale: ko })
-                    : "날짜를 선택하세요"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 bg-white" align="start">
-                <Calendar
-                  mode="single"
-                  selected={date}
-                  onSelect={setDate}
-                  initialFocus
-                  locale={ko}
-                  className="rounded-md border"
-                  disabled={disablePastDates}
-                />
-              </PopoverContent>
-            </Popover>
+                  {Array.from({ length: 24 }, (_, i) =>
+                    String(i).padStart(2, "0")
+                  ).map((hour) => (
+                    <option key={hour} value={hour}>
+                      {hour}시
+                    </option>
+                  ))}
+                </select>
+                <select
+                  value={selectedMinute}
+                  onChange={(e) => setSelectedMinute(e.target.value)}
+                  className="h-12 rounded-md border border-input bg-background px-3"
+                >
+                  {Array.from({ length: 12 }, (_, i) =>
+                    String(i * 5).padStart(2, "0")
+                  ).map((minute) => (
+                    <option key={minute} value={minute}>
+                      {minute}분
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
           </div>
 
           <div className="space-y-2">
@@ -283,9 +318,18 @@ export default function WritePostForm() {
           </div>
 
           <div className="flex items-center space-x-2">
-            <Checkbox id="isBoatFishing" />
-            <label htmlFor="isBoatFishing" className="font-medium">
-              선상 낚시 여부
+            <Checkbox
+              id="isBoatFishing"
+              checked={isBoatFishing}
+              onCheckedChange={(checked) =>
+                setIsBoatFishing(checked as boolean)
+              }
+            />
+            <label
+              htmlFor="isBoatFishing"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              선상 낚시
             </label>
           </div>
 
@@ -295,8 +339,10 @@ export default function WritePostForm() {
             </label>
             <Textarea
               id="content"
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
               required
-              placeholder="모집 내용, 준비물 등을 입력해주세요"
+              placeholder="내용을 입력하세요"
               className="min-h-[200px]"
             />
           </div>
