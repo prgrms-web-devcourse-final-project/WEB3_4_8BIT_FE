@@ -16,7 +16,7 @@ export default function FishingGroupSection() {
             <h2 className="text-2xl font-bold text-gray-900">동출 모집하기</h2>
           </div>
           <Link
-            href="#"
+            href="/fishing-group"
             className="inline-block px-4 py-2 bg-gray-80 text-gray-20 text-sm font-medium rounded-full hover:bg-gray-60 transition-colors"
           >
             더보기

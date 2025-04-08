@@ -5,6 +5,7 @@ import Header from "@/components/layout/Header";
 import Script from "next/script";
 import Providers from "./providers";
 import Footer from "@/components/layout/Footer";
+import { Toaster } from "sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -40,6 +41,7 @@ export default function RootLayout({
           <main className="mt-[90px]">{children}</main>
         </Providers>
         <Footer />
+        <Toaster position="top-right" />
       </body>
     </html>
   );

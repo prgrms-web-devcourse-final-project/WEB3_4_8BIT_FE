@@ -27,9 +27,9 @@ export default function CommentSection({ comments }: CommentSectionProps) {
 
   return (
     <div className="bg-white rounded-lg shadow p-4 space-y-4 border border-gray-70">
-      <h3 className="text-lg font-bold">댓글 {comments.length}개</h3>
+      <h3 className="text-lg font-bold">댓글 {comments?.length || 0}개</h3>
       <div className="space-y-4">
-        {comments.map((comment) => (
+        {comments?.map((comment) => (
           <div key={comment.id} className="border-b border-gray-200 pb-2">
             <div className="flex items-start space-x-3">
               {/* 프로필 이미지 표시 */}
@@ -56,6 +56,11 @@ export default function CommentSection({ comments }: CommentSectionProps) {
             </div>
           </div>
         ))}
+        {(!comments || comments.length === 0) && (
+          <div className="text-gray-500 text-sm">
+            아직 작성된 댓글이 없습니다.
+          </div>
+        )}
       </div>
       <div className="pt-4">
         <textarea
