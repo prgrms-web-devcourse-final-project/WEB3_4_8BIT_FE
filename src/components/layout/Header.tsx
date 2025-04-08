@@ -28,19 +28,19 @@ export default function Header() {
           </div>
           <nav className="hidden md:block">
             <ul className="flex lg:gap-[51px] gap-[30px]">
-              <li className="text-[18px] text-[#fff] font-semibold hover:text-blue-400 transition-colors cursor-pointer">
+              <li className="text-[18px] text-[#fff] font-semibold cursor-pointer">
                 menu1
               </li>
-              <li className="text-[18px] text-[#fff] font-semibold hover:text-blue-400 transition-colors cursor-pointer">
+              <li className="text-[18px] text-[#fff] font-semibold cursor-pointer">
                 menu2
               </li>
-              <li className="text-[18px] text-[#fff] font-semibold hover:text-blue-400 transition-colors cursor-pointer">
+              <li className="text-[18px] text-[#fff] font-semibold cursor-pointer">
                 menu3
               </li>
-              <li className="text-[18px] text-[#fff] font-semibold hover:text-blue-400 transition-colors cursor-pointer">
+              <li className="text-[18px] text-[#fff] font-semibold cursor-pointer">
                 menu4
               </li>
-              <li className="text-[18px] text-[#fff] font-semibold hover:text-blue-400 transition-colors cursor-pointer">
+              <li className="text-[18px] text-[#fff] font-semibold cursor-pointer">
                 menu5
               </li>
             </ul>
@@ -50,7 +50,7 @@ export default function Header() {
         {/* 헤더 오른쪽 - 로그인 버튼 */}
         <div className="hidden md:block">
           <Link href="/auth/login" className="inline-block">
-            <button className="bg-blue-600 hover:bg-blue-700 text-white text-[14px] px-[20px] py-[6px] rounded-full shadow-md flex items-center gap-2">
+            <button className="bg-blue-600 hover:bg-blue-700 text-white text-[14px] px-[20px] py-[6px] rounded-full shadow-md flex items-center gap-2 cursor-pointer">
               <User className="w-[18px] h-[18px]" />
               로그인
             </button>
@@ -82,7 +82,7 @@ export default function Header() {
           <div className="p-6">
             <div className="mb-8">
               <Link href="/auth/login" className="inline-block w-full">
-                <button className="w-full bg-blue-600 hover:bg-blue-700 text-white text-[14px] px-[20px] py-[10px] rounded-full shadow-md flex items-center justify-center gap-2">
+                <button className="w-full bg-blue-600 hover:bg-blue-700 text-white text-[14px] px-[20px] py-[10px] rounded-full shadow-md flex items-center justify-center gap-2 cursor-pointer">
                   <User className="w-[18px] h-[18px]" />
                   로그인
                 </button>
@@ -91,19 +91,19 @@ export default function Header() {
 
             <nav>
               <ul className="space-y-6">
-                <li className="text-[18px] text-gray-800 font-semibold hover:text-blue-600 transition-colors cursor-pointer">
+                <li className="text-[18px] text-gray-800 font-semibold cursor-pointer">
                   menu1
                 </li>
-                <li className="text-[18px] text-gray-800 font-semibold hover:text-blue-600 transition-colors cursor-pointer">
+                <li className="text-[18px] text-gray-800 font-semibold cursor-pointer">
                   menu2
                 </li>
-                <li className="text-[18px] text-gray-800 font-semibold hover:text-blue-600 transition-colors cursor-pointer">
+                <li className="text-[18px] text-gray-800 font-semibold cursor-pointer">
                   menu3
                 </li>
-                <li className="text-[18px] text-gray-800 font-semibold hover:text-blue-600 transition-colors cursor-pointer">
+                <li className="text-[18px] text-gray-800 font-semibold cursor-pointer">
                   menu4
                 </li>
-                <li className="text-[18px] text-gray-800 font-semibold hover:text-blue-600 transition-colors cursor-pointer">
+                <li className="text-[18px] text-gray-800 font-semibold cursor-pointer">
                   menu5
                 </li>
               </ul>
