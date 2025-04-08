@@ -178,6 +178,7 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
             longitude={post.longitude}
             latitude={post.latitude}
             author={post.name}
+            fishingTripPostId={post.fishingTripPostId}
           />
         </div>
       </div>

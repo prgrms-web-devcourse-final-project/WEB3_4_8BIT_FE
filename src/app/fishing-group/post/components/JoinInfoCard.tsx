@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { Slider } from "@/components/ui/slider";
+import { toast } from "sonner";
 
 interface JoinInfoCardProps {
   currentCount: number;
@@ -14,6 +15,7 @@ interface JoinInfoCardProps {
   longitude: number;
   latitude: number;
   author: string;
+  fishingTripPostId: number;
 }
 
 export default function JoinInfoCard({
@@ -26,31 +28,63 @@ export default function JoinInfoCard({
   longitude,
   latitude,
   author,
+  fishingTripPostId,
 }: JoinInfoCardProps) {
   // 참여 여부 및 모달 오픈 상태 관리
   const [isJoined, setIsJoined] = useState(false);
   const [showModal, setShowModal] = useState(false);
 
   // 모달 내부 폼 상태
-  const [experience, setExperience] = useState("초급");
+  const [experience, setExperience] = useState("BEGINNER");
   const [applicationText, setApplicationText] = useState("");
 
   // 현재 사용자 더미 데이터
   const currentUser = {
-    nickname: "User123",
+    nickname: "테스트 사용자",
     profileImageUrl: "/default-user.png",
   };
 
   // 현재 날짜 (YYYY-MM-DD)
   const currentDate = new Date().toISOString().split("T")[0];
 
-  const handleJoinSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleJoinSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // 필수 정보(신청 내용 소개)가 입력되어어야 진행
-    if (!applicationText.trim()) return;
-    // 신청 처리 로직 추가
-    setIsJoined(true);
-    setShowModal(false);
+    if (!applicationText.trim()) {
+      toast.error("신청 내용을 입력해주세요.");
+      return;
+    }
+
+    const requestData = {
+      fishingTripPostId,
+      introduction: applicationText.trim(),
+      fishingLevel: experience,
+    };
+
+    console.log("참여 신청 요청 데이터:", requestData);
+
+    try {
+      const response = await fetch("/api/v1/fishing-trip-recruitment", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestData),
+      });
+
+      const data = await response.json();
+      console.log("참여 신청 응답 데이터:", data);
+
+      if (data.success) {
+        toast.success(data.message || "참여 신청이 완료되었습니다.");
+        setIsJoined(true);
+        setShowModal(false);
+      } else {
+        toast.error(data.message || "참여 신청에 실패했습니다.");
+      }
+    } catch (error) {
+      console.error("참여 신청 중 오류:", error);
+      toast.error("참여 신청 중 오류가 발생했습니다.");
+    }
   };
 
   return (
@@ -74,17 +108,23 @@ export default function JoinInfoCard({
         />
 
         {/* 참여 신청 버튼 (신청 후에는 disabled 처리) */}
-        <button
-          onClick={() => setShowModal(true)}
-          disabled={isJoined}
-          className={`w-full py-2 rounded-lg text-white ${
-            isJoined
-              ? "bg-gray-400 cursor-default pointer-events-none"
-              : "bg-primary hover:bg-[#2f8ae0] cursor-pointer"
-          }`}
-        >
-          참여 신청하기
-        </button>
+        {!isJoined && currentCount < recruitmentCount && (
+          <button
+            onClick={() => setShowModal(true)}
+            className="w-full py-2 rounded-lg text-white bg-primary hover:bg-[#2f8ae0] cursor-pointer"
+          >
+            참여 신청하기
+          </button>
+        )}
+
+        {isJoined && (
+          <button
+            disabled
+            className="w-full py-2 rounded-lg text-green-500 border border-green-500 cursor-not-allowed"
+          >
+            참여 완료
+          </button>
+        )}
 
         <button className="w-full py-2 border border-gray-70 rounded-lg text-base hover:bg-gray-80 cursor-pointer">
           참여자 채팅방
@@ -129,15 +169,13 @@ export default function JoinInfoCard({
               {/* 사용자 프로필 및 닉네임 상단 배치 */}
               <div className="flex items-center space-x-3 mb-4">
                 <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200">
-                  {currentUser.profileImageUrl && (
-                    <Image
-                      src={currentUser.profileImageUrl}
-                      alt={currentUser.nickname}
-                      width={40}
-                      height={40}
-                      className="object-cover"
-                    />
-                  )}
+                  <Image
+                    src={currentUser.profileImageUrl}
+                    alt="Profile"
+                    width={40}
+                    height={40}
+                    className="object-cover"
+                  />
                 </div>
                 <span className="text-base font-medium">
                   {currentUser.nickname}
@@ -151,9 +189,9 @@ export default function JoinInfoCard({
                   onChange={(e) => setExperience(e.target.value)}
                   className="w-full border border-gray-300 rounded-md p-2"
                 >
-                  <option value="초급">초급</option>
-                  <option value="중급">중급</option>
-                  <option value="고급">고급</option>
+                  <option value="BEGINNER">초급</option>
+                  <option value="INTERMEDIATE">중급</option>
+                  <option value="ADVANCED">고급</option>
                 </select>
               </div>
               {/* 신청 내용 */}
