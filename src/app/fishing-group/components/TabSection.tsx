@@ -1,10 +1,29 @@
 "use client";
 
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useState } from "react";
 
-export function TabSection() {
+export type PostFilter = "all" | "recruiting" | "completed";
+
+interface TabSectionProps {
+  onFilterChange: (filter: PostFilter) => void;
+}
+
+export function TabSection({ onFilterChange }: TabSectionProps) {
+  const [activeTab, setActiveTab] = useState<PostFilter>("all");
+
+  const handleTabChange = (value: string) => {
+    const filter = value as PostFilter;
+    setActiveTab(filter);
+    onFilterChange(filter);
+  };
+
   return (
-    <Tabs defaultValue="all" className="w-full">
+    <Tabs
+      value={activeTab}
+      onValueChange={handleTabChange}
+      className="w-full mb-8"
+    >
       <TabsList className="w-full grid grid-cols-3 h-12 ">
         <TabsTrigger
           value="all"

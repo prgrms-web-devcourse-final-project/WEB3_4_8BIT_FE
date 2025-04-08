@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ThumbsUp } from "lucide-react";
 import PostImages from "../components/PostImage";
 import PostInfo from "../components/PostInfo";
@@ -9,32 +9,49 @@ import JoinInfoCard from "../components/JoinInfoCard";
 import CommentSection, { Comment } from "../components/CommentSection";
 import Image from "next/image";
 import Link from "next/link";
+import { getFishingPost } from "@/lib/api/fishingPostAPI";
+
+interface PostDetail {
+  fishingTripPostId: number;
+  subject: string;
+  content: string;
+  fishingDate: string;
+  fishPointName: string;
+  fishPointDetailName: string;
+  currentCount: number;
+  recruitmentCount: number;
+  fileUrlList: string[];
+  postStatus: string;
+  author: {
+    id: number;
+    nickname: string;
+    profileImageUrl: string;
+  };
+}
 
 export default function PostDetailPage({ params }: { params: { id: string } }) {
-  // PostImage 예시 데이터
-  const post = {
-    id: params.id,
-    images: ["/images/test.png", "/images/test.png"],
-  };
+  const [post, setPost] = useState<PostDetail | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // PostInfo 예시 데이터
-  const postInfoData = {
-    placeName: "부산 기장군 기장읍 연화리 방파제",
-    date: "2025.11.18",
-    time: "05:00",
-    currentMembers: 3,
-    maxMembers: 6,
-    title: "기장 3월 30일 제주도 아쿠아마린호 동출하실 5분 구합니다.",
-    isRecruiting: true,
-  };
+  useEffect(() => {
+    const fetchPost = async () => {
+      try {
+        setLoading(true);
+        const data = await getFishingPost(parseInt(params.id));
+        setPost(data);
+      } catch (err) {
+        console.error("게시글 로딩 중 오류:", err);
+        setError(
+          err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다."
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // PostContent 예시 데이터
-  const postContentData = `이번 주말(11월 18일) 기장 방파제에서 감성돔 낚시 계획 중입니다. 함께 하실 분 모집합니다. 
-
-초보자분들은 장비가 없으시면 말씀해주세요. 제가 여분 장비를 가져갈 수 있습니다. 
-차량은 제가 운전해서 가며, 기장역에서 픽업 가능합니다. 
-식사는 현장에서 각자 해결하거나 근처 식당에서 함께 할 예정입니다.  
-날씨가 좋지 않을 경우 일정이 변경될 수 있으니 참고해주세요.`;
+    fetchPost();
+  }, [params.id]);
 
   // 좋아요 버튼 클릭 시 상태 변경
   const [likes, setLikes] = useState(0);
@@ -45,21 +62,17 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
     setLikes(isLiked ? likes - 1 : likes + 1);
   };
 
-  // JoinInfoCard 예시 데이터
-  const joinMembers = [
-    {
-      id: "1",
-      name: "바다사랑",
-      profileImageUrl: "/images/test.png",
-      isAuthor: true,
-    },
-    { id: "2", name: "낚시초보", profileImageUrl: "/images/test.png" },
-    { id: "3", name: "물고기사냥꾼", profileImageUrl: "/images/test.png" },
-  ];
-  const joinAuthor = {
-    name: "바다사랑",
-    profileImageUrl: "/images/test.png",
-  };
+  if (loading) {
+    return <div className="text-center py-8">게시글을 불러오는 중...</div>;
+  }
+
+  if (error) {
+    return <div className="text-center py-8 text-red-500">{error}</div>;
+  }
+
+  if (!post) {
+    return <div className="text-center py-8">게시글을 찾을 수 없습니다.</div>;
+  }
 
   // CommentSection 예시 데이터
   const comments: Comment[] = [
@@ -72,7 +85,7 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
     },
     {
       id: "2",
-      author: "바다사랑",
+      author: post.author.nickname,
       content: "환영합니다. 준비물 꼭 확인해주세요.",
       date: "2025-11-02",
       isAuthor: true,
@@ -105,22 +118,22 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* 왼쪽 섹션: 게시글 내용 */}
-            <div className="lg:col-span-2 shadow border border-gray-70 p-4 rounded-lg space-y-6">
+            <div className="lg:col-span-2 space-y-6">
               <div className="flex items-center justify-between gap-4 flex-wrap">
                 <div className="flex items-center gap-3">
                   {/* 모집 상태 */}
                   <span
                     className={`px-3 py-2 text-base rounded-lg ${
-                      postInfoData.isRecruiting
+                      post.postStatus === "모집중"
                         ? "bg-[#2CD5D7] text-white"
                         : "bg-gray-500 text-white"
                     }`}
                   >
-                    {postInfoData.isRecruiting ? "모집중" : "모집완료"}
+                    {post.postStatus}
                   </span>
                   {/* 게시글 제목 */}
                   <h2 className="text-xl font-bold w-96 whitespace-nowrap">
-                    {postInfoData.title}
+                    {post.subject}
                   </h2>
                 </div>
                 <div className="flex items-center gap-3 mt-2 lg:mt-0">
@@ -136,35 +149,62 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
                   </button>
                 </div>
               </div>
+
               {/* 작성자 프로필 이미지, 이름, 작성일 */}
-              <div className="flex items-center gap-3 mt-4">
+              <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200">
                   <Image
-                    src={joinAuthor.profileImageUrl}
-                    alt={joinAuthor.name}
+                    src={post.author.profileImageUrl}
+                    alt={post.author.nickname}
                     width={32}
                     height={32}
                     className="object-cover w-full h-full"
                   />
                 </div>
                 <div>
-                  <p className="font-medium text-lg">{joinAuthor.name}</p>
-                  <p className="text-xs text-gray-400">{postInfoData.date}</p>
+                  <p className="font-medium text-lg">{post.author.nickname}</p>
+                  <p className="text-xs text-gray-400">
+                    {new Date(post.fishingDate).toLocaleDateString("ko-KR", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </p>
                 </div>
               </div>
 
-              <PostImages images={post.images} />
-              <PostInfo {...postInfoData} />
-              <PostContent content={postContentData} />
+              <PostImages images={post.fileUrlList} />
+              <PostInfo
+                placeName={post.fishPointDetailName}
+                date={new Date(post.fishingDate).toLocaleDateString("ko-KR", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+                time="05:00" // TODO: API에서 시간 정보 추가 필요
+                currentMembers={post.currentCount}
+                maxMembers={post.recruitmentCount}
+              />
+              <PostContent content={post.content} />
             </div>
 
             {/* 오른쪽 섹션*/}
             <div className="lg:col-span-1 space-y-6">
               <JoinInfoCard
-                currentMembers={postInfoData.currentMembers}
-                maxMembers={postInfoData.maxMembers}
-                members={joinMembers}
-                author={joinAuthor}
+                currentMembers={post.currentCount}
+                maxMembers={post.recruitmentCount}
+                members={[
+                  {
+                    id: post.author.id.toString(),
+                    name: post.author.nickname,
+                    profileImageUrl: post.author.profileImageUrl,
+                    isAuthor: true,
+                  },
+                ]}
+                author={{
+                  name: post.author.nickname,
+                  profileImageUrl: post.author.profileImageUrl,
+                }}
               />
               <div className="bg-white rounded-lg shadow border border-gray-70 p-4">
                 <h3 className="text-lg font-bold mb-2">지도</h3>

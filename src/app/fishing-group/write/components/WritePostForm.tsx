@@ -26,7 +26,7 @@ import { ko } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { useState, useRef } from "react";
 import { uploadImagesToS3 } from "@/lib/api/uploadImageAPI";
-import { createFishingPost } from "@/lib/api/createFishingPostAPI";
+import { createFishingPost } from "@/lib/api/fishingPostAPI";
 import { useRouter } from "next/navigation";
 
 export default function WritePostForm() {
@@ -274,7 +274,7 @@ export default function WritePostForm() {
               <Button
                 type="button"
                 variant="outline"
-                className="mt-4"
+                className="mt-4 cursor-pointer"
                 onClick={() => fileInputRef.current?.click()}
               >
                 파일 선택
@@ -304,13 +304,13 @@ export default function WritePostForm() {
           </div>
 
           <div className="flex justify-end gap-2 pt-4">
-            <Button type="button" variant="outline">
+            <Button type="button" variant="outline" className="cursor-pointer">
               취소
             </Button>
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="bg-primary text-white"
+              className="bg-primary text-white cursor-pointer"
             >
               {isSubmitting ? "등록 중..." : "등록하기"}
             </Button>
