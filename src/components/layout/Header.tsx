@@ -49,7 +49,7 @@ export default function Header() {
 
         {/* 헤더 오른쪽 - 로그인 버튼 */}
         <div className="hidden md:block">
-          <Link href="#" className="inline-block">
+          <Link href="/auth/login" className="inline-block">
             <button className="bg-blue-600 hover:bg-blue-700 text-white text-[14px] px-[20px] py-[6px] rounded-full shadow-md flex items-center gap-2">
               <User className="w-[18px] h-[18px]" />
               로그인
@@ -81,7 +81,7 @@ export default function Header() {
 
           <div className="p-6">
             <div className="mb-8">
-              <Link href="#" className="inline-block w-full">
+              <Link href="/auth/login" className="inline-block w-full">
                 <button className="w-full bg-blue-600 hover:bg-blue-700 text-white text-[14px] px-[20px] py-[10px] rounded-full shadow-md flex items-center justify-center gap-2">
                   <User className="w-[18px] h-[18px]" />
                   로그인
