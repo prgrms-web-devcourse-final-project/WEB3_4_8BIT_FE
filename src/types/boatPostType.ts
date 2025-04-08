@@ -12,7 +12,7 @@ export interface PostType {
   reviewCount: number; // 추후에 추가 예정
 }
 
-export interface ShipFishingPost {
+export interface PostDetailPost {
   shipFishingPostId: number;
   subject: string;
   content: string;
@@ -24,7 +24,7 @@ export interface ShipFishingPost {
   reviewEverRate: number;
 }
 
-export interface Ship {
+export interface PostDetailShip {
   shipId: number;
   shipName: string;
   shipNumber: string;
@@ -39,19 +39,19 @@ export interface Ship {
   parkingAvailable: boolean;
 }
 
-export interface Member {
+export interface PostDetailMember {
   memberId: number;
   email: string;
   name: string;
   phone: string;
 }
 
-export interface ApiResponse {
+export interface PostDetailType {
   timestamp: string;
   data: {
-    detailShipFishingPost: ShipFishingPost;
-    detailShip: Ship;
-    detailMember: Member;
+    detailShipFishingPost: PostDetailPost;
+    detailShip: PostDetailShip;
+    detailMember: PostDetailMember;
   };
   success: boolean;
 }
