@@ -2,7 +2,7 @@ import Image from "next/image";
 
 export default function Header() {
   return (
-    <header className="w-full h-[90px] bg-[rgba(0,0,0,0.6)] backdrop-blur-[6px] flex items-center justify-between fixed top-0 left-0 right-0 z-9999999">
+    <header className="w-full h-[90px] bg-[rgba(0,0,0,0.6)] backdrop-blur-[6px] flex items-center justify-between fixed top-0 left-0 right-0 z-[9999]">
       <div className="w-[1280px] h-full mx-auto flex items-center justify-between">
         {/* 헤더 왼쪽 */}
         <div className="flex items-center justify-between">
