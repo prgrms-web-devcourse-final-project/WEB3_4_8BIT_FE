@@ -4,18 +4,8 @@ import { Separator } from "@/components/ui/separator";
 import React from "react";
 import {X, MapPin} from "lucide-react";
 import {Button} from "@/components/ui/button";
-import {useQueries, useQuery, UseQueryResult} from "@tanstack/react-query";
-import {User} from "@/types/user.interface";
-import {UserAPI} from "@/lib/api/userAPI";
+import {useQueries, UseQueryResult} from "@tanstack/react-query";
 import {APIResponse, FishAPI} from "@/lib/api/fishAPI";
-
-interface CatchPlace {
-  date : string;
-  placeName: string;
-  point: string;
-  largestSize: number;
-  count: number;
-}
 
 interface FishUpdateProps extends FishInfo {
   setIsUpdateModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -39,12 +29,12 @@ export default function FishUpdateModal({
   >( {
     queries: [
       {
-        queryKey: ['userFishEncyclopedia', fishEncyclopediaId],
+        queryKey: ['fishDictionary', fishEncyclopediaId],
         queryFn: () => FishAPI.getFishDictionaryData(fishEncyclopediaId),
         staleTime: 1000 * 60 * 5,
       },
       {
-        queryKey: ['fishDictionary'],
+        queryKey: ['userFishEncyclopedia', fishEncyclopediaId],
         queryFn: () => FishAPI.getDetailFishEncyclopedias(fishEncyclopediaId),
         staleTime: 1000 * 60 * 5,
       },
@@ -69,13 +59,13 @@ export default function FishUpdateModal({
             onClick={() => setIsUpdateModalOpen(false)}
           />
         </div>
-        <div className="grid grid-flow-row md:grid-flow-col md:grid-rows-[2fr_1fr_1fr] gap-4 md:h-[270px]">
+        <div className="grid items-center grid-flow-row md:grid-flow-col md:grid-rows-[2fr_1fr_1fr] gap-4 md:h-[270px]">
           <Image
-            className="w-full md:w-[270px] md:h-[270px] object-cover md:row-span-3 rounded-lg"
+            className="w-full md:w-[220px] md:h-[220px] object-cover md:row-span-3 rounded-lg"
             src={fileUrl}
             alt="물고기 이미지"
-            width={270}
-            height={270}
+            width={220}
+            height={220}
           />
           <div>
             <div className="font-semibold text-xl">설명</div>
@@ -128,7 +118,7 @@ export default function FishUpdateModal({
             <MapPin/>
             <div className="font-bold text-xl">잡은 장소</div>
           </div>
-          <div className="grid gap-3">
+          <div className="grid gap-3 overflow-scroll max-h-60">
             {results[1].isSuccess && (
               results[1].data?.data.content.map((item: FishDetailInfo) => (
                 <div className="grid bg-gray-70 rounded-md p-1.5 px-3 gap-1" key={item.fishEncyclopediaId}>
