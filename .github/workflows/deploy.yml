@@ -30,16 +30,17 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       # 4. Docker 이미지 빌드 및 푸시
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v4
-        with:
-          push: true
-          platforms: linux/arm64
-          build-args: |
-            NEXT_PUBLIC_BADANORI_API_KEY=${{ secrets.NEXT_PUBLIC_BADANORI_API_KEY }}
-            NEXT_PUBLIC_KAKAO_MAP_API_KEY=${{ secrets.NEXT_PUBLIC_KAKAO_MAP_API_KEY }}
-            NEXT_PUBLIC_OPENWEATHER_API_KEY=${{ secrets.NEXT_PUBLIC_OPENWEATHER_API_KEY }}
-          tags: ${{ secrets.DOCKER_USERNAME }}/mikki_fe:v1
+      - name: Build Docker image
+        run: |
+          docker build \
+          --build-arg NEXT_PUBLIC_BADANORI_API_KEY=${{ secrets.NEXT_PUBLIC_BADANORI_API_KEY }} \
+          --build-arg NEXT_PUBLIC_KAKAO_MAP_API_KEY=${{ secrets.NEXT_PUBLIC_KAKAO_MAP_API_KEY }} \
+          --build-arg NEXT_PUBLIC_OPENWEATHER_API_KEY=${{ secrets.NEXT_PUBLIC_OPENWEATHER_API_KEY }} \
+          -t ${{ secrets.DOCKER_USERNAME }}/mikki_fe:v1 .
+
+      - name: Push Docker image
+        run: |
+          docker push "${{ secrets.DOCKER_USERNAME }}/mikki_fe:v1"
 
       - name: Jenkins deploy
         if: success()
