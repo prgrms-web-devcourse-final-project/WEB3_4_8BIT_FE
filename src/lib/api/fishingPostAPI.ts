@@ -3,6 +3,30 @@ import { MOCK_HOT_POSTS } from "../mocks/fishingPostMock";
 
 const API_BASE_URL = "https://api.mikki.kr/api/v1";
 
+// API 응답 데이터 구조 정의
+export interface Post {
+  fishingTripPostId: number;
+  name: string;
+  subject: string;
+  content: string;
+  currentCount: number;
+  recruitmentCount: number;
+  createDate: string;
+  fishingDate: string;
+  fishPointDetailName: string;
+  fishPointName: string;
+  longitude: number;
+  latitude: number;
+  fileUrlList: string[];
+  postStatus: "RECRUITING" | "COMPLETED";
+}
+
+export interface ApiResponseData {
+  content: Post[];
+  last: boolean;
+  // ... 기타 필요한 페이지 정보
+}
+
 // 게시글 목록 조회 (스크롤 기반)
 export const getFishingPosts = async (params: {
   order: string;
@@ -108,26 +132,37 @@ export const getFishingPoints = async () => {
   }
 };
 
-// 게시글 목록 조회 (커서 기반)
-export const getFishingPostsByCursor = async (cursorRequest: {
+// 게시글 목록 조회 (커서 기반) 파라미터 타입 정의
+export interface CursorRequestParams {
   order: string;
   sort: string;
   type: string;
-  fieldValue: string;
-  id: number;
+  fieldValue: string | null;
+  id: number | null;
   size: number;
-  status: string;
-}) => {
+  status?: string;
+}
+
+export const getFishingPostsByCursor = async (
+  cursorRequest: CursorRequestParams
+) => {
   try {
+    // null 값 파라미터 제외
+    const filteredParams = Object.fromEntries(
+      Object.entries(cursorRequest).filter(([, v]) => v != null)
+    ); // _ 대신 빈 배열 요소 사용
+
     const response = await axiosInstance.get(
       `${API_BASE_URL}/fishing-trip-post/scroll`,
       {
-        params: cursorRequest,
+        params: filteredParams,
       }
     );
-    return response.data;
+    // 응답 타입 명시 (예시, 실제 API 응답 구조에 맞게 조정 필요)
+    return response.data as { success: boolean; data: ApiResponseData };
   } catch (error) {
     console.error("Failed to fetch posts by cursor.", error);
     throw error;
   }
 };
+
