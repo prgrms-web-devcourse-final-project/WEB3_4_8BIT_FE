@@ -1,4 +1,5 @@
 FROM node:18-alpine AS base
+
 # 빌드 시 환경 변수로 전달받을 인자를 정의
 ARG NEXT_PUBLIC_BADANORI_API_KEY
 ARG NEXT_PUBLIC_KAKAO_MAP_API_KEY
@@ -8,6 +9,7 @@ ARG NEXT_PUBLIC_OPENWEATHER_API_KEY
 FROM base AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
+
 COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
 RUN \
   if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
@@ -20,6 +22,7 @@ FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+
 RUN \
   if [ -f yarn.lock ]; then yarn run build; \
   elif [ -f package-lock.json ]; then npm run build; \
@@ -29,24 +32,31 @@ RUN \
 
 FROM base AS runner
 WORKDIR /app
+
 ENV NODE_ENV=production
 # 빌드 시 전달받은 ARG 값을 런타임 ENV로 설정
 ENV NEXT_PUBLIC_BADANORI_API_KEY=${NEXT_PUBLIC_BADANORI_API_KEY}
 ENV NEXT_PUBLIC_KAKAO_MAP_API_KEY=${NEXT_PUBLIC_KAKAO_MAP_API_KEY}
 ENV NEXT_PUBLIC_OPENWEATHER_API_KEY=${NEXT_PUBLIC_OPENWEATHER_API_KEY}
+
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
+
 COPY --from=builder /app/public ./public
+
 RUN mkdir .next
 RUN chown nextjs:nodejs .next
+
+#COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+#COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
 COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
-COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
 
 USER nextjs
+
 EXPOSE 3000
+
 ENV PORT=3000
+
 # 아래거 서버 ip
 ENV HOSTNAME="0.0.0.0"
-# server.js 파일이 있는지 확인하는 스크립트와 대체 방법 제공
-CMD ["sh", "-c", "if [ -f server.js ]; then node server.js; elif [ -f node_modules/next/dist/bin/next ]; then node node_modules/next/dist/bin/next start; else npm run start; fi"]
