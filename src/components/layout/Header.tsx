@@ -3,6 +3,7 @@
 import { Menu, User, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export default function Header() {
@@ -10,6 +11,12 @@ export default function Header() {
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
+  };
+
+  const router = useRouter();
+
+  const goToHome = () => {
+    router.push("/");
   };
 
   return (
@@ -23,7 +30,8 @@ export default function Header() {
               alt="logo"
               width={130}
               height={30}
-              className="w-[145px] h-[40px]"
+              className="w-[145px] h-[40px] cursor-pointer"
+              onClick={goToHome}
             />
           </div>
           <nav className="hidden md:block">
