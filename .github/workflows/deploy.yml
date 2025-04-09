@@ -34,7 +34,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           push: true
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/arm64
           build-args: |
             NEXT_PUBLIC_BADANORI_API_KEY=${{ secrets.NEXT_PUBLIC_BADANORI_API_KEY }}
             NEXT_PUBLIC_KAKAO_MAP_API_KEY=${{ secrets.NEXT_PUBLIC_KAKAO_MAP_API_KEY }}
