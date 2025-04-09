@@ -1,6 +1,6 @@
 "use client"
 
-import type React from "react"
+import React, {useEffect} from "react"
 
 import { useState } from "react"
 import Image from "next/image"
@@ -13,13 +13,18 @@ import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
 import {UserAPI} from "@/lib/api/userAPI";
+import {uploadImagesToS3} from "@/lib/api/uploadImageAPI";
+import {NormalUserInputData, User} from "@/types/user.interface";
+import {useUserStore} from "@/stores/userStore";
 
 export default function UserRegistrationPage() {
   const router = useRouter()
+  const userInfo = useUserStore(state => state.user);
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [profileImage, setProfileImage] = useState<string | null>(null)
+  const [profileFile, setProfileFile] = useState<File | null>(null)
   const [nickname, setNickname] = useState("");
   const [description, setDescription] = useState("");
+  const profileUrl = profileFile ? URL.createObjectURL(profileFile) : null;
 
   const formData = {
     nickname,
@@ -29,7 +34,7 @@ export default function UserRegistrationPage() {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
-      setProfileImage(URL.createObjectURL(file));
+      setProfileFile(file);
     }
   };
 
@@ -37,15 +42,30 @@ export default function UserRegistrationPage() {
     e.preventDefault()
     setIsSubmitting(true)
 
-    try {
-      const response = await UserAPI.postMemberInfo(formData);
+    try{
+      let imageFileIds : number[] = [];
+
+      if (profileFile) {
+        imageFileIds = await uploadImagesToS3([profileFile],'profile');
+      }
+
+      const newFormData : NormalUserInputData = {...formData }
+
+      if (imageFileIds.length > 0) {
+        newFormData['fileId'] = imageFileIds[0]
+      }
+
+      console.log("newForm data", newFormData)
+      const response = await UserAPI.postMemberInfo(newFormData);
       console.log(response)
-      setTimeout(() => {
-        alert('등록 완료!') // TODO 추후 모달 구현
-        router.push('/')
-      }, 500)
+      if (response?.success) {
+        alert('사용자의 추가 정보 입력이 완료되었습니다!') // TODO 모달 수정
+        router.replace("/");
+      } else {
+
+      }
     } catch (error) {
-      console.error("Registration failed:", error)
+      console.error('사용자 추가 정보 등록 에러', error);
     }
   }
 
@@ -64,9 +84,9 @@ export default function UserRegistrationPage() {
                 <h3 className="text-lg font-medium">기본 정보</h3>
                 <div className="flex flex-col items-center">
                   <div className="relative mb-4">
-                    <div className="w-30 h-30 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
-                      {profileImage ? (
-                        <Image src={profileImage || "/placeholder.svg"} alt="Profile" fill className="object-cover" />
+                    <div className="w-30 h-30 rounded-full relative overflow-hidden bg-gray-200 flex items-center justify-center">
+                      {profileUrl ? (
+                        <Image src={profileUrl} alt="Profile" fill className="object-cover" />
                       ) : (
                         <Upload className="h-8 w-8 text-gray-400" />
                       )}
@@ -96,9 +116,8 @@ export default function UserRegistrationPage() {
                     <Input
                       id="email"
                       type="email"
-                      placeholder="example@email.com"
                       required
-                      defaultValue="user@example.com"
+                      defaultValue={userInfo?.email}
                       disabled
                     />
                   </div>
@@ -109,9 +128,8 @@ export default function UserRegistrationPage() {
                     <Input
                       id="phone"
                       type="tel"
-                      placeholder="010-4948-4098"
                       required
-                      defaultValue="010-3094-0398"
+                      defaultValue={userInfo?.phone}
                       disabled
                     />
                   </div>
@@ -121,9 +139,8 @@ export default function UserRegistrationPage() {
                     </Label>
                     <Input
                       id="fullName"
-                      placeholder="김길동"
                       required
-                      defaultValue="김길동"
+                      defaultValue={userInfo?.name}
                       disabled
                     />
                   </div>

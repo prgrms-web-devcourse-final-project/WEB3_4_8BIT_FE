@@ -42,7 +42,7 @@ export class UserAPI {
       const response = await apiInstance.post('/members/captains',boatInput);
       return response.data
     } catch (error) {
-      console.error('getMemberInfo error:', error)
+      console.error('postCaptainMemberInfo error:', error)
       return null
     }
   }
@@ -56,7 +56,7 @@ export class UserAPI {
       const response = await apiInstance.post('/ship',boat);
       return response.headers
     } catch (error) {
-      console.error('getMemberInfo error:', error)
+      console.error('postCaptainBoatInfo error:', error)
       return null
     }
   }
