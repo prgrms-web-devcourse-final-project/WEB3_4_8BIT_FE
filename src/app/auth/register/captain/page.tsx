@@ -14,18 +14,18 @@ import {BoatData, BoatInputData, User} from "@/types/user.interface";
 import BoatFormCard from "@/app/auth/register/captain/components/BoatFormCard";
 import {UserAPI} from "@/lib/api/userAPI";
 import {useRouter} from "next/navigation";
+import {uploadImagesToS3} from "@/lib/api/uploadImageAPI";
 
 export default function CaptainRegisterPage() {
-  const user = useUserStore(state => state.user);
-  const [profileImage, setProfileImage] = useState<string | null>(null);
-  const [userInfo, setUserInfo] = useState<User | null>(null);
+  const userInfo = useUserStore(state => state.user);
+  const [profileFile, setProfileFile] = useState<File | null>(null);
   const [nickname, setNickname] = useState("");
   const [shipLicenseNumber, setShipLicenseNumber] = useState("");
   const [description, setDescription] = useState("");
   const [boatsData, setBoatsData] = useState<BoatData[]>([]);
   const boatIndex = useRef(0);
   const router = useRouter();
-
+  const profileUrl = profileFile ? URL.createObjectURL(profileFile) : null;
   const formData = {
     nickname,
     description,
@@ -71,53 +71,62 @@ export default function CaptainRegisterPage() {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
-      setProfileImage(URL.createObjectURL(file));
+      setProfileFile(file);
     }
   };
 
   const handleSubmit = async (e : React.FormEvent) => {
     e.preventDefault();
 
-    const unsavedBoats = boatsData.filter((boat) => !boat.isSaved);
-    if (unsavedBoats.length > 0) {
-      alert("모든 선박은 '선박 저장' 버튼을 눌러 저장한 후 가입 완료를 진행해주세요.");
-      return;
-    }
+    try{
+      const unsavedBoats = boatsData.filter((boat) => !boat.isSaved);
+      if (unsavedBoats.length > 0) {
+        alert("모든 선박은 '선박 저장' 버튼을 눌러 저장한 후 가입 완료를 진행해주세요.");
+        return;
+      }
 
-    const savedBoats = boatsData.filter((boat) => boat.isSaved);
-    if (savedBoats.length < 1) {
-      alert("선박 정보는 추가해야 합니다!")
-      return;
-    }
+      const savedBoats = boatsData.filter((boat) => boat.isSaved);
+      if (savedBoats.length < 1) {
+        alert("선박 정보는 추가해야 합니다!")
+        return;
+      }
 
-    const boatSavePromises : Promise<any>[] = [];
+      const boatSavePromises : Promise<any>[] = [];
 
-    for (const item of savedBoats) {
-      const { id, isSaved, ...newItem } = item;
-      console.log(newItem);
-      const promise = UserAPI.postCaptainBoatInfo(newItem);
-      boatSavePromises.push(promise)
-    }
+      for (const item of savedBoats) {
+        const { id, isSaved, ...newItem } = item;
+        console.log(newItem);
+        const promise = UserAPI.postCaptainBoatInfo(newItem);
+        boatSavePromises.push(promise)
+      }
 
-    const responses = await Promise.all(boatSavePromises);
-    const boatIds: number[] = responses.map(response => response['Location']);
+      const responses = await Promise.all(boatSavePromises);
+      const boatIds: number[] = responses.map(response => response['Location']);
 
-    console.log(boatIds);
+      console.log(boatIds);
 
-    const newFormData : BoatInputData = {...formData, shipList : boatIds}
+      let imageFileIds : number[] = [];
+      if (profileFile) {
+        imageFileIds = await uploadImagesToS3([profileFile],'profile');
+      }
 
-    const response = await UserAPI.postCaptainMemberInfo(newFormData);
-    console.log(response);
-    if (response?.success) {
-      alert('선장님의 추가 정보 입력이 완료되었습니다!')
-      router.replace("/");
+      const newFormData : BoatInputData = {...formData, shipList : boatIds}
+
+      if (imageFileIds.length > 0) {
+        newFormData['fileId'] = imageFileIds[0];
+      }
+
+      console.log(newFormData);
+      const response = await UserAPI.postCaptainMemberInfo(newFormData);
+      console.log(response);
+      if (response?.success) {
+        alert('선장님의 추가 정보 입력이 완료되었습니다!') // TODO 모달 수정
+        router.replace("/");
+      }
+    } catch (error) {
+      console.error('선장님 추가 정보 등록 에러', error);
     }
   }
-
-  useEffect(() => {
-    setUserInfo(user);
-    console.log("zustand 상태 확인:", useUserStore.getState());
-  },[user]);
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-10">
@@ -135,9 +144,9 @@ export default function CaptainRegisterPage() {
 
           <div className="flex flex-col items-center">
             <div className="relative mb-4">
-              <div className="w-30 h-30 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
-                {profileImage ? (
-                  <Image src={profileImage || "/placeholder.svg"} alt="Profile" fill className="object-cover" />
+              <div className="w-30 h-30 relative rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
+                {profileUrl ? (
+                  <Image src={profileUrl} alt="Profile" fill className="object-cover" />
                 ) : (
                   <Upload className="h-8 w-8 text-gray-400" />
                 )}
