@@ -3,7 +3,7 @@ name: Build, Push, and Deploy Docker Image
 on:
   push:
     branches:
-      - main  # main 브랜치에 푸시될 때 트리거
+      - dev  # dev 브랜치에 푸시될 때 트리거
 
 jobs:
   build-and-deploy:
