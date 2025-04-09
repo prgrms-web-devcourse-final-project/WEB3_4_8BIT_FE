@@ -8,15 +8,19 @@ export const axiosInstance = axios.create({
   },
 });
 
-axiosInstance.interceptors.request.use(function (config) {
-  const token =
-    localStorage.getItem("accessToken") ||
-    "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIyIiwiYXV0aCI6IlVTRVIiLCJlbWFpbCI6ImNqMjE3NEBuYXZlci5jb20iLCJpYXQiOjE3NDQxNjQwOTIsImV4cCI6MTc0NDI1MDQ5Mn0.8uzhLMqNeK99KjaHhFHNvlEkl5tsPoOom1CbjlBqVTo3wwK5R6AwWRHZQs_nvc9QyS-2dzs0ycdu3I9419a2_Q";
-  if (token) {
-    config.headers.Authorization = token;
+// Set the token directly without 'Bearer' prefix
+const token =
+  "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIyIiwiYXV0aCI6IlVTRVIiLCJlbWFpbCI6ImNqMjE3NEBuYXZlci5jb20iLCJpYXQiOjE3NDQxNjg1NjIsImV4cCI6MTc0NDI1NDk2Mn0.iT-Zv_SvmTPi9E6xz69PR6GAWCXXyAcE3s7fId1yB5gqFEqJs1RNsgieOSsLnP8N5tkhsN1gY9yT2QXdghC9Gg";
+
+axiosInstance.interceptors.request.use(
+  (config) => {
+    config.headers["Authorization"] = token;
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
   }
-  return config;
-});
+);
 
 // 응답 인터셉터
 axiosInstance.interceptors.response.use(

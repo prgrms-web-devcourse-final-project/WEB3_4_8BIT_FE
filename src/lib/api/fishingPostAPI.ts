@@ -1,5 +1,8 @@
 import { axiosInstance } from "./axiosInstance";
 import { MOCK_POSTS, MOCK_HOT_POSTS } from "../mocks/fishingPostMock";
+import axios from "axios";
+
+const API_BASE_URL = "https://api.mikki.kr/api/v1";
 
 // 날짜에 따른 게시글 상태 체크
 function checkPostStatus(fishingDate: string): "모집중" | "모집완료" {
@@ -18,19 +21,22 @@ export const getHotFishingPosts = async () => {
   return MOCK_HOT_POSTS;
 };
 
-// 게시글 상세 조회 (목업 데이터 사용)
-export const getFishingPost = async (postId: number) => {
-  const post = MOCK_POSTS.find((p) => p.data.fishingTripPostId === postId);
-  if (!post) {
-    const hotPost = MOCK_HOT_POSTS.find(
-      (p) => p.data.fishingTripPostId === postId
-    );
-    if (!hotPost) {
-      throw new Error("게시글을 찾을 수 없습니다.");
-    }
-    return hotPost;
+// 게시글 상세 조회
+export const getFishingPost = async (postId) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/fishing-trip-post`, {
+      params: { id: postId },
+      headers: {
+        accept: "*/*",
+        Authorization:
+          "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIyIiwiYXV0aCI6IlVTRVIiLCJlbWFpbCI6ImNqMjE3NEBuYXZlci5jb20iLCJpYXQiOjE3NDQxNjg1NjIsImV4cCI6MTc0NDI1NDk2Mn0.iT-Zv_SvmTPi9E6xz69PR6GAWCXXyAcE3s7fId1yB5gqFEqJs1RNsgieOSsLnP8N5tkhsN1gY9yT2QXdghC9Gg",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Failed to fetch post details.", error);
+    throw error;
   }
-  return post;
 };
 
 // 게시글 작성 인터페이스
