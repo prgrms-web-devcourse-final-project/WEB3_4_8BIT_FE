@@ -68,7 +68,12 @@ export default function KakaoMapSection({
             낚시 포인트 제보하기
           </Button>
         </div>
-        <KaKaoMap fishingPoints={fishingPoints || []} />
+        <KaKaoMap
+          fishingPoints={fishingPoints || []}
+          locationData={locationData}
+          selectedLocationProps={selectedLocation}
+          handleClickRegionMarker={setSelectedLocation}
+        />
       </div>
     </section>
   );
