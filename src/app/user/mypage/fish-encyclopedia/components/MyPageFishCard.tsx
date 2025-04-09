@@ -8,6 +8,7 @@ import FishRegisterModal from "@/app/user/mypage/fish-encyclopedia/components/Fi
 import {FishInfo} from "@/types/fish.interface";
 import FishUpdateModal from "@/app/user/mypage/fish-encyclopedia/components/FishUpdateModal";
 import React, {useState} from "react";
+import {Separator} from "@/components/ui/separator";
 
 export default function MyPageFishCard({
   fishEncyclopediaId,
@@ -21,14 +22,15 @@ export default function MyPageFishCard({
 
   return (
     <Card className="overflow-hidden hover:shadow-md py-0 gap-0 transition-shadow">
-      <div className="relative w-full aspect-[291/221]">
+      <div className="grid items-center justify-center w-full aspect-[291/200]">
         <Image
           src={fileUrl}
           alt={fishName}
-          fill
-          className="object-cover rounded-t-md"
+          width={150}
+          height={80}
         />
       </div>
+      <Separator/>
       <div className="p-3">
         <div className="ml-4">
           <div className="flex items-center justify-between">
