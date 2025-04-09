@@ -35,7 +35,7 @@ jobs:
           docker build \
           --build-arg NEXT_PUBLIC_BADANORI_API_KEY=${{ secrets.NEXT_PUBLIC_BADANORI_API_KEY }} \
           --build-arg NEXT_PUBLIC_KAKAO_MAP_API_KEY=${{ secrets.NEXT_PUBLIC_KAKAO_MAP_API_KEY }} \
-          --build-arg NEXT_PUBLIC_OPENWEATHER_API_KEY=${{ NEXT_PUBLIC_OPENWEATHER_API_KEY }} \
+          --build-arg NEXT_PUBLIC_OPENWEATHER_API_KEY=${{ secrets.NEXT_PUBLIC_OPENWEATHER_API_KEY }} \
           -t ${{ secrets.DOCKER_USERNAME }}/mikki_fe:v1 .
 
       - name: Push Docker image
