@@ -71,3 +71,27 @@ export const updateFishingPost = async (
     throw error;
   }
 };
+
+// Fetch region data
+export const getRegions = async () => {
+  // 임시 하드코딩된 지역 데이터
+  return [
+    { id: 1, name: "서울" },
+    { id: 2, name: "부산" },
+    { id: 3, name: "인천" },
+    { id: 4, name: "대구" },
+    { id: 5, name: "광주" },
+  ];
+};
+
+// Fetch fishing point data
+export const getFishingPoints = async () => {
+  // 임시 하드코딩된 낚시 포인트 데이터
+  return [
+    { id: 1, name: "여의도 낚시터", regionId: 1 },
+    { id: 2, name: "송도 낚시터", regionId: 3 },
+    { id: 3, name: "부산 해운대 낚시터", regionId: 2 },
+    { id: 4, name: "인천 송도 낚시터", regionId: 3 },
+    { id: 5, name: "대구 달성 낚시터", regionId: 4 },
+  ];
+};

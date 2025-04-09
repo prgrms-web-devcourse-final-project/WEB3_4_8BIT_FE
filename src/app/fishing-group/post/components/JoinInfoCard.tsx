@@ -50,17 +50,29 @@ export default function JoinInfoCard({
 
   const handleJoinSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    console.log("참여 신청 제출 시작");
+
     if (!applicationText.trim()) {
+      console.log("신청 내용 없음");
       toast.error("신청 내용을 입력해주세요.");
       return;
     }
+    console.log("신청 내용 유효함");
 
     try {
+      console.log("API 요청 시도:", {
+        fishingTripPostId,
+        introduction: applicationText.trim(),
+        fishingLevel: experience,
+      });
+
       const response = await applyFishingTripRecruitment({
         fishingTripPostId,
         introduction: applicationText.trim(),
         fishingLevel: experience,
       });
+
+      console.log("API 응답 받음:", response);
 
       if (response.success) {
         toast.success(response.message || "참여 신청이 완료되었습니다.");
@@ -70,7 +82,7 @@ export default function JoinInfoCard({
         toast.error(response.message || "참여 신청에 실패했습니다.");
       }
     } catch (error) {
-      console.error("참여 신청 중 오류:", error);
+      console.error("참여 신청 중 오류 발생:", error);
       toast.error("참여 신청 중 오류가 발생했습니다.");
     }
   };
@@ -117,6 +129,27 @@ export default function JoinInfoCard({
         <button className="w-full py-2 border border-gray-70 rounded-lg text-base hover:bg-gray-80 cursor-pointer">
           참여자 채팅방
         </button>
+
+        {/* 참여자 정보 */}
+        <div>
+          <h4 className="font-medium text-base mb-2 mt-4">참여자 정보</h4>
+          <div className="flex items-center space-x-3 mb-4">
+            <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200">
+              <Image
+                src={currentUser.profileImageUrl}
+                alt="Profile"
+                width={32}
+                height={32}
+                className="object-cover"
+              />
+            </div>
+            <div>
+              <p className="font-medium text-base text-gray-700">
+                {currentUser.nickname}
+              </p>
+            </div>
+          </div>
+        </div>
 
         {/* 작성자 정보 */}
         <div>

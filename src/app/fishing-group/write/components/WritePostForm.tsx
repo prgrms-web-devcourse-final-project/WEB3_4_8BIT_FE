@@ -20,6 +20,8 @@ import {
   Search,
   MapPin,
   Clock,
+  Upload,
+  X,
 } from "lucide-react";
 
 import { format, isBefore, startOfDay } from "date-fns";
@@ -29,6 +31,34 @@ import { useState, useRef } from "react";
 import { uploadImagesToS3 } from "@/lib/api/uploadImageAPI";
 import { createFishingPost } from "@/lib/api/fishingPostAPI";
 import { useRouter } from "next/navigation";
+
+// 낚시 포인트 임시 데이터
+const fishingPoints = [
+  { id: 1, name: "인천 송도" },
+  { id: 2, name: "인천 영종도" },
+  { id: 3, name: "인천 강화도" },
+  { id: 4, name: "인천 옹진군" },
+  { id: 5, name: "서울 여의도" },
+  { id: 6, name: "경기 안산" },
+  { id: 7, name: "경기 시흥" },
+  { id: 8, name: "경기 화성" },
+  { id: 9, name: "경기 평택" },
+  { id: 10, name: "경기 부천" },
+];
+
+// 지역 임시 데이터
+const regions = [
+  { id: 1, name: "서울" },
+  { id: 2, name: "인천" },
+  { id: 3, name: "경기" },
+  { id: 4, name: "강원" },
+  { id: 5, name: "충북" },
+  { id: 6, name: "충남" },
+  { id: 7, name: "전북" },
+  { id: 8, name: "전남" },
+  { id: 9, name: "경북" },
+  { id: 10, name: "경남" },
+];
 
 export default function WritePostForm() {
   const router = useRouter();
@@ -42,13 +72,9 @@ export default function WritePostForm() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [isBoatFishing, setIsBoatFishing] = useState(false);
+  const [selectedFishingPoint, setSelectedFishingPoint] = useState("");
+  const [selectedRegion, setSelectedRegion] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // 시간 옵션 생성
-  const hours = Array.from({ length: 24 }, (_, i) =>
-    i.toString().padStart(2, "0")
-  );
-  const minutes = ["00", "15", "30", "45"];
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -72,6 +98,11 @@ export default function WritePostForm() {
     setSelectedFiles(updatedFiles);
     const updatedUrls = updatedFiles.map((file) => URL.createObjectURL(file));
     setPreviewUrls(updatedUrls);
+
+    // 파일 input 초기화
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -80,6 +111,18 @@ export default function WritePostForm() {
 
     if (!date) {
       alert("날짜를 선택해주세요.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (!selectedFishingPoint) {
+      alert("낚시 포인트를 선택해주세요.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (!selectedRegion) {
+      alert("지역을 선택해주세요.");
       setIsSubmitting(false);
       return;
     }
@@ -99,7 +142,8 @@ export default function WritePostForm() {
       const requestBody = {
         subject: title,
         fishingDate: fishingDateTime.toISOString(),
-        fishingPointId: 1,
+        fishingPointId: parseInt(selectedFishingPoint),
+        regionId: parseInt(selectedRegion),
         recruitmentCount: memberCount,
         isShipFish: isBoatFishing,
         content: content,
@@ -184,6 +228,7 @@ export default function WritePostForm() {
                       initialFocus
                       locale={ko}
                       className="rounded-md border"
+                      disabled={disablePastDates}
                     />
                   </PopoverContent>
                 </Popover>
@@ -221,67 +266,48 @@ export default function WritePostForm() {
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="time" className="block font-medium">
-              낚시 시간
-            </label>
-            <div className="flex items-center gap-2">
-              <div className="relative flex-1">
-                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
-                <select
-                  value={selectedHour}
-                  onChange={(e) => setSelectedHour(e.target.value)}
-                  className="w-full h-12 pl-10 pr-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent appearance-none bg-white"
-                >
-                  {hours.map((hour) => (
-                    <option key={hour} value={hour}>
-                      {hour}시
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex-1">
-                <select
-                  value={selectedMinute}
-                  onChange={(e) => setSelectedMinute(e.target.value)}
-                  className="w-full h-12 px-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent appearance-none bg-white"
-                >
-                  {minutes.map((minute) => (
-                    <option key={minute} value={minute}>
-                      {minute}분
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-2">
             <label htmlFor="fishingSpot" className="block font-medium">
               낚시 포인트
             </label>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
-              <Input
+              <select
                 id="fishingSpot"
+                value={selectedFishingPoint}
+                onChange={(e) => setSelectedFishingPoint(e.target.value)}
+                className="w-full h-12 pl-10 pr-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent appearance-none bg-white"
                 required
-                placeholder="낚시 포인트를 입력하세요"
-                className="pl-10"
-              />
+              >
+                <option value="">낚시 포인트를 선택하세요</option>
+                {fishingPoints.map((point) => (
+                  <option key={point.id} value={point.id}>
+                    {point.name}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
           <div className="space-y-2">
             <label htmlFor="location" className="block font-medium">
-              상세 위치
+              지역
             </label>
             <div className="relative">
               <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
-              <Input
+              <select
                 id="location"
+                value={selectedRegion}
+                onChange={(e) => setSelectedRegion(e.target.value)}
+                className="w-full h-12 pl-10 pr-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent appearance-none bg-white"
                 required
-                placeholder="상세 위치를 입력하세요"
-                className="pl-10"
-              />
+              >
+                <option value="">지역을 선택하세요</option>
+                {regions.map((region) => (
+                  <option key={region.id} value={region.id}>
+                    {region.name}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
@@ -362,46 +388,57 @@ export default function WritePostForm() {
           <div className="space-y-2">
             <p className="font-medium">이미지 첨부 (선택사항)</p>
             <div className="border border-dashed rounded-lg p-6 text-center">
-              <p className="text-gray-500">
-                최대 10장의 이미지를 업로드할 수 있습니다.
-              </p>
-              <input
-                id="file-upload"
-                type="file"
-                multiple
-                accept="image/*"
-                className="hidden"
-                ref={fileInputRef}
-                onChange={handleImageChange}
-              />
-              <Button
-                type="button"
-                variant="outline"
-                className="mt-4 cursor-pointer"
-                onClick={() => fileInputRef.current?.click()}
-              >
-                파일 선택
-              </Button>
+              <div className="flex flex-col items-center justify-center">
+                <Upload className="h-10 w-10 text-gray-400 mb-2" />
+                <p className="text-gray-500 mb-2">
+                  최대 10장의 이미지를 업로드할 수 있습니다.
+                </p>
+                <input
+                  id="file-upload"
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  className="hidden"
+                  ref={fileInputRef}
+                  onChange={handleImageChange}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="cursor-pointer"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  파일 선택
+                </Button>
+              </div>
             </div>
             {previewUrls.length > 0 && (
-              <div className="flex gap-4 mt-4 overflow-x-auto">
+              <div className="grid grid-cols-5 gap-4 mt-4">
                 {previewUrls.map((url, index) => (
-                  <div key={index} className="relative w-24 h-24 flex-shrink-0">
+                  <div key={index} className="relative aspect-square">
                     <Image
                       src={url}
                       alt={`preview-${index}`}
                       fill
-                      className="object-cover rounded"
+                      className="object-cover rounded-lg"
                     />
                     <button
                       type="button"
-                      className="absolute top-0 right-0 bg-white rounded-full p-1"
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
                       onClick={() => removeImage(index)}
                     >
-                      ×
+                      <X className="h-4 w-4" />
                     </button>
                   </div>
                 ))}
+                {previewUrls.length < 10 && (
+                  <div
+                    className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:border-primary transition-colors"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <PlusCircle className="h-8 w-8 text-gray-400" />
+                  </div>
+                )}
               </div>
             )}
           </div>
