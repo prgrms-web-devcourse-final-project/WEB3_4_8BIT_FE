@@ -1,5 +1,6 @@
 import {BoatInfo, BoatInputData, NormalUserInputData, User} from "@/types/user.interface";
 import {apiInstance} from "@/lib/api/apiInstance";
+import {PostAPIResponse} from "@/lib/api/fishAPI";
 
 // 백엔드가 설정한 기본 API 응답
 interface APIDataResponse<T> {
@@ -58,6 +59,16 @@ export class UserAPI {
       return response.headers
     } catch (error) {
       console.error('postCaptainBoatInfo error:', error)
+      throw error;
+    }
+  }
+
+  public static async deleteUserReview(reviewId : number) : Promise<PostAPIResponse> {
+    try {
+      const response = await apiInstance.delete(`/reviews/${reviewId}`);
+      return response.data
+    } catch (error) {
+      console.error('deleteUserReview error:', error)
       throw error;
     }
   }
