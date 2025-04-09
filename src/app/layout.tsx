@@ -5,6 +5,7 @@ import Header from "@/components/layout/Header";
 import Script from "next/script";
 import Providers from "./providers";
 import Footer from "@/components/layout/Footer";
+import { Toaster } from "sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,11 +36,16 @@ export default function RootLayout({
           src={`https://dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.NEXT_PUBLIC_KAKAO_MAP_API_KEY}&libraries=services,clusterer&autoload=false`}
           strategy="beforeInteractive"
         />
+        <Script
+          src={'//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js'}
+          strategy="beforeInteractive"
+        />
         <Header />
         <Providers>
           <main className="mt-[90px]">{children}</main>
         </Providers>
         <Footer />
+        <Toaster position="top-right" />
       </body>
     </html>
   );

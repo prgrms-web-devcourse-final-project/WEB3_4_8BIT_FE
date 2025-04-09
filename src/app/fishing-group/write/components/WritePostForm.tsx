@@ -19,23 +19,61 @@ import {
   AlertCircle,
   Search,
   MapPin,
+  Clock,
+  Upload,
+  X,
 } from "lucide-react";
 
-import { format } from "date-fns";
+import { format, isBefore, startOfDay } from "date-fns";
 import { ko } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { useState, useRef } from "react";
 import { uploadImagesToS3 } from "@/lib/api/uploadImageAPI";
-import { createFishingPost } from "@/lib/api/createFishingPostAPI";
+import { createFishingPost } from "@/lib/api/fishingPostAPI";
 import { useRouter } from "next/navigation";
+
+// 낚시 포인트 임시 데이터
+const fishingPoints = [
+  { id: 1, name: "인천 송도" },
+  { id: 2, name: "인천 영종도" },
+  { id: 3, name: "인천 강화도" },
+  { id: 4, name: "인천 옹진군" },
+  { id: 5, name: "서울 여의도" },
+  { id: 6, name: "경기 안산" },
+  { id: 7, name: "경기 시흥" },
+  { id: 8, name: "경기 화성" },
+  { id: 9, name: "경기 평택" },
+  { id: 10, name: "경기 부천" },
+];
+
+// 지역 임시 데이터
+const regions = [
+  { id: 1, name: "서울" },
+  { id: 2, name: "인천" },
+  { id: 3, name: "경기" },
+  { id: 4, name: "강원" },
+  { id: 5, name: "충북" },
+  { id: 6, name: "충남" },
+  { id: 7, name: "전북" },
+  { id: 8, name: "전남" },
+  { id: 9, name: "경북" },
+  { id: 10, name: "경남" },
+];
 
 export default function WritePostForm() {
   const router = useRouter();
   const [date, setDate] = useState<Date>();
+  const [selectedHour, setSelectedHour] = useState("09");
+  const [selectedMinute, setSelectedMinute] = useState("00");
   const [memberCount, setMemberCount] = useState(2);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [isBoatFishing, setIsBoatFishing] = useState(false);
+  const [selectedFishingPoint, setSelectedFishingPoint] = useState("");
+  const [selectedRegion, setSelectedRegion] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -60,11 +98,34 @@ export default function WritePostForm() {
     setSelectedFiles(updatedFiles);
     const updatedUrls = updatedFiles.map((file) => URL.createObjectURL(file));
     setPreviewUrls(updatedUrls);
+
+    // 파일 input 초기화
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
+
+    if (!date) {
+      alert("날짜를 선택해주세요.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (!selectedFishingPoint) {
+      alert("낚시 포인트를 선택해주세요.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (!selectedRegion) {
+      alert("지역을 선택해주세요.");
+      setIsSubmitting(false);
+      return;
+    }
 
     try {
       let imageFileIds: number[] = [];
@@ -73,17 +134,19 @@ export default function WritePostForm() {
         imageFileIds = await uploadImagesToS3(selectedFiles, "post");
       }
 
-      const form = e.currentTarget;
+      // 선택된 날짜와 시간을 합쳐서 fishingDate 생성
+      const fishingDateTime = new Date(date);
+      fishingDateTime.setHours(parseInt(selectedHour, 10));
+      fishingDateTime.setMinutes(parseInt(selectedMinute, 10));
+
       const requestBody = {
-        subject: (form.elements.namedItem("title") as HTMLInputElement).value,
-        fishingDate: date?.toISOString() ?? new Date().toISOString(),
-        fishingPointId: 1, // TODO: 낚시 포인트 ID 지정 방식에 따라 수정
+        subject: title,
+        fishingDate: fishingDateTime.toISOString(),
+        fishingPointId: parseInt(selectedFishingPoint),
+        regionId: parseInt(selectedRegion),
         recruitmentCount: memberCount,
-        isShipFish:
-          (form.elements.namedItem("isBoatFishing") as HTMLInputElement)
-            ?.checked ?? false,
-        content: (form.elements.namedItem("content") as HTMLTextAreaElement)
-          .value,
+        isShipFish: isBoatFishing,
+        content: content,
         fileIdList: imageFileIds,
       };
 
@@ -98,6 +161,11 @@ export default function WritePostForm() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  // 오늘 이전 날짜를 비활성화하는 함수
+  const disablePastDates = (date: Date) => {
+    return isBefore(date, startOfDay(new Date()));
   };
 
   return (
@@ -121,40 +189,80 @@ export default function WritePostForm() {
             <label htmlFor="title" className="block font-medium">
               제목
             </label>
-            <Input id="title" required placeholder="제목을 입력하세요" />
+            <Input
+              id="title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+              placeholder="제목을 입력하세요"
+            />
           </div>
 
           <div className="space-y-2">
             <label htmlFor="date" className="block font-medium">
-              낚시 날짜
+              낚시 날짜/시간
             </label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className={cn(
-                    "w-full justify-start text-left font-normal h-12",
-                    !date && "text-muted-foreground"
-                  )}
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal h-12",
+                        !date && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {date
+                        ? format(date, "PPP", { locale: ko })
+                        : "날짜를 선택하세요"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 bg-white" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={date}
+                      onSelect={setDate}
+                      initialFocus
+                      locale={ko}
+                      className="rounded-md border"
+                      disabled={disablePastDates}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <div className="flex gap-2 items-center relative">
+                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
+                <select
+                  value={selectedHour}
+                  onChange={(e) => setSelectedHour(e.target.value)}
+                  className="h-12 rounded-md border border-input bg-background pl-10 pr-3"
                 >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {date
-                    ? format(date, "PPP", { locale: ko })
-                    : "날짜를 선택하세요"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 bg-white" align="start">
-                <Calendar
-                  mode="single"
-                  selected={date}
-                  onSelect={setDate}
-                  initialFocus
-                  locale={ko}
-                  className="rounded-md border"
-                />
-              </PopoverContent>
-            </Popover>
+                  {Array.from({ length: 24 }, (_, i) =>
+                    String(i).padStart(2, "0")
+                  ).map((hour) => (
+                    <option key={hour} value={hour}>
+                      {hour}시
+                    </option>
+                  ))}
+                </select>
+                <select
+                  value={selectedMinute}
+                  onChange={(e) => setSelectedMinute(e.target.value)}
+                  className="h-12 rounded-md border border-input bg-background px-3"
+                >
+                  {Array.from({ length: 12 }, (_, i) =>
+                    String(i * 5).padStart(2, "0")
+                  ).map((minute) => (
+                    <option key={minute} value={minute}>
+                      {minute}분
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
           </div>
 
           <div className="space-y-2">
@@ -163,27 +271,43 @@ export default function WritePostForm() {
             </label>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
-              <Input
+              <select
                 id="fishingSpot"
+                value={selectedFishingPoint}
+                onChange={(e) => setSelectedFishingPoint(e.target.value)}
+                className="w-full h-12 pl-10 pr-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent appearance-none bg-white"
                 required
-                placeholder="낚시 포인트를 입력하세요"
-                className="pl-10"
-              />
+              >
+                <option value="">낚시 포인트를 선택하세요</option>
+                {fishingPoints.map((point) => (
+                  <option key={point.id} value={point.id}>
+                    {point.name}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
           <div className="space-y-2">
             <label htmlFor="location" className="block font-medium">
-              상세 위치
+              지역
             </label>
             <div className="relative">
               <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
-              <Input
+              <select
                 id="location"
+                value={selectedRegion}
+                onChange={(e) => setSelectedRegion(e.target.value)}
+                className="w-full h-12 pl-10 pr-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent appearance-none bg-white"
                 required
-                placeholder="상세 위치를 입력하세요"
-                className="pl-10"
-              />
+              >
+                <option value="">지역을 선택하세요</option>
+                {regions.map((region) => (
+                  <option key={region.id} value={region.id}>
+                    {region.name}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
@@ -206,7 +330,7 @@ export default function WritePostForm() {
                 value={memberCount}
                 min={2}
                 onChange={(e) => setMemberCount(Number(e.target.value))}
-                className="w-20 text-center"
+                className="w-20 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
               <Button
                 type="button"
@@ -220,9 +344,18 @@ export default function WritePostForm() {
           </div>
 
           <div className="flex items-center space-x-2">
-            <Checkbox id="isBoatFishing" />
-            <label htmlFor="isBoatFishing" className="font-medium">
-              선상 낚시 여부
+            <Checkbox
+              id="isBoatFishing"
+              checked={isBoatFishing}
+              onCheckedChange={(checked) =>
+                setIsBoatFishing(checked as boolean)
+              }
+            />
+            <label
+              htmlFor="isBoatFishing"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              선상 낚시
             </label>
           </div>
 
@@ -232,8 +365,10 @@ export default function WritePostForm() {
             </label>
             <Textarea
               id="content"
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
               required
-              placeholder="모집 내용, 준비물 등을 입력해주세요"
+              placeholder="내용을 입력하세요"
               className="min-h-[200px]"
             />
           </div>
@@ -253,58 +388,69 @@ export default function WritePostForm() {
           <div className="space-y-2">
             <p className="font-medium">이미지 첨부 (선택사항)</p>
             <div className="border border-dashed rounded-lg p-6 text-center">
-              <p className="text-gray-500">
-                최대 10장의 이미지를 업로드할 수 있습니다.
-              </p>
-              <input
-                id="file-upload"
-                type="file"
-                multiple
-                accept="image/*"
-                className="hidden"
-                ref={fileInputRef}
-                onChange={handleImageChange}
-              />
-              <Button
-                type="button"
-                variant="outline"
-                className="mt-4"
-                onClick={() => fileInputRef.current?.click()}
-              >
-                파일 선택
-              </Button>
+              <div className="flex flex-col items-center justify-center">
+                <Upload className="h-10 w-10 text-gray-400 mb-2" />
+                <p className="text-gray-500 mb-2">
+                  최대 10장의 이미지를 업로드할 수 있습니다.
+                </p>
+                <input
+                  id="file-upload"
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  className="hidden"
+                  ref={fileInputRef}
+                  onChange={handleImageChange}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="cursor-pointer"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  파일 선택
+                </Button>
+              </div>
             </div>
             {previewUrls.length > 0 && (
-              <div className="flex gap-4 mt-4 overflow-x-auto">
+              <div className="grid grid-cols-5 gap-4 mt-4">
                 {previewUrls.map((url, index) => (
-                  <div key={index} className="relative w-24 h-24 flex-shrink-0">
+                  <div key={index} className="relative aspect-square">
                     <Image
                       src={url}
                       alt={`preview-${index}`}
                       fill
-                      className="object-cover rounded"
+                      className="object-cover rounded-lg"
                     />
                     <button
                       type="button"
-                      className="absolute top-0 right-0 bg-white rounded-full p-1"
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
                       onClick={() => removeImage(index)}
                     >
-                      ×
+                      <X className="h-4 w-4" />
                     </button>
                   </div>
                 ))}
+                {previewUrls.length < 10 && (
+                  <div
+                    className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:border-primary transition-colors"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <PlusCircle className="h-8 w-8 text-gray-400" />
+                  </div>
+                )}
               </div>
             )}
           </div>
 
           <div className="flex justify-end gap-2 pt-4">
-            <Button type="button" variant="outline">
+            <Button type="button" variant="outline" className="cursor-pointer">
               취소
             </Button>
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="bg-primary text-white"
+              className="bg-primary text-white cursor-pointer"
             >
               {isSubmitting ? "등록 중..." : "등록하기"}
             </Button>
