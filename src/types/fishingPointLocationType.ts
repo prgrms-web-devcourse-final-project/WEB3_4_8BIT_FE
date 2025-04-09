@@ -1,6 +1,8 @@
 export interface FishingPointLocation {
   regionId: string;
   regionName: string;
+  latitude: number;
+  longitude: number;
 }
 
 export interface FishingPoint {
