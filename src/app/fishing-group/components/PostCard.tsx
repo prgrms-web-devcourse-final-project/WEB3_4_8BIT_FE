@@ -9,12 +9,11 @@ interface PostCardProps {
   content: string;
   date: string;
   location: string;
-  isRecruiting?: boolean;
   currentCount: number;
   recruitmentCount: number;
   fishPointName: string;
   fileUrlList: string[];
-  postStatus: string;
+  postStatus: "RECRUITING" | "COMPLETED";
 }
 
 export function PostCard({
@@ -23,7 +22,6 @@ export function PostCard({
   content,
   date,
   location,
-  isRecruiting = true,
   currentCount = 0,
   recruitmentCount,
   fishPointName,
@@ -33,6 +31,9 @@ export function PostCard({
   // 썸네일 이미지 URL 결정
   const thumbnailUrl =
     fileUrlList.length > 0 ? fileUrlList[0] : "/images/default-fishing.jpg";
+
+  // 표시될 텍스트 변환
+  const displayStatusText = postStatus === "RECRUITING" ? "모집중" : "모집완료";
 
   return (
     <Link href={`/fishing-group/post/${fishingTripPostId}`} className="block">
@@ -54,12 +55,12 @@ export function PostCard({
               <div className="flex items-center gap-3">
                 <span
                   className={`px-2 py-1 text-sm rounded-full ${
-                    postStatus === "모집중"
+                    postStatus === "RECRUITING"
                       ? "bg-[#2CD5D7] text-white"
                       : "bg-gray-500 text-white"
                   }`}
                 >
-                  {postStatus}
+                  {displayStatusText}
                 </span>
                 <h3 className="text-lg font-medium text-gray-900">
                   <span className="text-gray-600">[{fishPointName}]</span>{" "}
