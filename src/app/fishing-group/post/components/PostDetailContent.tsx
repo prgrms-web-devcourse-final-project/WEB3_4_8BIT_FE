@@ -196,7 +196,11 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
             fishingTripPostId={post.fishingTripPostId}
           />
 
-          <MapCard fishPointName={post.fishPointName} />
+          <MapCard
+            fishPointName={post.fishPointName}
+            latitude={post.latitude}
+            longitude={post.longitude}
+          />
         </div>
       </div>
       <div className="mt-6">
