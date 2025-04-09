@@ -3,7 +3,6 @@ import Link from "next/link";
 import { ChevronLeft, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import PlaceInfo from "@/app/boat-reservation/[id]/components/PlaceInfo";
 import PhoneInfo from "@/app/boat-reservation/[id]/components/PhoneInfo";
 import ReservationInfo from "@/app/boat-reservation/[id]/components/ReservationInfo";
 import TabDetail from "@/app/boat-reservation/[id]/components/TabDetail";
@@ -155,7 +154,6 @@ export default async function BoatReservationDetail({
                 }
               />
               <PhoneInfo />
-              <PlaceInfo />
             </div>
           </div>
         </div>
