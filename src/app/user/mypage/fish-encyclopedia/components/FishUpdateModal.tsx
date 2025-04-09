@@ -1,9 +1,13 @@
-import { FishInfo } from "@/types/fish.interface";
+import {FishDetailInfo, FishDictionaryInfo, FishInfo} from "@/types/fish.interface";
 import Image from "next/image";
 import { Separator } from "@/components/ui/separator";
 import React from "react";
 import {X, MapPin} from "lucide-react";
 import {Button} from "@/components/ui/button";
+import {useQueries, useQuery, UseQueryResult} from "@tanstack/react-query";
+import {User} from "@/types/user.interface";
+import {UserAPI} from "@/lib/api/userAPI";
+import {APIResponse, FishAPI} from "@/lib/api/fishAPI";
 
 interface CatchPlace {
   date : string;
@@ -16,24 +20,36 @@ interface CatchPlace {
 interface FishUpdateProps extends FishInfo {
   setIsUpdateModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setIsRegisterModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  description: string;
-  season: string;
-  living: string;
-  catchPlaces: CatchPlace[];
 }
 
 export default function FishUpdateModal({
   setIsUpdateModalOpen,
   setIsRegisterModalOpen,
+  fishEncyclopediaId,
   fishName,
-  image,
-  description,
-  largestSize,
-  count,
-  season,
-  living,
-  catchPlaces,
+  fileUrl,
+  bestLength,
+  totalCount
 }: FishUpdateProps) {
+  const results = useQueries<
+    [
+      UseQueryResult<APIResponse<FishDictionaryInfo>, Error>,
+      UseQueryResult<APIResponse<{content : FishDetailInfo[]}>, Error>
+    ]
+  >( {
+    queries: [
+      {
+        queryKey: ['userFishEncyclopedia', fishEncyclopediaId],
+        queryFn: () => FishAPI.getFishDictionaryData(fishEncyclopediaId),
+        staleTime: 1000 * 60 * 5,
+      },
+      {
+        queryKey: ['fishDictionary'],
+        queryFn: () => FishAPI.getDetailFishEncyclopedias(fishEncyclopediaId),
+        staleTime: 1000 * 60 * 5,
+      },
+    ],
+  });
 
   const handleAdd = () => {
     setIsUpdateModalOpen(false);
@@ -56,28 +72,44 @@ export default function FishUpdateModal({
         <div className="grid grid-flow-row md:grid-flow-col md:grid-rows-[2fr_1fr_1fr] gap-4 md:h-[270px]">
           <Image
             className="w-full md:w-[270px] md:h-[270px] object-cover md:row-span-3 rounded-lg"
-            src={image}
+            src={fileUrl}
             alt="물고기 이미지"
             width={270}
             height={270}
           />
           <div>
             <div className="font-semibold text-xl">설명</div>
-            <p>{description}</p>
+            {results[0].isSuccess && (
+              <p>{results[0].data?.data.description}</p>
+            )}
           </div>
           <div className="flex justify-between w-3/5">
             <div className="font-semibold">
               최대 길이
-              <div className="font-bold text-xl text-primary">{largestSize}cm</div>
+              <div className="font-bold text-xl text-primary">{bestLength}cm</div>
             </div>
             <div className="font-semibold">
               총 마릿수
-              <div className="font-bold text-xl text-primary">{count}마리</div>
+              <div className="font-bold text-xl text-primary">{totalCount}마리</div>
             </div>
           </div>
           <div className="font-semibold">
             잘 잡히는 시기
-            <div className="font-bold text-xl text-primary">{season}</div>
+            {results[0].isSuccess && (
+              (() => {
+                const spawnSeasonList = results[0].data?.data.spawnSeasonList;
+                if (!spawnSeasonList || spawnSeasonList.length === 0) {
+                  return null;
+                }
+                const firstSeason = spawnSeasonList[0];
+                const lastSeason = spawnSeasonList[spawnSeasonList.length - 1];
+                return (
+                  <div className="font-bold text-xl text-primary">
+                    {`${firstSeason}월 ~ ${lastSeason}월`}
+                  </div>
+                );
+              })()
+            )}
           </div>
         </div>
         <Separator className="bg-gray-60 my-4" />
@@ -86,7 +118,9 @@ export default function FishUpdateModal({
             <MapPin/>
             <div className="font-bold text-xl">서식지</div>
           </div>
-          <div>{living}</div>
+          {results[0].isSuccess && (
+            <div>{results[0].data?.data.spawnLocation}</div>
+          )}
         </div>
         <Separator className="bg-gray-60 my-4" />
         <div>
@@ -95,23 +129,26 @@ export default function FishUpdateModal({
             <div className="font-bold text-xl">잡은 장소</div>
           </div>
           <div className="grid gap-3">
-            {catchPlaces.map((item, index) => (
-              <div className="grid bg-gray-70 rounded-md p-1.5 px-3 gap-1" key={index}>
-                <div className="flex justify-between">
-                  <div>
-                    {item.placeName}
+            {results[1].isSuccess && (
+              results[1].data?.data.content.map((item: FishDetailInfo) => (
+                <div className="grid bg-gray-70 rounded-md p-1.5 px-3 gap-1" key={item.fishEncyclopediaId}>
+                  <div className="flex justify-between">
+                    <div>
+                      {item.fishPointName}
+                    </div>
+                    <div className="text-gray-40">
+                      {new Date(item.createdAt).toLocaleDateString()}
+                    </div>
                   </div>
-                  <div className="text-gray-40">
-                    {item.date}
+                  <div className="flex justify-between sm:w-7/8 md:w-3/5 text-gray-40">
+                    <div>포인트 : {item.fishPointDetailName}</div>
+                    <div>최대 길이 : {item.length}cm</div>
+                    <div>총 마릿수 : {item.count}마리</div>
                   </div>
                 </div>
-                <div className="flex justify-between sm:w-7/8 md:w-3/5 text-gray-40">
-                  <div>포인트 : {item.point}</div>
-                  <div>최대 길이 : {item.largestSize}cm</div>
-                  <div>총 마릿수 : {item.count}마리</div>
-                </div>
-              </div>
-            ))}
+              ))
+            )
+            }
           </div>
         </div>
         <div className="flex justify-end mt-4">
