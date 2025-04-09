@@ -113,13 +113,27 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
               <h1 className="text-2xl font-bold">{post.subject}</h1>
             </div>
 
-            <div className="flex items-center gap-2 mb-6 text-sm text-gray-500">
-              <span>{post.name}</span>
-              <span>·</span>
-              <span>{new Date(post.createDate).toLocaleDateString()}</span>
+            <div className="flex items-center justify-between mb-6 text-sm text-gray-500">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center">
+                  <span className="text-xs text-gray-600">이미지</span>
+                </div>
+                <span>{post.name}</span>
+                <span>·</span>
+                <span>{new Date(post.createDate).toLocaleDateString()}</span>
+              </div>
+              <div className="flex gap-2">
+                <button className="text-blue-500 hover:underline">수정</button>
+                <button className="text-red-500 hover:underline">삭제</button>
+              </div>
             </div>
 
-            <PostImages images={post.fileUrlList} />
+            {/* 낚시 이미지 placeholder */}
+            <div className="bg-gray-200 h-64 flex items-center justify-center">
+              <span className="text-gray-500">낚시 이미지 Placeholder</span>
+            </div>
+
+            {/* <PostImages images={post.fileUrlList} /> */}
 
             <div className="grid grid-cols-2 gap-4 my-6 bg-gray-70 rounded-lg p-4">
               <div className="flex items-start gap-3">
