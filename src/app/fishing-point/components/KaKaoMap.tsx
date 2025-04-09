@@ -174,10 +174,28 @@ export default function KaKaoMap() {
     const container = document.getElementById("map");
     if (!container) return null;
 
-    return new kakao.maps.Map(container, {
+    const map = new kakao.maps.Map(container, {
       center: new kakao.maps.LatLng(36.3504, 127.3845),
       level: 13,
     });
+
+    // 줌 컨트롤 추가
+    const zoomControl = new kakao.maps.ZoomControl();
+    map.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
+
+    // 줌 레벨 변경 이벤트 감지
+    kakao.maps.event.addListener(map, "zoom_changed", function () {
+      // 현재 줌 레벨 확인
+      const level = map.getLevel();
+
+      if (level > 13) {
+        map.setLevel(13);
+      }
+
+      console.log("현재 지도 레벨은 " + level + " 입니다");
+    });
+
+    return map;
   };
 
   const createMarker = (location: FishLocation) => {
@@ -221,7 +239,10 @@ export default function KaKaoMap() {
 
   return (
     <>
-      <div id="map" className="w-full h-[640px] rounded-lg shadow-lg" />
+      <div
+        id="map"
+        className="w-full h-[520px] md:h-[640px] rounded-lg shadow-lg"
+      />
       <div
         ref={overlayContainerRef}
         style={{

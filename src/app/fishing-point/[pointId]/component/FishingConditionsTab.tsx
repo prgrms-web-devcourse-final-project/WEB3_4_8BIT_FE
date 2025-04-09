@@ -146,7 +146,7 @@ function WeatherInfo({
       </div>
 
       {/* 날씨 정보 */}
-      <div className="grid grid-cols-4 gap-[30px] pb-[40px] mb-[40px] border-b border-gray-70">
+      <div className="grid grid-cols-3 lg:grid-cols-4 gap-[30px] pb-[40px] mb-[40px] border-b border-gray-70">
         {/* 현재 날씨 */}
         <div className="p-[12px] bg-[#F9FAFB] rounded-[8px] box-shadow-1">
           <p className="text-body-4 text-gray-40 mb-[4px]">날씨</p>

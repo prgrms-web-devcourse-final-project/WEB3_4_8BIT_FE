@@ -7,12 +7,22 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ChevronLeft, ChevronRight, Droplets, Moon, Sun } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Droplets, Moon, Sun } from "lucide-react";
 import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import {
+  DailyTideData,
+  getTideChartData,
+} from "@/lib/api/getSeaTemperatureAPI";
+import TideChart from "@/app/fishing-point/[pointId]/component/TideChart";
+import dayjs from "dayjs";
 
 export default function TabWater() {
   const [currentTideIndex, setCurrentTideIndex] = useState(0);
+  const { data: tideChartData } = useQuery<DailyTideData[]>({
+    queryKey: ["tideChartData"],
+    queryFn: () => getTideChartData(37.2688889, 126.2919444),
+  });
 
   // 물때 정보
   const tideInfo = [
@@ -72,12 +82,9 @@ export default function TabWater() {
                   <div className="border rounded-lg p-4 bg-white">
                     <div className="flex justify-between items-center mb-4">
                       <h3 className="text-lg font-medium flex items-center">
-                        {info.date}
-                        {index === 0 && (
-                          <span className="ml-2 text-sm bg-cyan-100 text-cyan-800 px-2 py-0.5 rounded-full">
-                            오늘
-                          </span>
-                        )}
+                        <span className="ml-2 text-sm bg-cyan-100 text-cyan-800 px-2 py-0.5 rounded-full">
+                          {dayjs(info.date).format("MM월 DD일")}
+                        </span>
                       </h3>
                       <div className="flex space-x-4">
                         <div className="flex items-center text-amber-500">
@@ -91,68 +98,7 @@ export default function TabWater() {
 
                     {/* Tide Visualization */}
                     <div className="mb-6">
-                      <div className="relative h-40 bg-gradient-to-b from-sky-50 to-blue-100 rounded-lg overflow-hidden">
-                        {/* Tide Wave Visualization */}
-                        <div className="absolute inset-0">
-                          <svg
-                            viewBox="0 0 1440 120"
-                            className="absolute bottom-0 w-full"
-                          >
-                            <path
-                              fill="rgba(59, 130, 246, 0.3)"
-                              d="M0,64L48,80C96,96,192,128,288,128C384,128,480,96,576,85.3C672,75,768,85,864,96C960,107,1056,117,1152,112C1248,107,1344,85,1392,74.7L1440,64L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z"
-                            ></path>
-                          </svg>
-                        </div>
-
-                        {/* High Tide Markers */}
-                        {info.highTide
-                          .filter((time) => time !== "--:--")
-                          .map((time, i) => {
-                            // Calculate position based on time (simplified)
-                            const hour = Number.parseInt(time.split(":")[0]);
-                            const minute = Number.parseInt(time.split(":")[1]);
-                            const position =
-                              ((hour * 60 + minute) / (24 * 60)) * 100;
-
-                            return (
-                              <div
-                                key={`high-${i}`}
-                                className="absolute top-4 bg-blue-600 text-white text-xs px-2 py-1 rounded-full"
-                                style={{ left: `${position}%` }}
-                              >
-                                <div className="flex flex-col items-center">
-                                  <span>만조</span>
-                                  <span>{time}</span>
-                                  <div className="h-16 border-l border-dashed border-blue-400 mt-1"></div>
-                                </div>
-                              </div>
-                            );
-                          })}
-
-                        {/* Low Tide Markers */}
-                        {info.lowTide.map((time, i) => {
-                          // Calculate position based on time (simplified)
-                          const hour = Number.parseInt(time.split(":")[0]);
-                          const minute = Number.parseInt(time.split(":")[1]);
-                          const position =
-                            ((hour * 60 + minute) / (24 * 60)) * 100;
-
-                          return (
-                            <div
-                              key={`low-${i}`}
-                              className="absolute bottom-10 bg-blue-200 text-blue-800 text-xs px-2 py-1 rounded-full"
-                              style={{ left: `${position}%` }}
-                            >
-                              <div className="flex flex-col items-center">
-                                <div className="h-8 border-l border-dashed border-blue-400 mb-1"></div>
-                                <span>간조</span>
-                                <span>{time}</span>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
+                      <TideChart tideChartData={tideChartData} />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
@@ -183,47 +129,6 @@ export default function TabWater() {
                 </div>
               ))}
             </div>
-          </div>
-
-          {/* 캐러셀 조작 버튼 */}
-          <div className="absolute top-1/2 left-0 right-0 flex justify-between items-center -mt-6 px-2">
-            <Button
-              variant="outline"
-              size="icon"
-              className="rounded-full cursor-pointer bg-white shadow-md h-10 w-10"
-              onClick={() =>
-                setCurrentTideIndex(Math.max(0, currentTideIndex - 1))
-              }
-              disabled={currentTideIndex === 0}
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              className="rounded-full cursor-pointer bg-white shadow-md h-10 w-10"
-              onClick={() =>
-                setCurrentTideIndex(
-                  Math.min(tideInfo.length - 1, currentTideIndex + 1)
-                )
-              }
-              disabled={currentTideIndex === tideInfo.length - 1}
-            >
-              <ChevronRight className="h-5 w-5" />
-            </Button>
-          </div>
-
-          {/* 캐러셀 */}
-          <div className="flex justify-center mt-4 space-x-2">
-            {tideInfo.map((_, index) => (
-              <button
-                key={index}
-                className={`h-2 w-2 rounded-full cursor-pointer ${
-                  index === currentTideIndex ? "bg-primary" : "bg-gray-300"
-                }`}
-                onClick={() => setCurrentTideIndex(index)}
-              />
-            ))}
           </div>
         </div>
 
