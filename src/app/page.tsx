@@ -32,7 +32,7 @@ export default function Home() {
 
   const { data, isError, isSuccess } = useQuery<User | null>({
     queryKey: ["userInfo"],
-    queryFn: UserAPI.getMemberInfo,
+    queryFn: UserAPI.getMemberInfo, // TODO 추후 수정이 필요한지?
     staleTime: 1000 * 60 * 5,
   });
 
