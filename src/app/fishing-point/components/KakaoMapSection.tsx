@@ -9,19 +9,46 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import KaKaoMap from "./KaKaoMap";
-import { FishingPointLocation } from "@/types/fishingPointLocationType";
+import {
+  FishingPoint,
+  FishingPointLocation,
+} from "@/types/fishingPointLocationType";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { getFishingRegion } from "@/lib/api/fishingPointAPI";
 
 export default function KakaoMapSection({
   locationData,
 }: {
   locationData: FishingPointLocation[];
 }) {
+  const [selectedLocation, setSelectedLocation] =
+    useState<FishingPointLocation | null>(null);
+
+  const { data: fishingPoints } = useQuery<FishingPoint[]>({
+    queryKey: ["fishingPoints", selectedLocation?.regionId],
+    queryFn: async () => {
+      if (!selectedLocation) return [];
+
+      const response = await getFishingRegion(selectedLocation.regionId);
+      return response;
+    },
+    enabled: !!selectedLocation,
+  });
+
   return (
     <section className="w-full mt-[34px]">
       <div className="xl:w-[1280px] w-[calc(100%-20px)] mx-auto">
         <div className="flex items-center justify-between mb-[16px]">
-          <Select>
-            <SelectTrigger className="w-[180px]">
+          <Select
+            onValueChange={(value) => {
+              const selectedLocation = locationData.find(
+                (location) => location.regionId === value
+              );
+              setSelectedLocation(selectedLocation as FishingPointLocation);
+            }}
+          >
+            <SelectTrigger className="w-[180px] cursor-pointer">
               <SelectValue placeholder="지역을 선택해주세요" />
             </SelectTrigger>
             <SelectContent
@@ -41,7 +68,7 @@ export default function KakaoMapSection({
             낚시 포인트 제보하기
           </Button>
         </div>
-        <KaKaoMap />
+        <KaKaoMap fishingPoints={fishingPoints || []} />
       </div>
     </section>
   );

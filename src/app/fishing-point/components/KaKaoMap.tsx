@@ -1,14 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import fishLocations from "@/constants/fish-location.json";
 import { useRouter } from "next/navigation";
-
-interface FishLocation {
-  value: number;
-  name: string;
-  title: string;
-  lat: number;
-  lng: number;
-}
+import { FishingPoint } from "@/types/fishingPointLocationType";
 
 declare global {
   interface Window {
@@ -21,13 +13,13 @@ const CustomOverlay = ({
   location,
   onClose,
 }: {
-  location: FishLocation;
+  location: FishingPoint;
   onClose: () => void;
 }) => {
   const router = useRouter();
 
-  const handleNavigate = (value: number) => {
-    router.push(`/fishing-point/${value}`);
+  const handleNavigate = (id: number) => {
+    router.push(`/fishing-point/${id}`);
   };
 
   return (
@@ -81,12 +73,14 @@ const CustomOverlay = ({
               fontFamily: "paperlogy-7bold",
             }}
           >
-            {location.title}
+            {location.fishPointName}
           </h5>
-          <p style={{ fontSize: "12px", color: "#6b7280" }}>{location.name}</p>
+          <p style={{ fontSize: "12px", color: "#6b7280" }}>
+            {location.fishPointDetailName}
+          </p>
         </div>
         <button
-          onClick={() => handleNavigate(location.value)}
+          onClick={() => handleNavigate(location.fishPointId)}
           style={{
             backgroundColor: "#3b82f6",
             color: "white",
@@ -112,10 +106,14 @@ const CustomOverlay = ({
   );
 };
 
-export default function KaKaoMap() {
+export default function KaKaoMap({
+  fishingPoints,
+}: {
+  fishingPoints: FishingPoint[];
+}) {
   const mapRef = useRef<any>(null);
   const overlayRef = useRef<any>(null);
-  const [selectedLocation, setSelectedLocation] = useState<FishLocation | null>(
+  const [selectedLocation, setSelectedLocation] = useState<FishingPoint | null>(
     null
   );
   const overlayContainerRef = useRef<HTMLDivElement>(null);
@@ -123,10 +121,12 @@ export default function KaKaoMap() {
   useEffect(() => {
     if (typeof window === "undefined" || !window.kakao) return;
 
-    kakao.maps.load(() => {
+    window.kakao.maps.load(() => {
       mapRef.current = initializeMap();
-      const markers = fishLocations.map((location) => createMarker(location));
-      applyClusterer(markers);
+      if (fishingPoints && fishingPoints.length > 0) {
+        const markers = fishingPoints.map((location) => createMarker(location));
+        applyClusterer(markers);
+      }
     });
 
     return () => {
@@ -134,7 +134,7 @@ export default function KaKaoMap() {
         overlayRef.current.setMap(null);
       }
     };
-  }, []);
+  }, [fishingPoints]);
 
   // 오버레이 표시/숨김 처리
   useEffect(() => {
@@ -148,10 +148,10 @@ export default function KaKaoMap() {
     // 오버레이 컨테이너의 display 스타일을 block으로 변경
     overlayContainerRef.current.style.display = "block";
 
-    overlayRef.current = new kakao.maps.CustomOverlay({
-      position: new kakao.maps.LatLng(
-        selectedLocation.lat,
-        selectedLocation.lng
+    overlayRef.current = new window.kakao.maps.CustomOverlay({
+      position: new window.kakao.maps.LatLng(
+        selectedLocation.latitude,
+        selectedLocation.longitude
       ),
       content: overlayContainerRef.current,
       map: mapRef.current,
@@ -163,10 +163,6 @@ export default function KaKaoMap() {
       if (overlayRef.current) {
         overlayRef.current.setMap(null);
       }
-      // cleanup 시 display를 none으로 변경
-      if (overlayContainerRef.current) {
-        overlayContainerRef.current.style.display = "none";
-      }
     };
   }, [selectedLocation]);
 
@@ -174,44 +170,45 @@ export default function KaKaoMap() {
     const container = document.getElementById("map");
     if (!container) return null;
 
-    const map = new kakao.maps.Map(container, {
-      center: new kakao.maps.LatLng(36.3504, 127.3845),
+    const map = new window.kakao.maps.Map(container, {
+      center: new window.kakao.maps.LatLng(36.3504, 127.3845),
       level: 13,
     });
 
     // 줌 컨트롤 추가
-    const zoomControl = new kakao.maps.ZoomControl();
-    map.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
+    const zoomControl = new window.kakao.maps.ZoomControl();
+    map.addControl(zoomControl, window.kakao.maps.ControlPosition.RIGHT);
 
     // 줌 레벨 변경 이벤트 감지
-    kakao.maps.event.addListener(map, "zoom_changed", function () {
+    window.kakao.maps.event.addListener(map, "zoom_changed", function () {
       // 현재 줌 레벨 확인
       const level = map.getLevel();
 
       if (level > 13) {
         map.setLevel(13);
       }
-
-      console.log("현재 지도 레벨은 " + level + " 입니다");
     });
 
     return map;
   };
 
-  const createMarker = (location: FishLocation) => {
-    const position = new kakao.maps.LatLng(location.lat, location.lng);
-    const marker = new kakao.maps.Marker({
+  const createMarker = (location: FishingPoint) => {
+    const position = new window.kakao.maps.LatLng(
+      location.latitude,
+      location.longitude
+    );
+    const marker = new window.kakao.maps.Marker({
       position: position,
-      image: new kakao.maps.MarkerImage(
+      image: new window.kakao.maps.MarkerImage(
         "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png",
-        new kakao.maps.Size(32, 32),
+        new window.kakao.maps.Size(32, 32),
         {
-          offset: new kakao.maps.Point(16, 32),
+          offset: new window.kakao.maps.Point(16, 32),
         }
       ),
     });
 
-    kakao.maps.event.addListener(marker, "click", () => {
+    window.kakao.maps.event.addListener(marker, "click", () => {
       setSelectedLocation(location);
     });
 
@@ -221,7 +218,7 @@ export default function KaKaoMap() {
   const applyClusterer = (markers: any[]) => {
     if (!mapRef.current) return;
 
-    new kakao.maps.MarkerClusterer({
+    new window.kakao.maps.MarkerClusterer({
       map: mapRef.current,
       markers,
       averageCenter: true,
@@ -230,8 +227,8 @@ export default function KaKaoMap() {
       icons: [
         {
           src: "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png",
-          size: new kakao.maps.Size(56, 56),
-          offset: new kakao.maps.Point(28, 28),
+          size: new window.kakao.maps.Size(56, 56),
+          offset: new window.kakao.maps.Point(28, 28),
         },
       ],
     });
