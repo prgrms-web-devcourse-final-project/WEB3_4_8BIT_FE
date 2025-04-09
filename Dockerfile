@@ -35,7 +35,7 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 # 빌드 시 전달받은 ARG 값을 런타임 ENV로 설정
-ENV NEXT_PUBLIC_BADANORI_API_KEY=${NNEXT_PUBLIC_BADANORI_API_KEY}
+ENV NEXT_PUBLIC_BADANORI_API_KEY=${NEXT_PUBLIC_BADANORI_API_KEY}
 ENV NEXT_PUBLIC_KAKAO_MAP_API_KEY=${NEXT_PUBLIC_KAKAO_MAP_API_KEY}
 ENV NEXT_PUBLIC_OPENWEATHER_API_KEY=${NEXT_PUBLIC_OPENWEATHER_API_KEY}
 
@@ -47,8 +47,10 @@ COPY --from=builder /app/public ./public
 RUN mkdir .next
 RUN chown nextjs:nodejs .next
 
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+#COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+#COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
 
 USER nextjs
 
