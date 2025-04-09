@@ -5,8 +5,10 @@ import { getFishingPost } from "@/lib/api/fishingPostAPI";
 import PostImages from "../components/PostImage";
 import PostContent from "../components/PostContent";
 import JoinInfoCard from "../components/JoinInfoCard";
+import MapCard from "../components/MapCard";
 import CommentSection from "../components/CommentSection";
 import { MapPin, Calendar, Clock, Users } from "lucide-react";
+import React from "react";
 
 interface PostDetailContentProps {
   postId: number;
@@ -128,7 +130,6 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
               </div>
             </div>
 
-            {/* 낚시 이미지 placeholder */}
             <div className="bg-gray-200 h-64 flex items-center justify-center">
               <span className="text-gray-500">낚시 이미지 Placeholder</span>
             </div>
@@ -194,6 +195,8 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
             author={post.name}
             fishingTripPostId={post.fishingTripPostId}
           />
+
+          <MapCard fishPointName={post.fishPointName} />
         </div>
       </div>
       <div className="mt-6">

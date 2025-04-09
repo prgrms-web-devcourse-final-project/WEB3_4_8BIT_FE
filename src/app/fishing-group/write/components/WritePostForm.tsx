@@ -31,6 +31,7 @@ import { useState, useRef } from "react";
 import { uploadImagesToS3 } from "@/lib/api/uploadImageAPI";
 import { createFishingPost } from "@/lib/api/fishingPostAPI";
 import { useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 
 // 낚시 포인트 임시 데이터
 const fishingPoints = [
@@ -62,6 +63,8 @@ const regions = [
 
 export default function WritePostForm() {
   const router = useRouter();
+  const params = useParams();
+  const id = params.id;
   const [date, setDate] = useState<Date>();
   const [selectedHour, setSelectedHour] = useState("09");
   const [selectedMinute, setSelectedMinute] = useState("00");
