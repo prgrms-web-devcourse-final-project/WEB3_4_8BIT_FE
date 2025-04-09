@@ -1,13 +1,13 @@
-import KakaoMapSection from "./components/KakaoMapSection";
+import ServerKaKaoMapSection from "./components/ServerKaKaoMapSection";
 import FishingSpotsSection from "./components/FishingSpotsSection";
-import {FloatingChatButton} from "@/components/chat/FloatingChatButton";
+import { FloatingChatButton } from "@/components/chat/FloatingChatButton";
 
 export default function FishingPoint() {
   return (
     <div>
-      <KakaoMapSection />
+      <ServerKaKaoMapSection />
       <FishingSpotsSection />
-      <FloatingChatButton/>
+      <FloatingChatButton />
     </div>
   );
 }
