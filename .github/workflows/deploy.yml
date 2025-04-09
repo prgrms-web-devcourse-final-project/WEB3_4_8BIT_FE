@@ -11,7 +11,7 @@ jobs:
     steps:
       # 1. 코드 체크아웃
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
       # 2. node_modules 캐시 설정 (필요할 경우)
       - name: Cache node_modules
@@ -33,9 +33,9 @@ jobs:
       - name: Build Docker image
         run: |
           docker build \
-          --build-arg NEXT_PUBLIC_BADANORI_API_KEY=${{ secrets.NEXT_PUBLIC_SPRING_API_URL }} \
-          --build-arg NEXT_PUBLIC_KAKAO_MAP_API_KEY=${{ secrets.NEXT_PUBLIC_FAST_API_URL }} \
-          --build-arg NEXT_PUBLIC_OPENWEATHER_API_KEY=${{ secrets.NEXT_PUBLIC_FAST_API_URL }} \
+          --build-arg NEXT_PUBLIC_BADANORI_API_KEY=${{ secrets.NEXT_PUBLIC_BADANORI_API_KEY }} \
+          --build-arg NEXT_PUBLIC_KAKAO_MAP_API_KEY=${{ secrets.NEXT_PUBLIC_KAKAO_MAP_API_KEY }} \
+          --build-arg NEXT_PUBLIC_OPENWEATHER_API_KEY=${{ NEXT_PUBLIC_OPENWEATHER_API_KEY }} \
           -t ${{ secrets.DOCKER_USERNAME }}/mikki_fe:v1 .
 
       - name: Push Docker image
