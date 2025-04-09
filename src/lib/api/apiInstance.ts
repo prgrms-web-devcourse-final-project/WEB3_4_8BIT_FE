@@ -17,7 +17,7 @@ export const apiInstance = axios.create({
 
 apiInstance.interceptors.request.use(
   function getAccessToken(config : InternalAxiosRequestConfig) : InternalAxiosRequestConfig {
-    const token = localStorage.getItem('accessToken');
+    const token = localStorage.getItem('accessToken'); // TODO 추후 수정해야함
     if (token) {
       config.headers.Authorization = token
     }
