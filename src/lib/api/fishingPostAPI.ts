@@ -1,19 +1,29 @@
 import { axiosInstance } from "./axiosInstance";
-import { MOCK_POSTS, MOCK_HOT_POSTS } from "../mocks/fishingPostMock";
-import axios from "axios";
+import { MOCK_HOT_POSTS } from "../mocks/fishingPostMock";
 
 const API_BASE_URL = "https://api.mikki.kr/api/v1";
 
-// 날짜에 따른 게시글 상태 체크
-function checkPostStatus(fishingDate: string): "모집중" | "모집완료" {
-  const now = new Date();
-  const fishingDateTime = new Date(fishingDate);
-  return fishingDateTime > now ? "모집중" : "모집완료";
-}
-
-// 게시글 목록 조회 (목업 데이터 사용)
-export const getFishingPosts = async () => {
-  return MOCK_POSTS;
+// 게시글 목록 조회 (스크롤 기반)
+export const getFishingPosts = async (params: {
+  order: string;
+  sort: string;
+  type: string;
+  fieldValue: string;
+  id: number;
+  size: number;
+}) => {
+  try {
+    const response = await axiosInstance.get(
+      `${API_BASE_URL}/fishing-trip-post/scroll`,
+      {
+        params,
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Failed to fetch fishing posts.", error);
+    throw error;
+  }
 };
 
 // 핫포스트 목록 조회 (목업 데이터 사용)
@@ -22,16 +32,14 @@ export const getHotFishingPosts = async () => {
 };
 
 // 게시글 상세 조회
-export const getFishingPost = async (postId) => {
+export const getFishingPost = async (postId: number) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/fishing-trip-post`, {
-      params: { id: postId },
-      headers: {
-        accept: "*/*",
-        Authorization:
-          "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIyIiwiYXV0aCI6IlVTRVIiLCJlbWFpbCI6ImNqMjE3NEBuYXZlci5jb20iLCJpYXQiOjE3NDQxNjg1NjIsImV4cCI6MTc0NDI1NDk2Mn0.iT-Zv_SvmTPi9E6xz69PR6GAWCXXyAcE3s7fId1yB5gqFEqJs1RNsgieOSsLnP8N5tkhsN1gY9yT2QXdghC9Gg",
-      },
-    });
+    const response = await axiosInstance.get(
+      `${API_BASE_URL}/fishing-trip-post`,
+      {
+        params: { id: postId },
+      }
+    );
     return response.data;
   } catch (error) {
     console.error("Failed to fetch post details.", error);
@@ -80,24 +88,46 @@ export const updateFishingPost = async (
 
 // Fetch region data
 export const getRegions = async () => {
-  // 임시 하드코딩된 지역 데이터
-  return [
-    { id: 1, name: "서울" },
-    { id: 2, name: "부산" },
-    { id: 3, name: "인천" },
-    { id: 4, name: "대구" },
-    { id: 5, name: "광주" },
-  ];
+  try {
+    const response = await axiosInstance.get("/regions");
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching regions:", error);
+    throw error;
+  }
 };
 
 // Fetch fishing point data
 export const getFishingPoints = async () => {
-  // 임시 하드코딩된 낚시 포인트 데이터
-  return [
-    { id: 1, name: "여의도 낚시터", regionId: 1 },
-    { id: 2, name: "송도 낚시터", regionId: 3 },
-    { id: 3, name: "부산 해운대 낚시터", regionId: 2 },
-    { id: 4, name: "인천 송도 낚시터", regionId: 3 },
-    { id: 5, name: "대구 달성 낚시터", regionId: 4 },
-  ];
+  try {
+    const response = await axiosInstance.get("/fishing-points");
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching fishing points:", error);
+    throw error;
+  }
+};
+
+// 게시글 목록 조회 (커서 기반)
+export const getFishingPostsByCursor = async (cursorRequest: {
+  order: string;
+  sort: string;
+  type: string;
+  fieldValue: string;
+  id: number;
+  size: number;
+  status: string;
+}) => {
+  try {
+    const response = await axiosInstance.get(
+      `${API_BASE_URL}/fishing-trip-post/scroll`,
+      {
+        params: cursorRequest,
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Failed to fetch posts by cursor.", error);
+    throw error;
+  }
 };

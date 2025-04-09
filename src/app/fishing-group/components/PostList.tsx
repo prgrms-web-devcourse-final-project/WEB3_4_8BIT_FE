@@ -41,11 +41,20 @@ export function PostList({ filter }: PostListProps) {
     const fetchPosts = async () => {
       try {
         setLoading(true);
-        const response = await getFishingPosts();
-        if (Array.isArray(response)) {
-          setPosts(response.map((item) => item.data));
-        } else if (response.success) {
-          setPosts([response.data]);
+        // 초기 파라미터 설정
+        const initialParams = {
+          order: "desc",
+          sort: "createdAt",
+          type: "next",
+          fieldValue: new Date().toISOString(), // 현재 시간 ISO 문자열
+          id: 0, // 초기 ID (혹은 null, API 명세 확인 필요)
+          size: 10,
+        };
+        const response = await getFishingPosts(initialParams);
+
+        // API 응답 구조에 맞게 데이터 처리 (중요: 실제 응답 구조 확인 필요)
+        if (response.success && Array.isArray(response.data.content)) {
+          setPosts(response.data.content);
         } else {
           setError("게시글을 불러오는데 실패했습니다.");
         }
