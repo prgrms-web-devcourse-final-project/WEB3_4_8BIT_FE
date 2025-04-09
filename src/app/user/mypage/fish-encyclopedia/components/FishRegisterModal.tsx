@@ -5,10 +5,11 @@ import {Button} from "@/components/ui/button";
 import {X} from "lucide-react";
 
 interface ModalProps {
+  fishName: string;
   setIsRegisterModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export default function FishRegisterModal({ setIsRegisterModalOpen }: ModalProps) {
+export default function FishRegisterModal({ fishName, setIsRegisterModalOpen }: ModalProps) {
   const [point, setPoint] = useState<string>("");
   const [location, setLocation] = useState<string>("");
   const [length, setLength] = useState<string>("");
@@ -37,7 +38,7 @@ export default function FishRegisterModal({ setIsRegisterModalOpen }: ModalProps
       <div className="grid align-right bg-white rounded-lg shadow-lg p-6 w-full max-w-lg">
         <div className="flex justify-between">
           <div className="grid gap-1">
-            <div className="font-bold text-xl">문어 등록하기</div>
+            <div className="font-bold text-xl">{fishName} 등록하기</div>
             <div className="text-gray-30">새로운 어종을 도감에 등록해보세요.</div>
           </div>
           <X
