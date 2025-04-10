@@ -25,27 +25,7 @@ import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-
-interface PostDetailContentProps {
-  postId: number;
-}
-
-interface PostData {
-  fishingTripPostId: number;
-  name: string;
-  subject: string;
-  content: string;
-  currentCount: number;
-  recruitmentCount: number;
-  createDate: string;
-  fishingDate: string;
-  fishPointDetailName: string;
-  fishPointName: string;
-  longitude: number;
-  latitude: number;
-  fileUrlList: string[];
-  postStatus: string;
-}
+import { PostDetailContentProps, PostData } from "@/types/PostDetailType";
 
 export default function PostDetailContent({ postId }: PostDetailContentProps) {
   const router = useRouter();
