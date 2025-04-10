@@ -9,7 +9,7 @@ export const axiosInstance = axios.create({
 });
 
 const token =
-  "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIyIiwiYXV0aCI6IlVTRVIiLCJlbWFpbCI6ImNqMjE3NEBuYXZlci5jb20iLCJpYXQiOjE3NDQxNzc3NTksImV4cCI6MTc0NDI2NDE1OX0.utUjVHxSMZoeaSpe6JIEQRGljrfwAkqLLKj4RrKZ5UVubAm-0ML940XWbcYAu11MMcVGV2xBOFabKlqCtxq_hg";
+  "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIyIiwiYXV0aCI6IlVTRVIiLCJlbWFpbCI6ImNqMjE3NEBuYXZlci5jb20iLCJpYXQiOjE3NDQyNjUyNTAsImV4cCI6MTc0NDM1MTY1MH0.UdBtp8Xmft_w9mVl-lPaBaptvVlaPLShdmmxY6XJOoYqwqEEhmkVCJcO0ZXU5zFPpzb3q8wOI4MzFreaSzJU7g";
 
 axiosInstance.interceptors.request.use(
   (config) => {
