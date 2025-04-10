@@ -13,11 +13,11 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import {
-  CalendarIcon,
+  Calendar as CalendarIcon,
+  Clock,
+  MapPin,
   MinusCircle,
   PlusCircle,
-  MapPin,
-  Clock,
   X,
   AlertCircle,
   Upload,
@@ -26,12 +26,17 @@ import {
 import { format, isBefore, startOfDay } from "date-fns";
 import { ko } from "date-fns/locale";
 import { cn } from "@/lib/utils";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { uploadImagesToS3 } from "@/lib/api/uploadImageAPI";
-import { createFishingPost } from "@/lib/api/fishingPostAPI";
+import { getFishingPost, updateFishingPost } from "@/lib/api/fishingPostAPI";
 import { useRouter } from "next/navigation";
+import {
+  FileInfo,
+  EditPostFormProps,
+  PostData,
+} from "@/types/EditPostFormType";
 
-// 낚시 포인트 임시 데이터
+// TODO: API에서 가져오도록 수정
 const fishingPoints = [
   { id: 1, name: "인천 송도" },
   { id: 2, name: "인천 영종도" },
@@ -45,7 +50,7 @@ const fishingPoints = [
   { id: 10, name: "경기 부천" },
 ];
 
-// 지역 임시 데이터
+// TODO: API에서 가져오도록 수정
 const regions = [
   { id: 1, name: "서울" },
   { id: 2, name: "인천" },
@@ -59,7 +64,7 @@ const regions = [
   { id: 10, name: "경남" },
 ];
 
-export default function WritePostForm() {
+export default function EditPostForm({ postId }: EditPostFormProps) {
   const router = useRouter();
   const [date, setDate] = useState<Date>();
   const [selectedHour, setSelectedHour] = useState("09");
@@ -67,7 +72,11 @@ export default function WritePostForm() {
   const [memberCount, setMemberCount] = useState(2);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const [existingFiles, setExistingFiles] = useState<FileInfo[]>([]);
+  const [existingFileUrls, setExistingFileUrls] = useState<string[]>([]);
+  const [existingFileIds, setExistingFileIds] = useState<number[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [isBoatFishing, setIsBoatFishing] = useState(false);
@@ -75,15 +84,85 @@ export default function WritePostForm() {
   const [selectedRegion, setSelectedRegion] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  useEffect(() => {
+    const fetchPostData = async () => {
+      try {
+        setIsLoading(true);
+        const response = await getFishingPost(postId);
+        // console.log("📄 게시글 데이터 응답:", response);
+
+        if (response.success) {
+          const postData = response.data as PostData;
+          // console.log("📄 게시글 데이터 상세:", postData);
+
+          setTitle(postData.subject);
+          setContent(postData.content);
+
+          const fishingDate = new Date(postData.fishingDate);
+          setDate(fishingDate);
+          setSelectedHour(String(fishingDate.getHours()).padStart(2, "0"));
+          setSelectedMinute(String(fishingDate.getMinutes()).padStart(2, "0"));
+
+          setMemberCount(postData.recruitmentCount);
+
+          if (postData.fishingPointId) {
+            setSelectedFishingPoint(String(postData.fishingPointId));
+          }
+          if (postData.regionId) {
+            setSelectedRegion(String(postData.regionId));
+          }
+
+          if (postData.isShipFish !== undefined) {
+            setIsBoatFishing(postData.isShipFish);
+          }
+
+          let fileIds: number[] = [];
+          let fileUrls: string[] = [];
+          let fileInfos: FileInfo[] = [];
+
+          if (postData.fileList && postData.fileList.length > 0) {
+            fileInfos = postData.fileList;
+            fileIds = postData.fileList.map((f: FileInfo) => f.fileId);
+            fileUrls = postData.fileList.map((f: FileInfo) => f.fileUrl);
+          } else if (postData.files && postData.files.length > 0) {
+            fileInfos = postData.files;
+            fileIds = postData.files.map((f: FileInfo) => f.fileId);
+            fileUrls = postData.files.map((f: FileInfo) => f.fileUrl);
+          } else if (postData.fileUrlList && postData.fileUrlList.length > 0) {
+            fileUrls = postData.fileUrlList;
+            fileIds = [];
+            fileInfos = [];
+          }
+
+          setExistingFiles(fileInfos);
+          setExistingFileUrls(fileUrls);
+          setExistingFileIds(fileIds);
+        } else {
+          alert("게시글을 불러오는데 실패했습니다.");
+          router.push("/fishing-group");
+        }
+      } catch (error) {
+        console.error("❌ 게시글 불러오기 오류:", error);
+        alert("게시글을 불러오는데 실패했습니다.");
+        router.push("/fishing-group");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchPostData();
+  }, [postId, router]);
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
     const newFiles = Array.from(files);
-    const totalCount = selectedFiles.length + newFiles.length;
+    const totalCount =
+      selectedFiles.length + newFiles.length + existingFileUrls.length;
 
     if (totalCount > 10) {
       alert("최대 10장까지 업로드 가능합니다.");
-      newFiles.splice(10 - selectedFiles.length);
+      newFiles.splice(10 - selectedFiles.length - existingFileUrls.length);
     }
 
     const updatedFiles = [...selectedFiles, ...newFiles];
@@ -92,13 +171,31 @@ export default function WritePostForm() {
     setPreviewUrls(urls);
   };
 
-  const removeImage = (index: number) => {
-    const updatedFiles = selectedFiles.filter((_, i) => i !== index);
-    setSelectedFiles(updatedFiles);
-    const updatedUrls = updatedFiles.map((file) => URL.createObjectURL(file));
-    setPreviewUrls(updatedUrls);
+  const removeImage = (index: number, isExisting: boolean = false) => {
+    if (isExisting) {
+      if (existingFiles.length > 0) {
+        const updatedFiles = existingFiles.filter((_, i) => i !== index);
+        setExistingFiles(updatedFiles);
+        setExistingFileUrls(updatedFiles.map((f: FileInfo) => f.fileUrl));
+        setExistingFileIds(updatedFiles.map((f: FileInfo) => f.fileId));
+      } else {
+        const updatedExistingUrls = existingFileUrls.filter(
+          (_, i) => i !== index
+        );
+        setExistingFileUrls(updatedExistingUrls);
+        const updatedExistingIds = existingFileIds.filter(
+          (_, i) => i !== index
+        );
 
-    // 파일 input 초기화
+        setExistingFileIds(updatedExistingIds);
+      }
+    } else {
+      const updatedFiles = selectedFiles.filter((_, i) => i !== index);
+      setSelectedFiles(updatedFiles);
+      const updatedUrls = updatedFiles.map((file) => URL.createObjectURL(file));
+      setPreviewUrls(updatedUrls);
+    }
+
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -127,45 +224,55 @@ export default function WritePostForm() {
     }
 
     try {
-      let imageFileIds: number[] = [];
+      let finalFileIds: number[] = [...existingFileIds];
+
       if (selectedFiles.length > 0) {
-        console.log("✅ 선택된 이미지 수:", selectedFiles.length);
-        imageFileIds = await uploadImagesToS3(selectedFiles, "post");
+        const newImageFileIds = await uploadImagesToS3(selectedFiles, "post");
+        finalFileIds = [...finalFileIds, ...newImageFileIds];
       }
 
-      // 선택된 날짜와 시간을 합쳐서 fishingDate 생성
       const fishingDateTime = new Date(date);
       fishingDateTime.setHours(parseInt(selectedHour, 10));
       fishingDateTime.setMinutes(parseInt(selectedMinute, 10));
 
       const requestBody = {
         subject: title,
+        content: content,
+        recruitmentCount: memberCount,
+        isShipFish: isBoatFishing,
         fishingDate: fishingDateTime.toISOString(),
         fishingPointId: parseInt(selectedFishingPoint),
         regionId: parseInt(selectedRegion),
-        recruitmentCount: memberCount,
-        isShipFish: isBoatFishing,
-        content: content,
-        fileIdList: imageFileIds,
+        fileIdList: finalFileIds,
       };
 
-      console.log("✅ 최종 전송 데이터:", requestBody);
-      await createFishingPost(requestBody);
+      // const result = await updateFishingPost({
+      await updateFishingPost({
+        fishingTripPostId: postId,
+        ...requestBody,
+      });
 
-      alert("게시글이 등록되었습니다!");
-      router.push("/fishing-group");
+      alert("게시글이 수정되었습니다!");
+      router.push(`/fishing-group/post/${postId}`);
     } catch (err) {
-      console.error("게시글 등록 중 오류:", err);
-      alert("게시글 등록 중 오류가 발생했습니다.");
+      console.error("❌ 게시글 수정 중 오류:", err);
+      alert("게시글 수정 중 오류가 발생했습니다.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // 오늘 이전 날짜를 비활성화하는 함수
   const disablePastDates = (date: Date) => {
     return isBefore(date, startOfDay(new Date()));
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center py-10">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -234,49 +341,47 @@ export default function WritePostForm() {
                   </PopoverContent>
                 </Popover>
               </div>
-
-              {/* 시간 선택 */}
-              <div className="relative w-[120px]">
+              <div className="flex gap-2 items-center relative">
                 <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
-                <select
-                  value={selectedHour}
-                  onChange={(e) => setSelectedHour(e.target.value)}
-                  className="h-12 w-full rounded-md border border-input bg-background pl-10 pr-8 cursor-pointer text-base appearance-none"
-                >
-                  {Array.from({ length: 24 }, (_, i) =>
-                    String(i).padStart(2, "0")
-                  ).map((hour) => (
-                    <option key={hour} value={hour}>
-                      {hour}시
-                    </option>
-                  ))}
-                </select>
-                <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                  <svg
-                    width="12"
-                    height="12"
-                    viewBox="0 0 12 12"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
+                <div className="relative w-[120px]">
+                  <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
+                  <select
+                    value={selectedHour}
+                    onChange={(e) => setSelectedHour(e.target.value)}
+                    className="h-12 w-full rounded-md border border-input bg-background pl-10 pr-8 cursor-pointer text-base appearance-none"
                   >
-                    <path
-                      d="M2.5 4.5L6 8L9.5 4.5"
-                      stroke="#6B7280"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
+                    {Array.from({ length: 24 }, (_, i) =>
+                      String(i).padStart(2, "0")
+                    ).map((hour) => (
+                      <option key={hour} value={hour}>
+                        {hour}시
+                      </option>
+                    ))}
+                  </select>
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 12 12"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M2.5 4.5L6 8L9.5 4.5"
+                        stroke="#6B7280"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </div>
                 </div>
               </div>
-
-              {/* 분 선택 */}
-              <div className="relative w-[120px]">
-                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
+              <div className="relative">
                 <select
                   value={selectedMinute}
                   onChange={(e) => setSelectedMinute(e.target.value)}
-                  className="h-12 w-full rounded-md border border-input bg-background pl-10 pr-8 cursor-pointer text-base appearance-none"
+                  className="h-12 rounded-md border border-input bg-background px-3"
                 >
                   {["00", "10", "20", "30", "40", "50"].map((minute) => (
                     <option key={minute} value={minute}>
@@ -284,23 +389,6 @@ export default function WritePostForm() {
                     </option>
                   ))}
                 </select>
-                <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                  <svg
-                    width="12"
-                    height="12"
-                    viewBox="0 0 12 12"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M2.5 4.5L6 8L9.5 4.5"
-                      stroke="#6B7280"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </div>
               </div>
             </div>
           </div>
@@ -495,10 +583,33 @@ export default function WritePostForm() {
             </div>
 
             {/* 이미지 미리보기 */}
-            {previewUrls.length > 0 && (
+            {(existingFileUrls.length > 0 || previewUrls.length > 0) && (
               <div className="grid grid-cols-5 gap-4 mt-4">
+                {/* 기존 이미지 */}
+                {existingFileUrls.map((url, index) => (
+                  <div
+                    key={`existing-${index}`}
+                    className="relative aspect-square"
+                  >
+                    <Image
+                      src={url}
+                      alt={`existing-${index}`}
+                      fill
+                      className="object-cover rounded-lg"
+                    />
+                    <button
+                      type="button"
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                      onClick={() => removeImage(index, true)}
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))}
+
+                {/* 새로 추가된 이미지 */}
                 {previewUrls.map((url, index) => (
-                  <div key={index} className="relative aspect-square">
+                  <div key={`new-${index}`} className="relative aspect-square">
                     <Image
                       src={url}
                       alt={`preview-${index}`}
@@ -514,7 +625,9 @@ export default function WritePostForm() {
                     </button>
                   </div>
                 ))}
-                {previewUrls.length < 10 && (
+
+                {/* 이미지 추가 버튼 */}
+                {existingFileUrls.length + previewUrls.length < 10 && (
                   <div
                     className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:border-primary transition-colors"
                     onClick={() => fileInputRef.current?.click()}
@@ -540,7 +653,7 @@ export default function WritePostForm() {
               disabled={isSubmitting}
               className="bg-primary text-white cursor-pointer"
             >
-              {isSubmitting ? "등록 중..." : "등록하기"}
+              {isSubmitting ? "수정 중..." : "수정하기"}
             </Button>
           </div>
         </form>

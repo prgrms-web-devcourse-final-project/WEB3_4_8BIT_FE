@@ -4,11 +4,11 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: 'devcouse4-team13-bucket.s3.ap-northeast-2.amazonaws.com',
-        port: '',
-        pathname: '/post/**',
-        search: '',
+        protocol: "https",
+        hostname: "devcouse4-team13-bucket.s3.ap-northeast-2.amazonaws.com",
+        port: "",
+        pathname: "/post/**",
+        search: "",
       },
     ],
   },

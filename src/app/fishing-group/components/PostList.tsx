@@ -33,7 +33,7 @@ export function PostList({ filter, searchKeyword = "" }: PostListProps) {
         type: "all", // 'all'로 설정하여 모든 게시물을 가져옵니다
         fieldValue: null,
         id: null,
-        size: 100, // 더 큰 크기로 설정하여 한 번에 더 많은 게시물을 가져옵니다
+        size: 100,
         status:
           filter === "recruiting"
             ? "RECRUITING"
@@ -94,7 +94,7 @@ export function PostList({ filter, searchKeyword = "" }: PostListProps) {
       (filter === "recruiting" && post.postStatus === "RECRUITING") ||
       (filter === "completed" && post.postStatus === "COMPLETED");
 
-    // 검색어 조건 확인 (제목에 검색어가 포함되어 있는지)
+    // 검색어 조건 확인
     const searchMatch =
       !searchKeyword ||
       post.subject.toLowerCase().includes(searchKeyword.toLowerCase());
@@ -121,7 +121,6 @@ export function PostList({ filter, searchKeyword = "" }: PostListProps) {
               day: "numeric",
             })}
             location={post.fishPointDetailName}
-            currentCount={post.currentCount}
             recruitmentCount={post.recruitmentCount}
             fishPointName={post.fishPointName}
             fileUrlList={post.fileUrlList}
