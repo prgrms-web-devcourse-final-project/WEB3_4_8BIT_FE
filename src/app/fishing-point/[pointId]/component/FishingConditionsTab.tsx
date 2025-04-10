@@ -30,11 +30,7 @@ import {
   Wind,
 } from "lucide-react";
 import TableContent from "./TableContent";
-import {
-  FishLocation,
-  SeaTemperatureData,
-  WeatherResponse,
-} from "@/types/weatherTypes";
+import { SeaTemperatureData, WeatherResponse } from "@/types/weatherTypes";
 import {
   getWeatherIcon,
   getWeatherText,
@@ -45,44 +41,52 @@ import {
 import { calculateMoonPhase } from "@/utils/moonPhaseCalculator";
 import SeaTimeDescription from "./seaTimeDescription";
 import TideChart from "./TideChart";
+import { FishingPointDetail } from "@/types/fishingPointLocationType";
 
 export default function FishingConditionsTab({
-  pointDataProp,
+  pointDetailData,
 }: {
-  pointDataProp: FishLocation | null;
+  pointDetailData: FishingPointDetail | undefined;
 }) {
   const { data: seaTemperatureData, isLoading: isSeaTemperatureDataLoading } =
     useQuery<SeaTemperatureData>({
-      queryKey: ["seaTemperatureData", pointDataProp?.title],
-      queryFn: () => getSeaTemperature(pointDataProp!.lat, pointDataProp!.lng),
-      enabled: !!pointDataProp,
+      queryKey: ["seaTemperatureData", pointDetailData?.fishPointDetailName],
+      queryFn: () =>
+        getSeaTemperature(
+          pointDetailData!.latitude,
+          pointDetailData!.longitude
+        ),
+      enabled: !!pointDetailData,
     });
 
   const { data: weatherData, isLoading: isWeatherDataLoading } =
     useQuery<WeatherResponse>({
-      queryKey: ["weatherData", pointDataProp?.title],
-      queryFn: () => getWeatherData(pointDataProp!.lat, pointDataProp!.lng),
-      enabled: !!pointDataProp,
+      queryKey: ["weatherData", pointDetailData?.fishPointDetailName],
+      queryFn: () =>
+        getWeatherData(pointDetailData!.latitude, pointDetailData!.longitude),
+      enabled: !!pointDetailData,
     });
 
   const { data: tideData, isLoading: isTideDataLoading } = useQuery<
     DailyTideData[]
   >({
-    queryKey: ["tideData", pointDataProp?.title],
-    queryFn: () => getWeeklyTideData(pointDataProp!.lat, pointDataProp!.lng),
-    enabled: !!pointDataProp,
+    queryKey: ["tideData", pointDetailData?.fishPointDetailName],
+    queryFn: () =>
+      getWeeklyTideData(pointDetailData!.latitude, pointDetailData!.longitude),
+    enabled: !!pointDetailData,
   });
 
   const { data: tideChartData, isLoading: isTideChartDataLoading } = useQuery<
     DailyTideData[]
   >({
-    queryKey: ["tideChartData", pointDataProp?.title],
-    queryFn: () => getTideChartData(pointDataProp!.lat, pointDataProp!.lng),
-    enabled: !!pointDataProp,
+    queryKey: ["tideChartData", pointDetailData?.fishPointDetailName],
+    queryFn: () =>
+      getTideChartData(pointDetailData!.latitude, pointDetailData!.longitude),
+    enabled: !!pointDetailData,
   });
 
   if (
-    !pointDataProp ||
+    !pointDetailData ||
     isSeaTemperatureDataLoading ||
     isWeatherDataLoading ||
     isTideDataLoading ||

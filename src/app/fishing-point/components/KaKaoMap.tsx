@@ -1,14 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import fishLocations from "@/constants/fish-location.json";
 import { useRouter } from "next/navigation";
-
-interface FishLocation {
-  value: number;
-  name: string;
-  title: string;
-  lat: number;
-  lng: number;
-}
+import {
+  FishingPoint,
+  FishingPointLocation,
+} from "@/types/fishingPointLocationType";
 
 declare global {
   interface Window {
@@ -21,40 +16,42 @@ const CustomOverlay = ({
   location,
   onClose,
 }: {
-  location: FishLocation;
+  location: FishingPoint;
   onClose: () => void;
 }) => {
   const router = useRouter();
 
-  const handleNavigate = (value: number) => {
-    router.push(`/fishing-point/${value}`);
+  const handleNavigate = (id: number) => {
+    router.push(`/fishing-point/${id}`);
   };
 
   return (
     <div
       style={{
         backgroundColor: "white",
-        padding: "12px 16px",
+        padding: "16px",
         borderRadius: "12px",
-        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+        boxShadow: "0 4px 20px rgba(0, 0, 0, 0.15)",
         border: "1px solid #e5e7eb",
-        minWidth: "200px",
+        minWidth: "240px",
+        maxWidth: "300px",
         position: "relative",
-        transform: "translate(-51%, -180px)",
+        transform: "translate(-50%, -180px)",
       }}
     >
       <div
         style={{
           position: "absolute",
-          top: "10px",
-          right: "10px",
+          top: "12px",
+          right: "12px",
           color: "#888",
-          width: "12px",
-          height: "12px",
-          background:
+          width: "14px",
+          height: "14px",
+          backgroundImage:
             "url('https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/overlay_close.png')",
           backgroundSize: "cover",
           cursor: "pointer",
+          zIndex: 10,
         }}
         onClick={onClose}
         title="닫기"
@@ -72,38 +69,45 @@ const CustomOverlay = ({
           borderBottom: "1px solid #e5e7eb",
         }}
       />
-      <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
         <div>
           <h5
             style={{
-              fontSize: "24px",
+              fontSize: "18px",
               fontWeight: "700",
               fontFamily: "paperlogy-7bold",
+              marginBottom: "4px",
+              paddingRight: "20px",
+              wordBreak: "break-word",
             }}
           >
-            {location.title}
+            {location.fishPointName}
           </h5>
-          <p style={{ fontSize: "12px", color: "#6b7280" }}>{location.name}</p>
+          <p
+            style={{
+              fontSize: "14px",
+              color: "#6b7280",
+              marginBottom: "8px",
+              wordBreak: "break-word",
+            }}
+          >
+            {location.fishPointDetailName}
+          </p>
         </div>
         <button
-          onClick={() => handleNavigate(location.value)}
+          onClick={() => handleNavigate(location.fishPointId)}
           style={{
             backgroundColor: "#3b82f6",
             color: "white",
-            padding: "8px 16px",
-            borderRadius: "6px",
+            padding: "10px 16px",
+            borderRadius: "8px",
             border: "none",
             fontSize: "14px",
             fontWeight: "500",
             cursor: "pointer",
-            transition: "background-color 0.2s",
+            width: "100%",
+            textAlign: "center",
           }}
-          onMouseOver={(e) =>
-            (e.currentTarget.style.backgroundColor = "#2563eb")
-          }
-          onMouseOut={(e) =>
-            (e.currentTarget.style.backgroundColor = "#3b82f6")
-          }
         >
           상세 정보 보기
         </button>
@@ -112,21 +116,69 @@ const CustomOverlay = ({
   );
 };
 
-export default function KaKaoMap() {
+export default function KaKaoMap({
+  fishingPoints,
+  locationData,
+  handleClickRegionMarker,
+  selectedLocationProps,
+}: {
+  fishingPoints: FishingPoint[];
+  locationData: FishingPointLocation[];
+  handleClickRegionMarker: (location: FishingPointLocation) => void;
+  selectedLocationProps: FishingPointLocation | null;
+}) {
   const mapRef = useRef<any>(null);
   const overlayRef = useRef<any>(null);
-  const [selectedLocation, setSelectedLocation] = useState<FishLocation | null>(
+  const markersRef = useRef<any[]>([]);
+  const clustererRef = useRef<any>(null);
+  const [selectedLocation, setSelectedLocation] = useState<FishingPoint | null>(
     null
   );
   const overlayContainerRef = useRef<HTMLDivElement>(null);
 
+  // 선택된 지역이 변경될 때 지도 중심 이동
+  useEffect(() => {
+    if (!mapRef.current || !selectedLocationProps) return;
+
+    // 기존 마커 제거
+    removeAllMarkers();
+
+    const position = new window.kakao.maps.LatLng(
+      selectedLocationProps.latitude,
+      selectedLocationProps.longitude
+    );
+
+    mapRef.current.setCenter(position);
+    mapRef.current.setLevel(10);
+  }, [selectedLocationProps]);
+
   useEffect(() => {
     if (typeof window === "undefined" || !window.kakao) return;
 
-    kakao.maps.load(() => {
-      mapRef.current = initializeMap();
-      const markers = fishLocations.map((location) => createMarker(location));
-      applyClusterer(markers);
+    window.kakao.maps.load(() => {
+      if (!mapRef.current) {
+        mapRef.current = initializeMap();
+      }
+
+      // 기존 마커 제거
+      removeAllMarkers();
+
+      if (
+        fishingPoints &&
+        fishingPoints.length > 0 &&
+        selectedLocationProps !== null
+      ) {
+        const markers = fishingPoints.map((location) => createMarker(location));
+        markersRef.current = markers;
+        applyClusterer(markers);
+      } else {
+        const markers = locationData.map((location) => {
+          const marker = createRegionMarker(location);
+          marker.setMap(mapRef.current);
+          return marker;
+        });
+        markersRef.current = markers;
+      }
     });
 
     return () => {
@@ -134,7 +186,7 @@ export default function KaKaoMap() {
         overlayRef.current.setMap(null);
       }
     };
-  }, []);
+  }, [fishingPoints, locationData, selectedLocationProps]);
 
   // 오버레이 표시/숨김 처리
   useEffect(() => {
@@ -148,10 +200,10 @@ export default function KaKaoMap() {
     // 오버레이 컨테이너의 display 스타일을 block으로 변경
     overlayContainerRef.current.style.display = "block";
 
-    overlayRef.current = new kakao.maps.CustomOverlay({
-      position: new kakao.maps.LatLng(
-        selectedLocation.lat,
-        selectedLocation.lng
+    overlayRef.current = new window.kakao.maps.CustomOverlay({
+      position: new window.kakao.maps.LatLng(
+        selectedLocation.latitude,
+        selectedLocation.longitude
       ),
       content: overlayContainerRef.current,
       map: mapRef.current,
@@ -163,10 +215,6 @@ export default function KaKaoMap() {
       if (overlayRef.current) {
         overlayRef.current.setMap(null);
       }
-      // cleanup 시 display를 none으로 변경
-      if (overlayContainerRef.current) {
-        overlayContainerRef.current.style.display = "none";
-      }
     };
   }, [selectedLocation]);
 
@@ -174,44 +222,60 @@ export default function KaKaoMap() {
     const container = document.getElementById("map");
     if (!container) return null;
 
-    const map = new kakao.maps.Map(container, {
-      center: new kakao.maps.LatLng(36.3504, 127.3845),
+    const map = new window.kakao.maps.Map(container, {
+      center: new window.kakao.maps.LatLng(36.3504, 127.3845),
       level: 13,
     });
 
     // 줌 컨트롤 추가
-    const zoomControl = new kakao.maps.ZoomControl();
-    map.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
-
-    // 줌 레벨 변경 이벤트 감지
-    kakao.maps.event.addListener(map, "zoom_changed", function () {
-      // 현재 줌 레벨 확인
-      const level = map.getLevel();
-
-      if (level > 13) {
-        map.setLevel(13);
-      }
-
-      console.log("현재 지도 레벨은 " + level + " 입니다");
-    });
+    const zoomControl = new window.kakao.maps.ZoomControl();
+    map.addControl(zoomControl, window.kakao.maps.ControlPosition.RIGHT);
 
     return map;
   };
 
-  const createMarker = (location: FishLocation) => {
-    const position = new kakao.maps.LatLng(location.lat, location.lng);
-    const marker = new kakao.maps.Marker({
+  const createRegionMarker = (location: FishingPointLocation) => {
+    const position = new window.kakao.maps.LatLng(
+      location.latitude,
+      location.longitude
+    );
+    const marker = new window.kakao.maps.Marker({
       position: position,
-      image: new kakao.maps.MarkerImage(
-        "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png",
-        new kakao.maps.Size(32, 32),
+      image: new window.kakao.maps.MarkerImage(
+        "/images/kakaoLocationPin.png",
+        new window.kakao.maps.Size(28, 28)
+      ),
+    });
+
+    window.kakao.maps.event.addListener(marker, "click", () => {
+      // 마커 클릭 시 해당 위치로 이동하고 줌 레벨 변경
+      mapRef.current.setCenter(position);
+      mapRef.current.setLevel(12);
+
+      // 기존 클릭 이벤트 핸들러 호출
+      handleClickRegionMarker(location);
+    });
+
+    return marker;
+  };
+
+  const createMarker = (location: FishingPoint) => {
+    const position = new window.kakao.maps.LatLng(
+      location.latitude,
+      location.longitude
+    );
+    const marker = new window.kakao.maps.Marker({
+      position: position,
+      image: new window.kakao.maps.MarkerImage(
+        "/images/kakaoFishingPointPin.png",
+        new window.kakao.maps.Size(32, 32),
         {
-          offset: new kakao.maps.Point(16, 32),
+          offset: new window.kakao.maps.Point(16, 32),
         }
       ),
     });
 
-    kakao.maps.event.addListener(marker, "click", () => {
+    window.kakao.maps.event.addListener(marker, "click", () => {
       setSelectedLocation(location);
     });
 
@@ -221,20 +285,37 @@ export default function KaKaoMap() {
   const applyClusterer = (markers: any[]) => {
     if (!mapRef.current) return;
 
-    new kakao.maps.MarkerClusterer({
+    // 기존 클러스터러 제거
+    if (clustererRef.current) {
+      clustererRef.current.clear();
+    }
+
+    clustererRef.current = new window.kakao.maps.MarkerClusterer({
       map: mapRef.current,
-      markers,
       averageCenter: true,
       minLevel: 5,
       gridSize: 60,
-      icons: [
-        {
-          src: "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png",
-          size: new kakao.maps.Size(56, 56),
-          offset: new kakao.maps.Point(28, 28),
-        },
-      ],
+      markers: markers,
     });
+  };
+
+  // 모든 마커 제거 함수
+  const removeAllMarkers = () => {
+    if (!mapRef.current) return;
+
+    // 클러스터러가 있으면 제거
+    if (clustererRef.current) {
+      clustererRef.current.clear();
+      clustererRef.current = null;
+    }
+
+    // 저장된 모든 마커 제거
+    markersRef.current.forEach((marker) => {
+      marker.setMap(null);
+    });
+
+    // 마커 배열 초기화
+    markersRef.current = [];
   };
 
   return (
