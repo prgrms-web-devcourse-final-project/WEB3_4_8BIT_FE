@@ -94,6 +94,12 @@ const hotPosts = [
 
 export default function FishingGroupPage() {
   const [activeFilter, setActiveFilter] = useState<PostFilter>("all");
+  const [searchKeyword, setSearchKeyword] = useState<string>("");
+
+  const handleSearch = (searchTerm: string) => {
+    console.log("검색어:", searchTerm);
+    setSearchKeyword(searchTerm);
+  };
 
   return (
     <>
@@ -110,9 +116,9 @@ export default function FishingGroupPage() {
 
       <div className="container mx-auto px-4 py-8">
         <HotPost />
-        <SearchBar />
+        <SearchBar handleSearch={handleSearch} />
         <TabSection onFilterChange={setActiveFilter} />
-        <PostList filter={activeFilter} />
+        <PostList filter={activeFilter} searchKeyword={searchKeyword} />
       </div>
     </>
   );
