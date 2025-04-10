@@ -254,9 +254,9 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
 
       alert("게시글이 수정되었습니다!");
       router.push(`/fishing-group/post/${postId}`);
-    } catch (err) {
-      console.error("❌ 게시글 수정 중 오류:", err);
-      alert("게시글 수정 중 오류가 발생했습니다.");
+    } catch (error: unknown) {
+      console.error("❌ 게시글 수정 중 오류:", error as Error);
+      throw error;
     } finally {
       setIsSubmitting(false);
     }
