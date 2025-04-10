@@ -59,7 +59,6 @@ const regions = [
   { id: 10, name: "경남" },
 ];
 
-// 파일 정보 인터페이스 정의
 interface FileInfo {
   fileId: number;
   fileUrl: string;
@@ -69,7 +68,6 @@ interface EditPostFormProps {
   postId: number;
 }
 
-// 서버 응답 타입 정의를 확장하여 파일 관련 필드 추가
 interface PostData {
   fishingTripPostId: number;
   subject: string;
@@ -82,7 +80,7 @@ interface PostData {
   fileList?: Array<{ fileId: number; fileUrl: string }>;
   fileIdList?: number[];
   fileUrlList?: string[];
-  files?: Array<{ fileId: number; fileUrl: string }>; // 추가된 필드: 일부 API는 이 형식을 사용할 수 있음
+  files?: Array<{ fileId: number; fileUrl: string }>;
 }
 
 export default function EditPostForm({ postId }: EditPostFormProps) {
@@ -143,12 +141,12 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
             setIsBoatFishing(postData.isShipFish);
           }
 
-          // 기존 이미지 처리 (다양한 API 응답 구조에 대응)
+          // 기존 이미지 처리
           let fileIds: number[] = [];
           let fileUrls: string[] = [];
           let fileInfos: FileInfo[] = [];
 
-          // 1. fileList 형태로 있는 경우 (id와 url이 함께 있는 경우)
+          // 1. fileList 형태로 있는 경우
           if (postData.fileList && postData.fileList.length > 0) {
             console.log("📷 파일 리스트 데이터:", postData.fileList);
             fileInfos = postData.fileList;
@@ -248,13 +246,13 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
 
         console.log("🗑️ 삭제 후 남은 파일:", updatedFiles);
       } else {
-        // 기존 방식으로 URL과 ID 개별 관리 (URL과 ID가 동일한 인덱스에 있다고 가정)
+        // 기존 방식으로 URL과 ID 개별 관리
         const updatedExistingUrls = existingFileUrls.filter(
           (_, i) => i !== index
         );
         setExistingFileUrls(updatedExistingUrls);
 
-        // 기존 이미지 ID도 함께 제거 (동일한 인덱스 가정)
+        // 기존 이미지 ID도 함께 제거
         const updatedExistingIds = existingFileIds.filter(
           (_, i) => i !== index
         );

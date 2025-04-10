@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, Users, MapPin } from "lucide-react";
+import { Calendar, MapPin, UserRound } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
@@ -10,8 +10,6 @@ interface PostCardProps {
   content: string;
   date: string;
   location: string;
-  isRecruiting?: boolean;
-  currentCount: number;
   recruitmentCount: number;
   fishPointName: string;
   fileUrlList?: string[];
@@ -28,7 +26,6 @@ export function PostCard({
   content,
   date,
   location,
-  currentCount = 0,
   recruitmentCount,
   fishPointName,
   fileUrlList = [],
@@ -100,7 +97,7 @@ export function PostCard({
 
   // 지도 클릭 시 새 창에서 해당 위치의 카카오맵 링크로 이동
   const handleMapClick = (e: React.MouseEvent) => {
-    e.preventDefault(); // Link 컴포넌트의 기본 동작 방지
+    e.preventDefault();
     if (!latitude || !longitude) return;
 
     const url = `https://map.kakao.com/link/map/${encodeURIComponent(
@@ -111,7 +108,7 @@ export function PostCard({
 
   // 위치 정보 클릭 시 지도 표시 토글
   const handleLocationClick = (e: React.MouseEvent) => {
-    e.preventDefault(); // Link 컴포넌트의 기본 동작 방지
+    e.preventDefault();
     if (latitude && longitude) {
       setShowMap(!showMap);
     }
@@ -162,8 +159,8 @@ export function PostCard({
                   동출날짜: {date}
                 </span>
                 <span className="flex items-center gap-1">
-                  <Users size={16} />
-                  모집인원: {currentCount}/{recruitmentCount}명
+                  <UserRound size={16} />
+                  모집인원: {recruitmentCount}명
                 </span>
                 <span
                   className={`flex items-center gap-1 ${
