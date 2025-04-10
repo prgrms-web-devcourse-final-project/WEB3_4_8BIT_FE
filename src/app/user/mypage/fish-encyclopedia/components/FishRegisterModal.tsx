@@ -1,36 +1,127 @@
-import React, { useEffect, useState } from "react";
+import React, {useEffect, useReducer, useState} from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {Button} from "@/components/ui/button";
 import {X} from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {useQuery} from "@tanstack/react-query";
+import {getFishingRegion, getRegions} from "@/lib/api/fishingPointAPI";
+import {FishUpload} from "@/types/fish.interface";
+import {FishAPI} from "@/lib/api/fishAPI";
+import {useRouter} from "next/navigation";
 
 interface ModalProps {
   fishName: string;
+  fishEncyclopediaId: number;
   setIsRegisterModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export default function FishRegisterModal({ fishName, setIsRegisterModalOpen }: ModalProps) {
-  const [point, setPoint] = useState<string>("");
-  const [location, setLocation] = useState<string>("");
-  const [length, setLength] = useState<string>("");
-  const [quantity, setQuantity] = useState<string>("");
+type Action  =
+  | {type : 'changed_fish_point_id', nextFishPointId : number}
+  | {type : 'changed_length', nextLength : number}
+  | {type : 'changed_count', nextCount : number}
 
-  // 포인트 값이 변경되면 잡은 위치 자동 업데이트 예정
-  useEffect(() => {
-    if (point) {
-      setLocation(`자동 채워진 위치: ${point}`);
-    } else {
-      setLocation("");
+function reducer(state : FishUpload, action : Action) : FishUpload {
+  switch (action.type) {
+    case 'changed_fish_point_id': {
+      return {
+        ...state,
+        fishPointId : action.nextFishPointId,
+      };
     }
-  }, [point]);
+    case 'changed_length': {
+      return {
+        ...state,
+        length : action.nextLength,
+      };
+    }
+    case 'changed_count': {
+      return {
+        ...state,
+        count : action.nextCount,
+      }
+    }
+    default :
+      throw new Error('Unknown action type');
+  }
+}
+
+export default function FishRegisterModal({ fishName, fishEncyclopediaId, setIsRegisterModalOpen }: ModalProps) {
+  const initialState : FishUpload = {
+    fishId : fishEncyclopediaId,
+    fishPointId : null,
+    length : null,
+    count : null,
+  };
+  const [fishUploadState, dispatch] = useReducer(reducer, initialState);
+  const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
+  const router = useRouter();
+
+  const { data: regionData, isSuccess: isRegionSuccess } = useQuery({
+    queryKey: ['regions'],
+    queryFn: getRegions,
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const { data: pointData, isSuccess: isPointSuccess } = useQuery({
+    queryKey: ['point', selectedRegion],
+    queryFn: () => getFishingRegion(selectedRegion as string),
+    staleTime: 1000 * 60 * 5,
+    enabled: !!selectedRegion,
+  });
+
+  const handleRegionChange = (regionName: string) => {
+    setSelectedRegion(regionName);
+  };
+
+  const handlePointChange = (pointId: string) => {
+    dispatch({ type: "changed_fish_point_id", nextFishPointId: Number(pointId) });
+  };
+
+  const handleLengthChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!Number(e.target.value)) {
+      e.target.value = '';
+    }
+    dispatch({ type: "changed_length", nextLength: Number(e.target.value) });
+  };
+
+  const handleCountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!Number(e.target.value)) {
+      e.target.value = '';
+    }
+    dispatch({ type: "changed_count", nextCount: Number(e.target.value) });
+  };
+
+  const validateData = (uploadFishData: FishUpload): boolean => {
+    if (uploadFishData.fishId === null || uploadFishData.fishId < 0) return false;
+    if (uploadFishData.fishPointId === null || uploadFishData.fishPointId < 0) return false;
+    if (uploadFishData.length === null || uploadFishData.length < 0) return false;
+    if (uploadFishData.count === null || uploadFishData.count < 0) return false;
+
+    return true;
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log({ point, location, length, quantity });
 
-    setTimeout(() => {
-      setIsRegisterModalOpen(false);
-    },1000)
+    if (!validateData(fishUploadState)) {
+      alert("모든 필드가 채워져야 하며, 값은 음수가 될 수 없습니다."); // TODO 수정 필요
+      return;
+    }
+
+    const response = await FishAPI.postFishEncyclopedias(fishUploadState);
+    if (response.success) {
+      alert('등록 완료'); // TODO: 수정 필요
+    }
+    router.refresh();
   };
 
   return (
@@ -49,29 +140,61 @@ export default function FishRegisterModal({ fishName, setIsRegisterModalOpen }: 
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="point" className="text-right">
-              포인트
+              잡은 지역
             </Label>
-            <Input
-              id="point"
-              placeholder="포인트를 검색하세요"
-              className="col-span-3"
-              value={point}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setPoint(e.target.value)
-              }
-            />
+            <Select onValueChange={handleRegionChange}>
+              <SelectTrigger className="w-[180px] cursor-pointer">
+                <SelectValue placeholder="지역 선택하기" />
+              </SelectTrigger>
+              {isRegionSuccess && regionData?.length > 0 && (
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectLabel>지역구 목록</SelectLabel>
+                    {regionData.map((item) => (
+                      <SelectItem
+                        key={item.regionId}
+                        value={String(item.regionId)}
+                      >
+                        {item.regionName}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              )}
+            </Select>
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="location" className="text-right">
-              잡은 위치
+          <div className="grid grid-cols-4 items-center gap-4 h-[35px]">
+            <Label htmlFor="point" className="text-right">
+              잡은 낚시 포인트
             </Label>
-            <Input
-              id="location"
-              placeholder="자동으로 채워집니다"
-              className="col-span-3"
-              value={location}
-              readOnly
-            />
+            <Select onValueChange={handlePointChange}>
+            {isPointSuccess && (
+              <>
+                {pointData?.length > 0 ? (
+                  <SelectTrigger className="w-[180px] cursor-pointer">
+                    <SelectValue placeholder="낚시 포인트 선택하기" />
+                  </SelectTrigger>
+                ) : (
+                  <SelectTrigger className="w-[180px] cursor-pointer" disabled>
+                    <SelectValue placeholder="포인트가 없습니다." />
+                  </SelectTrigger>
+                )}
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectLabel>낚시 포인트 목록</SelectLabel>
+                    {pointData.map((item) => (
+                      <SelectItem
+                        key={item.fishPointId}
+                        value={String(item.fishPointId)}
+                      >
+                        {item.fishPointDetailName}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </>
+            )}
+            </Select>
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="length" className="text-right">
@@ -81,10 +204,8 @@ export default function FishRegisterModal({ fishName, setIsRegisterModalOpen }: 
               id="length"
               placeholder="길이를 입력하세요"
               className="col-span-3"
-              value={length}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setLength(e.target.value)
-              }
+              value={fishUploadState.length ?? ""}
+              onChange={handleLengthChange}
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
@@ -95,10 +216,8 @@ export default function FishRegisterModal({ fishName, setIsRegisterModalOpen }: 
               id="quantity"
               placeholder="마릿수를 입력하세요"
               className="col-span-3"
-              value={quantity}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setQuantity(e.target.value)
-              }
+              value={fishUploadState.count ?? ""}
+              onChange={handleCountChange}
             />
           </div>
         </div>
