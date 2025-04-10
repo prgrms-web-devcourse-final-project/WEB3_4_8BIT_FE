@@ -6,6 +6,7 @@ import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
 import { applyFishingTripRecruitment } from "@/lib/api/fishingTripRecruitmentAPI";
 import { Button } from "@/components/ui/button";
+import { User } from "lucide-react";
 
 interface JoinInfoCardProps {
   postId: number;
@@ -58,12 +59,6 @@ export default function JoinInfoCard({
   // 모달 내부 폼 상태
   const [experience, setExperience] = useState("BEGINNER");
   const [applicationText, setApplicationText] = useState("");
-
-  // 현재 사용자 더미 데이터
-  const currentUser = {
-    nickname: "테스트 사용자",
-    profileImageUrl: "/default-user.png",
-  };
 
   // 현재 날짜 (YYYY-MM-DD)
   const currentDate = new Date().toISOString().split("T")[0];
@@ -160,27 +155,6 @@ export default function JoinInfoCard({
           참여자 채팅방
         </button>
 
-        {/* 참여자 정보 */}
-        <div>
-          <h4 className="font-medium text-base mb-2 mt-4">참여자 정보</h4>
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200">
-              <Image
-                src={currentUser.profileImageUrl}
-                alt="Profile"
-                width={32}
-                height={32}
-                className="object-cover"
-              />
-            </div>
-            <div>
-              <p className="font-medium text-base text-gray-700">
-                {currentUser.nickname}
-              </p>
-            </div>
-          </div>
-        </div>
-
         {/* 작성자 정보 */}
         <div>
           <h4 className="font-medium text-base mb-2 mt-4">작성자 정보</h4>
@@ -197,24 +171,36 @@ export default function JoinInfoCard({
           </button>
         </div>
 
+        {/* 수정된 참여자 목록 */}
         <div className="mt-4">
           <h3 className="text-lg font-semibold mb-2">참여자 목록</h3>
-          <ul className="space-y-2">
-            {participants.map((participant) => (
-              <li key={participant.memberId} className="flex items-center">
-                {participant.profileImageUrl ? (
-                  <img
-                    src={participant.profileImageUrl}
-                    alt={participant.nickname}
-                    className="w-8 h-8 rounded-full mr-2"
-                  />
-                ) : (
-                  <div className="w-8 h-8 bg-gray-200 rounded-full mr-2" />
-                )}
-                <span>{participant.nickname}</span>
-              </li>
-            ))}
-          </ul>
+          {participants && participants.length > 0 ? (
+            <ul className="space-y-2">
+              {participants.map((participant) => (
+                <li key={participant.memberId} className="flex items-center">
+                  {participant.profileImageUrl ? (
+                    <Image
+                      src={participant.profileImageUrl}
+                      alt={participant.nickname ?? "참여자 프로필"}
+                      width={32}
+                      height={32}
+                      className="w-8 h-8 rounded-full mr-2 object-cover"
+                      onError={(e) => {
+                        e.currentTarget.src = "/default-user.png";
+                      }}
+                    />
+                  ) : (
+                    <div className="w-8 h-8 bg-gray-200 rounded-full mr-2 flex items-center justify-center">
+                      <User className="w-5 h-5 text-gray-400" />
+                    </div>
+                  )}
+                  <span>{participant.nickname ?? "이름 없음"}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-gray-500">참여자가 없습니다.</p>
+          )}
         </div>
       </div>
 
@@ -237,75 +223,45 @@ export default function JoinInfoCard({
             </button>
             <h3 className="text-xl font-bold mb-4">참여 신청하기</h3>
             <form onSubmit={handleJoinSubmit} className="space-y-4">
-              {/* 사용자 프로필 및 닉네임 상단 배치 */}
-              <div className="flex items-center space-x-3 mb-4">
-                <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200">
-                  <Image
-                    src={currentUser.profileImageUrl}
-                    alt="Profile"
-                    width={40}
-                    height={40}
-                    className="object-cover"
-                  />
-                </div>
-                <span className="text-base font-medium">
-                  {currentUser.nickname}
-                </span>
-              </div>
-              {/* 경험 선택 */}
+              {/* 자기소개 입력 */}
               <div>
-                <label className="block text-sm font-medium mb-1">경험</label>
+                <label
+                  htmlFor="applicationText"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  자기소개 및 신청 내용
+                </label>
+                <textarea
+                  id="applicationText"
+                  value={applicationText}
+                  onChange={(e) => setApplicationText(e.target.value)}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
+                  placeholder="간단한 자기소개나 참여하고 싶은 이유를 작성해주세요."
+                  required
+                />
+              </div>
+
+              {/* 낚시 경험 선택 */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  낚시 경험
+                </label>
                 <select
                   value={experience}
                   onChange={(e) => setExperience(e.target.value)}
-                  className="w-full border border-gray-300 rounded-md p-2"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
                 >
-                  <option value="BEGINNER">초급</option>
-                  <option value="INTERMEDIATE">중급</option>
-                  <option value="ADVANCED">고급</option>
+                  <option value="BEGINNER">초급 (낚시 경험 거의 없음)</option>
+                  <option value="INTERMEDIATE">중급 (취미로 즐김)</option>
+                  <option value="ADVANCED">고급 (전문가 수준)</option>
                 </select>
               </div>
-              {/* 신청 내용 */}
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  신청 내용
-                </label>
-                <textarea
-                  value={applicationText}
-                  onChange={(e) => setApplicationText(e.target.value)}
-                  placeholder="신청 내용을 작성해주세요."
-                  className="w-full border border-gray-300 rounded-md p-2"
-                  rows={4}
-                />
-              </div>
-              {/* 신청일자 - 현재 날짜 표시 (수정 불가) */}
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  신청일자
-                </label>
-                <div className="w-full border border-gray-300 rounded-md p-2">
-                  {currentDate}
-                </div>
-              </div>
-              {/* 버튼 */}
-              <div className="flex justify-end space-x-2">
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="py-2 px-4 border border-gray-300 rounded-md hover:bg-gray-100 cursor-pointer"
-                >
-                  취소
-                </button>
-                <button
-                  type="submit"
-                  disabled={!applicationText.trim()}
-                  className={`py-2 px-4 bg-primary text-white rounded-md cursor-pointer hover:bg-[#2f8ae0] ${
-                    !applicationText.trim() && "opacity-50 cursor-not-allowed"
-                  }`}
-                >
-                  신청하기
-                </button>
-              </div>
+
+              {/* 제출 버튼 */}
+              <Button type="submit" className="w-full">
+                신청 제출
+              </Button>
             </form>
           </div>
         </div>
