@@ -17,9 +17,9 @@ export interface FishDetailInfo {
 
 export interface FishUpload {
   fishId : number;
-  length : number;
-  count : number;
-  fishPointId : number;
+  length : number | null;
+  count : number | null;
+  fishPointId : number | null;
 }
 
 type Month = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
