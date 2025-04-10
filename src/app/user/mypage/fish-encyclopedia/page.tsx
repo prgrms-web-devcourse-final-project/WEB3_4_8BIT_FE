@@ -2,8 +2,6 @@ import { Badge } from "@/components/ui/badge"
 import { cookies } from 'next/headers';
 import MyPageFishCard from "@/app/user/mypage/fish-encyclopedia/components/MyPageFishCard";
 import {FishInfo} from "@/types/fish.interface";
-import {Suspense} from "react";
-import {Skeleton} from "@/components/ui/skeleton";
 
 export default async function FishEncyclopedia() {
   const cookieStore = await cookies();
