@@ -78,6 +78,7 @@ export default function FishRegisterModal({ fishName, fishEncyclopediaId, setIsR
     enabled: !!selectedRegion,
   });
 
+  // TODO 지역을 고르고 낚시 포인트를 고르고 다른 지역을 고르고 다른 지역을 누르면 placeholder 가 안보이는 문제
   const handleRegionChange = (regionName: string) => {
     setSelectedRegion(regionName);
   };
@@ -168,32 +169,32 @@ export default function FishRegisterModal({ fishName, fishEncyclopediaId, setIsR
               잡은 낚시 포인트
             </Label>
             <Select onValueChange={handlePointChange}>
-            {isPointSuccess && (
-              <>
-                {pointData?.length > 0 ? (
-                  <SelectTrigger className="w-[180px] cursor-pointer">
-                    <SelectValue placeholder="낚시 포인트 선택하기" />
-                  </SelectTrigger>
-                ) : (
-                  <SelectTrigger className="w-[180px] cursor-pointer" disabled>
-                    <SelectValue placeholder="포인트가 없습니다." />
-                  </SelectTrigger>
-                )}
-                <SelectContent>
-                  <SelectGroup>
-                    <SelectLabel>낚시 포인트 목록</SelectLabel>
-                    {pointData.map((item) => (
-                      <SelectItem
-                        key={item.fishPointId}
-                        value={String(item.fishPointId)}
-                      >
-                        {item.fishPointDetailName}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </>
-            )}
+              {isPointSuccess && (
+                <>
+                  {pointData?.length > 0 ? (
+                    <SelectTrigger className="w-[180px] cursor-pointer">
+                      <SelectValue placeholder="낚시 포인트 선택하기" />
+                    </SelectTrigger>
+                  ) : (
+                    <SelectTrigger className="w-[180px] cursor-pointer" disabled>
+                      <SelectValue placeholder="포인트가 없습니다." />
+                    </SelectTrigger>
+                  )}
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectLabel>낚시 포인트 목록</SelectLabel>
+                      {pointData.map((item) => (
+                        <SelectItem
+                          key={item.fishPointId}
+                          value={String(item.fishPointId)}
+                        >
+                          {item.fishPointDetailName}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </>
+              )}
             </Select>
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
