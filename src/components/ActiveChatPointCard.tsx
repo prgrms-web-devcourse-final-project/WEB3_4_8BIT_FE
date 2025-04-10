@@ -46,7 +46,7 @@ const ActiveChatPointCard = () => {
   }, []);
 
   return (
-    <div className="bg-white p-4 w-full shadow-lg rounded-lg">
+    <div className="bg-white p-4 w-full shadow-lg rounded-lg border-1">
       <div className="flex items-center gap-2 mb-4">
         <svg
           className="w-5 h-5 text-primary"
@@ -69,7 +69,7 @@ const ActiveChatPointCard = () => {
         {chatPoints.map((point, index) => (
           <div key={index} className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="text-base">{point.title}</span>
+              <span className="font-medium text-base">{point.title}</span>
               <Badge
                 variant="outline"
                 className="text-sm px-2 py-0 h-5 bg-green-50 text-green-700 border-green-200"
