@@ -63,7 +63,7 @@ export function PostCard({
               <div className="flex items-center gap-3">
                 <span
                   className={`px-2 py-1 text-sm rounded-full ${
-                    postStatus === "모집중"
+                    postStatus === "RECRUITING"
                       ? "bg-[#2CD5D7] text-white"
                       : "bg-gray-500 text-white"
                   }`}
