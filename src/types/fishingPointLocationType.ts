@@ -37,3 +37,14 @@ export interface FishingPointDetailAPIResponse {
   data: FishingPointDetail;
   success: boolean;
 }
+
+export interface PopularFishingPoint {
+  fishPointId: number;
+  fishPointName: string;
+  fishPointDetailName: string;
+  recruitmentCount : number;
+}
+
+export interface NearestFishingPoint extends FishingPoint {
+  distance : number;
+}
