@@ -11,9 +11,10 @@ export default async function FishEncyclopedia() {
     headers: {
       Cookie: cookieHeader,
       // TODO 추후 쿠키로 통일해야함
-      Authorization : 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIzIiwiYXV0aCI6IkNBUFRBSU4iLCJlbWFpbCI6InRveWF6eEBuYXZlci5jb20iLCJpYXQiOjE3NDQxODA2MTIsImV4cCI6MTc0NDI2NzAxMn0.uhLhUHzlKc9K6THqYPcCUxzcfORBksafiNj7xti8hRAdLhkQ9D5YynFORaRrfDHT882_VPO8P7Tyj4pivZ2OeQ',
+      Authorization : `${process.env.NEXT_ACCESS_TOKEN}`,
     }
   });
+
   const responseData = await response.json();
   const fishData : FishInfo[] = responseData.data;
   console.log(fishData);

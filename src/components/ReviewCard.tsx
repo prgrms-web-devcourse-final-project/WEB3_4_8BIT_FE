@@ -3,9 +3,8 @@
 import {Card, CardContent} from "@/components/ui/card";
 import { Button } from "@/components/ui/button"
 import {Star, Trash2} from "lucide-react";
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import Image from "next/image";
-import Link from "next/link";
 import {UserAPI} from "@/lib/api/userAPI";
 import {useRouter} from "next/navigation";
 
@@ -44,13 +43,14 @@ export default function ReviewCard({
     }
   }
 
-  if (isDeleted) {
-    return null;
-  }
+  useEffect(() => {
+    if (isDeleted) {
+      router.refresh();
+    }
+  }, [isDeleted, router]);
 
   return (
-    // TODO push 로 하니까 뒤로가기 했을때 브라우저 캐시 때문인지 삭제된 데이터가 남아 있다
-    <Card className="cursor-pointer" onClick={() => router.replace(`/boat-reservation/${id}`)}>
+    <Card className="cursor-pointer" onClick={() => router.push(`/boat-reservation/${id}`)}>
       <CardContent className="p-6">
         <div className="flex justify-between items-start">
           <div className="flex items-center">

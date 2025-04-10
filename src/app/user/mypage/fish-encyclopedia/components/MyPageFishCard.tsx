@@ -24,10 +24,11 @@ export default function MyPageFishCard({
     <Card className="overflow-hidden hover:shadow-md py-0 gap-0 transition-shadow">
       <div className="grid items-center justify-center w-full aspect-[291/200]">
         <Image
-          src={fileUrl}
+          src={fileUrl || '/images/empty.png'}
           alt={fishName}
           width={150}
           height={80}
+          style={!totalCount ? { filter: "grayscale(100%) brightness(0.3) contrast(0)" } : {}}
         />
       </div>
       <Separator/>
@@ -63,6 +64,7 @@ export default function MyPageFishCard({
       {isRegisterModalOpen && (
         <FishRegisterModal
           fishName={fishName}
+          fishEncyclopediaId={fishEncyclopediaId}
           setIsRegisterModalOpen={setIsRegisterModalOpen}
         />
       )}
