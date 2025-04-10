@@ -14,6 +14,14 @@ export interface FishingPoint {
   isBan: boolean;
 }
 
+export interface fishList {
+  fileUrl: string;
+  fishId: number;
+  fishName: string;
+  spawnSeasonList: number[];
+  totalCount: number;
+}
+
 export interface FishingPointDetail {
   fishPointId: number;
   fishPointName: string;
@@ -21,7 +29,7 @@ export interface FishingPointDetail {
   latitude: number;
   longitude: number;
   isBan: boolean;
-  fishList: [];
+  fishList: fishList[];
 }
 
 export interface FishingPointDetailAPIResponse {

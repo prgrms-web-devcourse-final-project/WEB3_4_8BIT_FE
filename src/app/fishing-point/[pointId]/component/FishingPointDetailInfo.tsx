@@ -38,7 +38,7 @@ export default function FishingPointDetailInfo() {
       </div>
 
       {/* 대표 어종 */}
-      <MainFishList />
+      <MainFishList fishList={pointDetailData?.data.fishList} />
 
       {/* 날씨 정보 */}
       <FishingConditionsTab pointDetailData={pointDetailData?.data} />
