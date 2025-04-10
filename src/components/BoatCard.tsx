@@ -9,9 +9,9 @@ import {
 } from "@/components/ui/card";
 import Link from "next/link";
 import Image from "next/image";
-import { PostType } from "@/types/boatPostType";
+import {BoatFishing} from "@/lib/api/boatFishAPI";
 
-export default function BoatCard({ boatData }: { boatData: PostType }) {
+export default function BoatCard({ boatData }: { boatData: BoatFishing }) {
   // 메인페이지에서 오류 발생
   if (!boatData) {
     return <div>데이터가 없습니다.</div>;
@@ -22,9 +22,9 @@ export default function BoatCard({ boatData }: { boatData: PostType }) {
       <div className="h-48 overflow-hidden">
         <Image
           src={
-            boatData.imageList && boatData.imageList.length > 0
-              ? boatData.imageList[0]
-              : "/placeholder.svg"
+            boatData.fileUrlList && boatData.fileUrlList.length > 0
+              ? boatData.fileUrlList[0]
+              : "/images/fishing-point-dummy.png"
           }
           alt={boatData.subject}
           className="w-full h-full object-cover"
@@ -54,7 +54,7 @@ export default function BoatCard({ boatData }: { boatData: PostType }) {
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="flex flex-wrap gap-2">
-          {boatData.fishList.map((fish, index) => (
+          {boatData.fishNameList.map((fish, index) => (
             <span
               key={index}
               className="bg-gray-80 text-gray-800 text-xs px-2 py-1 rounded"
