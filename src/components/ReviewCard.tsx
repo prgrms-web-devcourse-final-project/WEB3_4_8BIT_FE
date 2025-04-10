@@ -1,8 +1,13 @@
+'use client'
+
 import {Card, CardContent} from "@/components/ui/card";
 import { Button } from "@/components/ui/button"
 import {Star, Trash2} from "lucide-react";
-import type React from "react";
+import React, {useState} from "react";
 import Image from "next/image";
+import Link from "next/link";
+import {UserAPI} from "@/lib/api/userAPI";
+import {useRouter} from "next/navigation";
 
 export default function ReviewCard({
   id,
@@ -13,7 +18,7 @@ export default function ReviewCard({
   rating,
   enableDelete
 }: {
-  id: string;
+  id: number;
   user : string
   date : string
   content : string
@@ -21,8 +26,31 @@ export default function ReviewCard({
   rating : number
   enableDelete? : boolean;
 }) {
+  const [isDeleted, setIsDeleted] = useState(false);
+  const router = useRouter();
+
+  const handleDelete = async (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    event.preventDefault();
+
+    try {
+      const response = await UserAPI.deleteUserReview(id);
+      console.log(response);
+      if (response.success) {
+        setIsDeleted(true);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  if (isDeleted) {
+    return null;
+  }
+
   return (
-    <Card>
+    // TODO push 로 하니까 뒤로가기 했을때 브라우저 캐시 때문인지 삭제된 데이터가 남아 있다
+    <Card className="cursor-pointer" onClick={() => router.replace(`/boat-reservation/${id}`)}>
       <CardContent className="p-6">
         <div className="flex justify-between items-start">
           <div className="flex items-center">
@@ -45,7 +73,7 @@ export default function ReviewCard({
             </div>
           </div>
           {enableDelete && (
-            <Button variant="outline" className="gap-1 text-red-600 hover:text-red-700 hover:bg-red-50 cursor-pointer">
+            <Button onClick={(event) => handleDelete(event)} variant="outline" className="gap-1 text-red-600 hover:text-red-700 hover:bg-red-50 cursor-pointer">
               <Trash2 className="h-4 w-4" /> 삭제
             </Button>
           )}

@@ -1,0 +1,59 @@
+name: frontend deploy
+
+on:
+  push:
+    branches:
+      - dev  # dev 브랜치에 푸시될 때 트리거
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. 코드 체크아웃
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # 2. node_modules 캐시 설정 (필요할 경우)
+      - name: Cache node_modules
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-modules-
+
+      # 3. Docker Hub에 로그인
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # 4. Docker 이미지 빌드 및 푸시
+      - name: Build Docker image
+        run: |
+          docker buildx build \
+          --platform linux/amd64,linux/arm64 \
+          --build-arg NEXT_PUBLIC_BADANORI_API_KEY=${{ secrets.NEXT_PUBLIC_BADANORI_API_KEY }} \
+          --build-arg NEXT_PUBLIC_KAKAO_MAP_API_KEY=${{ secrets.NEXT_PUBLIC_KAKAO_MAP_API_KEY }} \
+          --build-arg NEXT_PUBLIC_OPENWEATHER_API_KEY=${{ secrets.NEXT_PUBLIC_OPENWEATHER_API_KEY }} \
+          -t ${{ secrets.DOCKER_USERNAME }}/mikki_fe:v1 .
+
+      - name: Push Docker image
+        run: |
+          docker push "${{ secrets.DOCKER_USERNAME }}/mikki_fe:v1"
+
+      - name: Jenkins deploy
+        if: success()
+        uses: appleboy/jenkins-action@master
+        with:
+          url: ${{ secrets.JENKINS_URL }}
+          user: ${{ secrets.JENKINS_USER }}
+          token: ${{ secrets.JENKINS_DEPLOY_TOKEN }}
+          job: ${{ secrets.JENKINS_JOB }}

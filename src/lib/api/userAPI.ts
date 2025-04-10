@@ -1,5 +1,6 @@
 import {BoatInfo, BoatInputData, NormalUserInputData, User} from "@/types/user.interface";
 import {apiInstance} from "@/lib/api/apiInstance";
+import {PostAPIResponse} from "@/lib/api/fishAPI";
 
 // 백엔드가 설정한 기본 API 응답
 interface APIDataResponse<T> {
@@ -8,24 +9,25 @@ interface APIDataResponse<T> {
   timestamp : string;
 }
 
+// 사용자 관련 API 클래스
 export class UserAPI {
-  public static async getMemberInfo() : Promise<User | null> {
+  public static async getMemberInfo() : Promise<User> {
     try {
-      const response = await apiInstance.get<APIDataResponse<User | null>>('/members')
+      const response = await apiInstance.get<APIDataResponse<User>>('/members')
       return response.data.data
     } catch (error) {
       console.error('getMemberInfo error:', error)
-      return null
+      throw error;
     }
   }
 
-  public static async postMemberInfo(userInput : NormalUserInputData) : Promise<APIDataResponse<unknown> | null> {
+  public static async postMemberInfo(userInput : NormalUserInputData) : Promise<APIDataResponse<unknown>> {
     try {
       const response = await apiInstance.post('/members', userInput)
       return response.data
     } catch (error) {
       console.log(error)
-      return null
+      throw error;
     }
   }
 
@@ -37,13 +39,13 @@ export class UserAPI {
 
   }
 
-  public static async postCaptainMemberInfo(boatInput : BoatInputData) : Promise<APIDataResponse<unknown> | null> {
+  public static async postCaptainMemberInfo(boatInput : BoatInputData) : Promise<APIDataResponse<unknown>> {
     try {
       const response = await apiInstance.post('/members/captains',boatInput);
       return response.data
     } catch (error) {
       console.error('postCaptainMemberInfo error:', error)
-      return null
+      throw error;
     }
   }
 
@@ -57,7 +59,17 @@ export class UserAPI {
       return response.headers
     } catch (error) {
       console.error('postCaptainBoatInfo error:', error)
-      return null
+      throw error;
+    }
+  }
+
+  public static async deleteUserReview(reviewId : number) : Promise<PostAPIResponse> {
+    try {
+      const response = await apiInstance.delete(`/reviews/${reviewId}`);
+      return response.data
+    } catch (error) {
+      console.error('deleteUserReview error:', error)
+      throw error;
     }
   }
 }

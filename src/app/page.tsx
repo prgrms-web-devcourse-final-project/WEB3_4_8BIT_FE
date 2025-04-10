@@ -1,6 +1,6 @@
 "use client";
 
-import React, {useEffect} from "react";
+import React, { useEffect } from "react";
 import ActiveChatPointCard from "@/components/ActiveChatPointCard";
 import FishingPoint from "@/components/FishingPoint";
 import FishingPointCard from "@/components/FishingPointCard";
@@ -9,10 +9,10 @@ import BoatCardSection from "@/components/BoatCardSection";
 import FishSection from "@/components/FishSection";
 import BoatReservationSection from "@/components/BoatReservationSection";
 import FishingGroupSection from "@/components/FishingGroupSection";
-import {useQuery} from "@tanstack/react-query";
-import {UserAPI} from "@/lib/api/userAPI";
-import {useUserStore} from "@/stores/userStore";
-import {User} from "@/types/user.interface";
+import { useQuery } from "@tanstack/react-query";
+import { UserAPI } from "@/lib/api/userAPI";
+import { useUserStore } from "@/stores/userStore";
+import { User } from "@/types/user.interface";
 import {
   Dialog,
   DialogContent,
@@ -21,49 +21,52 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {Button} from "@/components/ui/button";
-import {useRouter} from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 import CurrentLocationWeather from "@/components/CurrentLocationWeather";
 
 export default function Home() {
-  const setUser = useUserStore(state => state.setUser);
-  const user = useUserStore(state => state.user);
-  const router = useRouter()
+  const setUser = useUserStore((state) => state.setUser);
+  const user = useUserStore((state) => state.user);
+  const router = useRouter();
 
   const { data, isError, isSuccess } = useQuery<User | null>({
-    queryKey: ['userInfo'],
-    queryFn: UserAPI.getMemberInfo,
-    staleTime : 1000 * 60 * 5,
-  })
+    queryKey: ["userInfo"],
+    queryFn: UserAPI.getMemberInfo, // TODO 추후 수정이 필요한지?
+    staleTime: 1000 * 60 * 5,
+  });
 
   const handleMoveRegister = () => {
-    router.push('/auth/register');
-  }
+    router.push("/auth/register");
+  };
 
-  useEffect(function setUserDataZustand() {
-    if (isError) {
-      alert("error"); // TODO 추후 에러 처리 필요
-      return;
-    }
+  useEffect(
+    function setUserDataZustand() {
+      if (isError) {
+        alert("error"); // TODO 추후 에러 처리 필요
+        return;
+      }
 
-    if(isSuccess && data) {
-      setUser(data);
-      return;
-    }
-  }, [isSuccess, setUser, data, isError])
+      if (isSuccess && data) {
+        setUser(data);
+        return;
+      }
+    },
+    [isSuccess, setUser, data, isError]
+  );
 
   return (
     <main>
-      <section className="relative w-full h-[550px] flex items-center justify-start">
+      <section className="relative w-[full] h-[550px] flex items-center justify-start">
         <div className="absolute inset-0 bg-gradient-to-r from-gray-20 to-gray-40 opacity-90" />
         <div className="absolute inset-0 bg-[url('/images/mainbanner.png')] bg-cover bg-center mix-blend-overlay" />
-        <div className="relative z-10 text-left px-4 sm:px-6 lg:px-8">
-          <h1 className="text-title-1 font-semibold text-white mb-6 leading-tight">
+        <div className="relative z-10 text-left sm:px-6 lg:px-8 xl:w-[1200px] w-full mx-auto px-4 xl:p-0 p-4">
+          <h1 className="md:text-title-1 font-semibold text-white mb-6 leading-tight text-title-2">
             손끝에서 전해지는 짜릿한 순간,
             <br />
             미끼미끼에서 시작해보세요
           </h1>
-          <p className="text-body-1 text-white/90 max-w-3xl mx-auto mb-8 leading-relaxed">
+          <p className="md:text-body-1 text-white/90 mb-8 leading-relaxed text-body-2">
             낚시를 즐기는 모든 이들을 위한 종합 플랫폼 <br />
             어류 도감부터 선상 낚시 예약까지 낚시에 필요한 모든 것
           </p>
@@ -105,12 +108,14 @@ export default function Home() {
               <DialogTitle>추가 정보를 등록해주세요</DialogTitle>
               <DialogDescription>
                 회원님의 추가 정보를 입력하고
-                <br/>
+                <br />
                 미끼미끼의 서비스를 더욱 알차게 이용해보세요!
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>
-              <Button className="cursor-pointer" onClick={handleMoveRegister}>등록하기</Button>
+              <Button className="cursor-pointer" onClick={handleMoveRegister}>
+                등록하기
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

@@ -60,3 +60,15 @@ export type BooleanKeys<T> = {
 }[keyof T];
 
 export type BoatInfoBooleanKeys = BooleanKeys<BoatData>;
+
+export interface UserReview {
+  reviewId: number;
+  rating : 1 | 2 | 3 | 4 | 5;
+  content : string;
+  fileUrlList : string[];
+  shipFishingPostId : number;
+  memberId: number;
+  nickname: string;
+  isAuthor: boolean;
+  createdAt: string;
+}

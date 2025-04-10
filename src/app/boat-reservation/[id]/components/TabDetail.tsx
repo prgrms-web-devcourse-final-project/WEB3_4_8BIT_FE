@@ -1,3 +1,5 @@
+"use client";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Anchor,
@@ -14,6 +16,13 @@ import {
 import { Separator } from "@/components/ui/separator";
 import type React from "react";
 import { PostDetailPost, PostDetailShip } from "@/types/boatPostType";
+import { useEffect } from "react";
+
+declare global {
+  interface Window {
+    kakao: any;
+  }
+}
 
 export default function TabDetail({
   detailShipFishingPost,
@@ -73,6 +82,30 @@ export default function TabDetail({
     )
     .map(([key]) => amenityConfig[key as keyof typeof amenityConfig]);
 
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.kakao) return;
+
+    kakao.maps.load(() => {
+      const container = document.getElementById("map");
+      if (!container) return;
+
+      const options = {
+        center: new kakao.maps.LatLng(37.566295, 126.977945), // 서울시청 좌표
+        level: 3,
+      };
+
+      const map = new kakao.maps.Map(container, options);
+
+      // 마커 생성
+      const marker = new kakao.maps.Marker({
+        position: new kakao.maps.LatLng(37.566295, 126.977945),
+      });
+
+      // 마커를 지도에 표시
+      marker.setMap(map);
+    });
+  }, []);
+
   return (
     <Card>
       <CardHeader>
@@ -128,6 +161,18 @@ export default function TabDetail({
         <div>
           <h3 className="font-medium mb-2">낚시 정보</h3>
           <p className="text-gray-700">{detailShipFishingPost.content}</p>
+        </div>
+
+        <Separator />
+
+        <div className="mt-8">
+          <div className="flex flex-col gap-2 mb-2">
+            <h3 className="font-medium">위치</h3>
+            <p className="text-gray-700">
+              부산광역시 기장군 기장읍 연화리 어촌계 선착장
+            </p>
+          </div>
+          <div id="map" className="w-full h-[400px] rounded-lg"></div>
         </div>
 
         <Separator />

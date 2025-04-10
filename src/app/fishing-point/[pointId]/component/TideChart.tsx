@@ -45,8 +45,7 @@ export default function TideChart({
       });
 
       // 두 번째 날짜의 모든 조석 데이터
-      const secondDayAllTides = tideChartData[1].tides;
-      secondDayAllTides.forEach((tide) => {
+      tideChartData[1].tides.forEach((tide) => {
         tempTideData.push({
           time: dayjs(tide.tph_time).format("HH:mm"),
           tide: +tide.tph_level,
@@ -54,20 +53,12 @@ export default function TideChart({
         });
       });
 
-      // 세 번째 날짜의 첫 번째 조석 데이터
-      const thirdDayFirstTide = tideChartData[2].tides[0];
-      tempTideData.push({
-        time: dayjs(thirdDayFirstTide.tph_time).format("HH:mm"),
-        tide: +thirdDayFirstTide.tph_level,
-        type: thirdDayFirstTide.hl_code,
-      });
-
-      // 세 번째 날짜의 두 번째 조석 데이터
-      const thirdDaySecondTide = tideChartData[2].tides[1];
-      tempTideData.push({
-        time: dayjs(thirdDaySecondTide.tph_time).format("HH:mm"),
-        tide: +thirdDaySecondTide.tph_level,
-        type: thirdDaySecondTide.hl_code,
+      tideChartData[2].tides.forEach((tide) => {
+        tempTideData.push({
+          time: dayjs(tide.tph_time).format("HH:mm"),
+          tide: +tide.tph_level,
+          type: tide.hl_code,
+        });
       });
     }
 
@@ -102,13 +93,8 @@ export default function TideChart({
 
         // 저조와 고조 지점의 위치 계산
         chartData.forEach((data, index) => {
-          // 첫 번째와 마지막 데이터는 제외
-          if (
-            index === 0 ||
-            index === chartData.length - 1 ||
-            index === chartData.length - 2
-          )
-            return;
+          // 첫 번째 데이터는 제외
+          if (index === 0) return;
 
           const tickElement = ticks[index];
           if (tickElement) {
@@ -163,8 +149,11 @@ export default function TideChart({
   });
 
   return (
-    <div className="overflow-x-hidden">
-      <div className="w-[1600px] h-[300px] relative" ref={chartRef}>
+    <div className="overflow-x-auto">
+      <div
+        className="lg:w-[2600px] md:w-[2000px] w-[1600px] h-[300px] relative"
+        ref={chartRef}
+      >
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart
             data={chartData}
