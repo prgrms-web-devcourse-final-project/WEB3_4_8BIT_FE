@@ -51,8 +51,6 @@ async function getShipPosts(
 export default async function BoatReservation() {
   const shipPostsData = await getShipPosts();
 
-  console.log(shipPostsData); // 서버 데이터
-
   return (
     <div className="min-h-screen">
       <div className="bg-sky-700 text-white py-12 px-4 sm:px-6 lg:px-8">

@@ -19,12 +19,12 @@ import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { Calendar } from "@/components/ui/calendar";
 import React, { useState } from "react";
-import { PostDetailPost } from "@/types/boatPostType";
+import { ShipFishingPostDetailData } from "@/types/boatPostType";
 
 export default function ReservationInfo({
-  detailShipFishingPost,
+  detailShip,
 }: {
-  detailShipFishingPost: PostDetailPost;
+  detailShip: ShipFishingPostDetailData;
 }) {
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [selectedPeople, setSelectedPeople] = useState(1);
@@ -32,11 +32,10 @@ export default function ReservationInfo({
   return (
     <Card className="shadow-lg">
       <CardHeader>
-        <CardTitle className="text-2xl">
-          {detailShipFishingPost.subject}
-        </CardTitle>
+        <CardTitle className="text-2xl">{detailShip.subject}</CardTitle>
         <CardDescription className="flex items-center">
-          <MapPin className="h-4 w-4 mr-1" /> 부산 기장군
+          <MapPin className="h-4 w-4 mr-1" />{" "}
+          {detailShip.detailShip.departurePort}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -106,18 +105,18 @@ export default function ReservationInfo({
         <div className="space-y-2">
           <div className="flex justify-between">
             <span>기본 요금 (1인)</span>
-            <span>₩{detailShipFishingPost.price}</span>
+            <span>₩{detailShip.price}</span>
           </div>
           {selectedPeople > 1 && (
             <div className="flex justify-between text-gray-600">
               <span>추가 인원 ({selectedPeople - 1}명)</span>
-              <span>₩{(selectedPeople - 1) * detailShipFishingPost.price}</span>
+              <span>₩{(selectedPeople - 1) * detailShip.price}</span>
             </div>
           )}
           <Separator />
           <div className="flex justify-between font-bold text-lg">
             <span>총 금액</span>
-            <span>₩{selectedPeople * detailShipFishingPost.price}</span>
+            <span>₩{selectedPeople * detailShip.price}</span>
           </div>
         </div>
 
