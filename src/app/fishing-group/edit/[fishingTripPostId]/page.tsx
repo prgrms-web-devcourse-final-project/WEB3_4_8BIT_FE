@@ -1,9 +1,18 @@
-"use client";
-
 import Image from "next/image";
 import EditPostForm from "./components/EditPostForm";
 
-export default function EditPage({
+// generateMetadata 함수를 추가하여 params 객체를 처리합니다.
+export async function generateMetadata({
+  params,
+}: {
+  params: { fishingTripPostId: string };
+}) {
+  return {
+    title: `게시글 수정 - ${params.fishingTripPostId}`,
+  };
+}
+
+export default function EditPostPage({
   params,
 }: {
   params: { fishingTripPostId: string };

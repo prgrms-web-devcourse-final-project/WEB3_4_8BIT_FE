@@ -106,10 +106,15 @@ interface UpdateFishingPostParams
 export const updateFishingPost = async (postData: UpdateFishingPostParams) => {
   try {
     const { fishingTripPostId, ...updateData } = postData;
-    const response = await axiosInstance.patch(
-      `${API_BASE_URL}/fishing-trip-post/${fishingTripPostId}`,
-      updateData
-    );
+    console.log(`수정 요청 URL: /fishing-trip-post/${fishingTripPostId}`);
+    console.log("수정 요청 데이터:", updateData);
+
+    // axios.patch의 URL을 직접 설정
+    const url = `/fishing-trip-post/${fishingTripPostId}`;
+    console.log("최종 요청 URL:", url);
+
+    const response = await axiosInstance.patch(url, updateData);
+    console.log("게시글 수정 응답:", response.data);
     return response.data;
   } catch (error) {
     console.error("게시글 수정 중 오류:", error);

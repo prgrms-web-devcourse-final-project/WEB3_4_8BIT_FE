@@ -13,18 +13,17 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import {
-  CalendarIcon,
+  Calendar as CalendarIcon,
+  Clock,
+  MapPin,
   MinusCircle,
   PlusCircle,
-  AlertCircle,
-  Search,
-  MapPin,
-  Clock,
-  Upload,
   X,
+  AlertCircle,
+  Upload,
 } from "lucide-react";
 
-import { format, isBefore, startOfDay, parseISO } from "date-fns";
+import { format, isBefore, startOfDay } from "date-fns";
 import { ko } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { useState, useRef, useEffect } from "react";
@@ -60,8 +59,29 @@ const regions = [
   { id: 10, name: "경남" },
 ];
 
+// 파일 정보 인터페이스 정의
+interface FileInfo {
+  fileId: number;
+  fileUrl: string;
+}
+
 interface EditPostFormProps {
   postId: number;
+}
+
+// 서버 응답 타입 정의
+interface PostData {
+  fishingTripPostId: number;
+  subject: string;
+  content: string;
+  recruitmentCount: number;
+  isShipFish: boolean;
+  fishingDate: string;
+  fishingPointId: number;
+  regionId: number;
+  fileList?: Array<{ fileId: number; fileUrl: string }>;
+  fileIdList?: number[];
+  fileUrlList?: string[];
 }
 
 export default function EditPostForm({ postId }: EditPostFormProps) {
@@ -72,7 +92,9 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
   const [memberCount, setMemberCount] = useState(2);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const [existingFiles, setExistingFiles] = useState<FileInfo[]>([]);
   const [existingFileUrls, setExistingFileUrls] = useState<string[]>([]);
+  const [existingFileIds, setExistingFileIds] = useState<number[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [title, setTitle] = useState("");
@@ -88,8 +110,10 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
       try {
         setIsLoading(true);
         const response = await getFishingPost(postId);
+        console.log("게시글 데이터 응답:", response);
         if (response.success) {
-          const postData = response.data;
+          const postData = response.data as PostData;
+          console.log("게시글 데이터:", postData);
 
           // 폼 필드 초기화
           setTitle(postData.subject);
@@ -105,7 +129,6 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
           setMemberCount(postData.recruitmentCount);
 
           // 낚시 포인트 및 지역 설정
-          // postData에 fishingPointId 또는 regionId가 존재한다고 가정
           if (postData.fishingPointId) {
             setSelectedFishingPoint(String(postData.fishingPointId));
           }
@@ -118,9 +141,33 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
             setIsBoatFishing(postData.isShipFish);
           }
 
-          // 기존 이미지 URL 설정
-          if (postData.fileUrlList && postData.fileUrlList.length > 0) {
-            setExistingFileUrls(postData.fileUrlList);
+          // 기존 이미지 처리 (서버 응답 구조 적응)
+          if (postData.fileList && postData.fileList.length > 0) {
+            // fileList 형태로 응답 (id와 url이 함께 있는 경우)
+            console.log("파일 리스트 데이터:", postData.fileList);
+            setExistingFiles(postData.fileList);
+            setExistingFileUrls(postData.fileList.map((f) => f.fileUrl));
+            setExistingFileIds(postData.fileList.map((f) => f.fileId));
+          } else if (postData.fileUrlList && postData.fileUrlList.length > 0) {
+            // fileUrlList와 fileIdList가 별도로 있는 경우
+            console.log("파일 URL 리스트:", postData.fileUrlList);
+            console.log("파일 ID 리스트:", postData.fileIdList || []);
+
+            const fileUrls = postData.fileUrlList;
+            const fileIds = postData.fileIdList || [];
+
+            // URL과 ID 개수가 일치하는 경우만 매핑
+            if (fileIds.length === fileUrls.length) {
+              const files = fileUrls.map((url, index) => ({
+                fileId: fileIds[index],
+                fileUrl: url,
+              }));
+              setExistingFiles(files);
+            } else {
+              console.log("파일 URL과 ID 개수가 불일치합니다");
+              setExistingFileUrls(fileUrls);
+              setExistingFileIds(fileIds);
+            }
           }
         } else {
           alert("게시글을 불러오는데 실패했습니다.");
@@ -158,11 +205,27 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
 
   const removeImage = (index: number, isExisting: boolean = false) => {
     if (isExisting) {
-      // 기존 이미지 제거
-      const updatedExistingUrls = existingFileUrls.filter(
-        (_, i) => i !== index
-      );
-      setExistingFileUrls(updatedExistingUrls);
+      if (existingFiles.length > 0) {
+        // 기존 파일 정보를 사용하여 제거
+        const updatedFiles = existingFiles.filter((_, i) => i !== index);
+        setExistingFiles(updatedFiles);
+        setExistingFileUrls(updatedFiles.map((f) => f.fileUrl));
+        setExistingFileIds(updatedFiles.map((f) => f.fileId));
+        console.log("이미지 제거 후 남은 파일:", updatedFiles);
+      } else {
+        // 기존 방식으로 URL과 ID 개별 관리
+        const updatedExistingUrls = existingFileUrls.filter(
+          (_, i) => i !== index
+        );
+        setExistingFileUrls(updatedExistingUrls);
+
+        // 기존 이미지 ID도 함께 제거
+        const updatedExistingIds = existingFileIds.filter(
+          (_, i) => i !== index
+        );
+        console.log("이미지 제거 후 남은 ID:", updatedExistingIds);
+        setExistingFileIds(updatedExistingIds);
+      }
     } else {
       // 새로 추가한 이미지 제거
       const updatedFiles = selectedFiles.filter((_, i) => i !== index);
@@ -211,21 +274,28 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
       fishingDateTime.setHours(parseInt(selectedHour, 10));
       fishingDateTime.setMinutes(parseInt(selectedMinute, 10));
 
+      // 기존 이미지 ID와 새로 업로드된 이미지 ID를 합침
+      const allFileIds = [...existingFileIds, ...imageFileIds];
+      console.log("전송할 모든 파일 ID:", allFileIds);
+
+      // API 문서 형식에 맞게 요청 본문 구성
       const requestBody = {
-        fishingTripPostId: postId,
         subject: title,
+        content: content,
+        recruitmentCount: memberCount,
+        isShipFish: isBoatFishing,
         fishingDate: fishingDateTime.toISOString(),
         fishingPointId: parseInt(selectedFishingPoint),
         regionId: parseInt(selectedRegion),
-        recruitmentCount: memberCount,
-        isShipFish: isBoatFishing,
-        content: content,
-        fileIdList: imageFileIds,
-        // 기존 파일 URL을 유지하는 정보가 필요할 수 있음
+        fileIdList: allFileIds,
       };
 
       console.log("✅ 최종 전송 데이터:", requestBody);
-      await updateFishingPost(requestBody);
+      const result = await updateFishingPost({
+        fishingTripPostId: postId,
+        ...requestBody,
+      });
+      console.log("게시글 수정 응답:", result);
 
       alert("게시글이 수정되었습니다!");
       router.push(`/fishing-group/post/${postId}`);
@@ -277,6 +347,8 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
               onChange={(e) => setTitle(e.target.value)}
               required
               placeholder="제목을 입력하세요"
+              className="text-base"
+              style={{ fontSize: "16px" }}
             />
           </div>
 
@@ -292,11 +364,11 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
                       type="button"
                       variant="outline"
                       className={cn(
-                        "w-full justify-start text-left font-normal h-12",
+                        "w-full justify-start text-left font-normal h-12 cursor-pointer text-base",
                         !date && "text-muted-foreground"
                       )}
                     >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      <CalendarIcon className="mr-2 h-5 w-5" />
                       {date
                         ? format(date, "PPP", { locale: ko })
                         : "날짜를 선택하세요"}
@@ -317,19 +389,39 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
               </div>
               <div className="flex gap-2 items-center relative">
                 <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
-                <select
-                  value={selectedHour}
-                  onChange={(e) => setSelectedHour(e.target.value)}
-                  className="h-12 rounded-md border border-input bg-background pl-10 pr-3"
-                >
-                  {Array.from({ length: 24 }, (_, i) =>
-                    String(i).padStart(2, "0")
-                  ).map((hour) => (
-                    <option key={hour} value={hour}>
-                      {hour}시
-                    </option>
-                  ))}
-                </select>
+                <div className="relative w-[120px]">
+                  <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
+                  <select
+                    value={selectedHour}
+                    onChange={(e) => setSelectedHour(e.target.value)}
+                    className="h-12 w-full rounded-md border border-input bg-background pl-10 pr-8 cursor-pointer text-base appearance-none"
+                  >
+                    {Array.from({ length: 24 }, (_, i) =>
+                      String(i).padStart(2, "0")
+                    ).map((hour) => (
+                      <option key={hour} value={hour}>
+                        {hour}시
+                      </option>
+                    ))}
+                  </select>
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 12 12"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M2.5 4.5L6 8L9.5 4.5"
+                        stroke="#6B7280"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </div>
+                </div>
               </div>
               <div className="relative">
                 <select
@@ -357,7 +449,7 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
                   id="region"
                   value={selectedRegion}
                   onChange={(e) => setSelectedRegion(e.target.value)}
-                  className="w-full h-12 pl-10 pr-4 rounded-md border-gray-60 bg-white text-base cursor-pointer"
+                  className="w-full h-12 pl-10 pr-8 rounded-md border border-gray-200 bg-white text-base cursor-pointer appearance-none"
                   required
                 >
                   <option value="">지역을 선택하세요</option>
@@ -368,6 +460,23 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
                   ))}
                 </select>
                 <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
+                <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 12 12"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M2.5 4.5L6 8L9.5 4.5"
+                      stroke="#6B7280"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </div>
               </div>
             </div>
 
@@ -380,7 +489,7 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
                   id="fishingPoint"
                   value={selectedFishingPoint}
                   onChange={(e) => setSelectedFishingPoint(e.target.value)}
-                  className="w-full h-12 pl-10 pr-4 rounded-md border-gray-60 bg-white text-base cursor-pointer"
+                  className="w-full h-12 pl-10 pr-8 rounded-md border border-gray-200 bg-white text-base cursor-pointer appearance-none"
                   required
                 >
                   <option value="">낚시 포인트를 선택하세요</option>
@@ -391,6 +500,23 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
                   ))}
                 </select>
                 <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
+                <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 12 12"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M2.5 4.5L6 8L9.5 4.5"
+                      stroke="#6B7280"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </div>
               </div>
             </div>
           </div>
@@ -405,19 +531,19 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
                   type="button"
                   variant="outline"
                   size="icon"
-                  className="h-12 w-12 rounded-md border-gray-60 bg-white"
+                  className="h-12 w-12 rounded-md border-gray-200 bg-white cursor-pointer"
                   onClick={() => setMemberCount(Math.max(1, memberCount - 1))}
                 >
                   <MinusCircle className="h-5 w-5 text-gray-600" />
                 </Button>
-                <div className="h-12 w-16 flex items-center justify-center text-center text-lg">
+                <div className="h-12 w-16 flex items-center justify-center text-center text-base">
                   {memberCount}명
                 </div>
                 <Button
                   type="button"
                   variant="outline"
                   size="icon"
-                  className="h-12 w-12 rounded-md border-gray-60 bg-white"
+                  className="h-12 w-12 rounded-md border-gray-200 bg-white cursor-pointer"
                   onClick={() => setMemberCount(Math.min(10, memberCount + 1))}
                 >
                   <PlusCircle className="h-5 w-5 text-gray-600" />
@@ -454,15 +580,34 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
               onChange={(e) => setContent(e.target.value)}
               placeholder="게시글 내용을 입력하세요"
               required
-              className="h-60 rounded-md border-gray-60 bg-white text-base"
+              className="h-60 rounded-md border-gray-70 bg-white text-base"
+              style={{ fontSize: "16px" }}
             />
           </div>
 
+          <div className="bg-blue-50 p-4 rounded-lg text-sm text-primary">
+            <div className="flex items-center space-x-2 mb-2">
+              <AlertCircle className="h-4 w-4" />
+              <p>동출 모집 시 안내사항</p>
+            </div>
+            <ul className="list-disc pl-5 space-y-1">
+              <li>모든 인원이 모집되면 채팅방이 개설됩니다.</li>
+              <li>허위 정보 작성 시 이용이 제한될 수 있습니다.</li>
+              <li>게시글 작성자는 책임감을 가지고 작성해주세요.</li>
+            </ul>
+          </div>
+
           <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <label className="block font-medium">이미지 업로드</label>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500">최대 10장</span>
+            <p className="font-medium">이미지 첨부 (선택사항)</p>
+            <div className="border border-dashed rounded-lg p-6 text-center">
+              <div className="flex flex-col items-center justify-center">
+                <Upload className="h-10 w-10 text-gray-400 mb-2" />
+                <p className="text-gray-500 mb-2">
+                  이미지를 드래그하여 업로드하거나 클릭하여 파일을 선택하세요
+                </p>
+                <p className="text-gray-500 mb-4">
+                  (최대 10장까지 업로드 가능)
+                </p>
                 <input
                   id="file-upload"
                   type="file"
@@ -483,9 +628,10 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
               </div>
             </div>
 
-            {/* 기존 이미지 미리보기 */}
-            {existingFileUrls.length > 0 && (
+            {/* 이미지 미리보기 */}
+            {(existingFileUrls.length > 0 || previewUrls.length > 0) && (
               <div className="grid grid-cols-5 gap-4 mt-4">
+                {/* 기존 이미지 */}
                 {existingFileUrls.map((url, index) => (
                   <div
                     key={`existing-${index}`}
@@ -506,14 +652,10 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
                     </button>
                   </div>
                 ))}
-              </div>
-            )}
 
-            {/* 새로 추가된 이미지 미리보기 */}
-            {previewUrls.length > 0 && (
-              <div className="grid grid-cols-5 gap-4 mt-4">
+                {/* 새로 추가된 이미지 */}
                 {previewUrls.map((url, index) => (
-                  <div key={index} className="relative aspect-square">
+                  <div key={`new-${index}`} className="relative aspect-square">
                     <Image
                       src={url}
                       alt={`preview-${index}`}
@@ -529,7 +671,9 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
                     </button>
                   </div>
                 ))}
-                {previewUrls.length < 10 && (
+
+                {/* 이미지 추가 버튼 */}
+                {existingFileUrls.length + previewUrls.length < 10 && (
                   <div
                     className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:border-primary transition-colors"
                     onClick={() => fileInputRef.current?.click()}
