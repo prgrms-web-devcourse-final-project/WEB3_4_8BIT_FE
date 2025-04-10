@@ -255,6 +255,7 @@ export function PostList({ filter }: PostListProps) {
             recruitmentCount={post.recruitmentCount}
             fishPointName={post.fishPointName}
             fileUrlList={post.fileUrlList}
+            imageUrl={post.imageUrl}
             postStatus={post.postStatus}
           />
         ))}

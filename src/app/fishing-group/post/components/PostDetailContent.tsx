@@ -130,11 +130,13 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
               </div>
             </div>
 
-            <div className="bg-gray-200 h-64 flex items-center justify-center">
-              <span className="text-gray-500">낚시 이미지 Placeholder</span>
-            </div>
-
-            {/* <PostImages images={post.fileUrlList} /> */}
+            {post.fileUrlList && post.fileUrlList.length > 0 ? (
+              <PostImages images={post.fileUrlList} />
+            ) : (
+              <div className="bg-gray-200 h-64 flex items-center justify-center">
+                <span className="text-gray-500">낚시 이미지 Placeholder</span>
+              </div>
+            )}
 
             <div className="grid grid-cols-2 gap-4 my-6 bg-gray-70 rounded-lg p-4">
               <div className="flex items-start gap-3">

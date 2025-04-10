@@ -9,11 +9,13 @@ interface PostCardProps {
   content: string;
   date: string;
   location: string;
+  isRecruiting?: boolean;
   currentCount: number;
   recruitmentCount: number;
   fishPointName: string;
-  fileUrlList: string[];
-  postStatus: "RECRUITING" | "COMPLETED";
+  fileUrlList?: string[];
+  imageUrl?: string;
+  postStatus: string;
 }
 
 export function PostCard({
@@ -26,11 +28,13 @@ export function PostCard({
   recruitmentCount,
   fishPointName,
   fileUrlList = [],
+  imageUrl,
   postStatus,
 }: PostCardProps) {
   // 썸네일 이미지 URL 결정
   const thumbnailUrl =
-    fileUrlList.length > 0 ? fileUrlList[0] : "/images/default-fishing.jpg";
+    imageUrl ||
+    (fileUrlList.length > 0 ? fileUrlList[0] : "/images/default.png");
 
   // 표시될 텍스트 변환
   const displayStatusText = postStatus === "RECRUITING" ? "모집중" : "모집완료";
@@ -43,8 +47,12 @@ export function PostCard({
           <div className="w-full md:w-[180px] h-[120px] rounded-md overflow-hidden flex-shrink-0">
             <img
               src={thumbnailUrl}
-              alt="게시글 썸네일"
+              alt={`${title} - 낚시 모임 게시글 썸네일`}
               className="w-full h-full object-cover"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = "/images/default.png";
+              }}
             />
           </div>
 
@@ -55,7 +63,7 @@ export function PostCard({
               <div className="flex items-center gap-3">
                 <span
                   className={`px-2 py-1 text-sm rounded-full ${
-                    postStatus === "RECRUITING"
+                    postStatus === "모집중"
                       ? "bg-[#2CD5D7] text-white"
                       : "bg-gray-500 text-white"
                   }`}

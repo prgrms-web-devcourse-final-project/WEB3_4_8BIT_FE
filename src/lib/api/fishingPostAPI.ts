@@ -18,6 +18,7 @@ export interface Post {
   longitude: number;
   latitude: number;
   fileUrlList: string[];
+  imageUrl?: string;
   postStatus: "RECRUITING" | "COMPLETED";
 }
 
@@ -165,4 +166,3 @@ export const getFishingPostsByCursor = async (
     throw error;
   }
 };
-
