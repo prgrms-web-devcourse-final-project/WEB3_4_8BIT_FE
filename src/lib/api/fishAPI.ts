@@ -9,7 +9,7 @@ export interface APIResponse<T> {
 }
 
 // post에 대한 응답 타입
-interface PostAPIResponse {
+export interface PostAPIResponse {
   timestamp : string;
   success : boolean;
 }

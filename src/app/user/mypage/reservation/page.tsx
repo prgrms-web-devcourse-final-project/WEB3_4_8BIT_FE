@@ -1,8 +1,23 @@
 import type React from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import ReservationCard from "@/app/user/mypage/reservation/components/ReservationCard";
+import {cookies} from "next/headers";
 
-export default function Reservations() {
+export default async function Reservations() {
+  const cookieStore = await cookies();
+  const cookieHeader = cookieStore.toString();
+
+  const response = await fetch('https://api.mikki.kr/api/v1/reservations/members?size=999', {
+    headers: {
+      Cookie: cookieHeader,
+      // TODO 추후 쿠키로 통일해야함
+      Authorization : 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIzIiwiYXV0aCI6IkNBUFRBSU4iLCJlbWFpbCI6InRveWF6eEBuYXZlci5jb20iLCJpYXQiOjE3NDQxODA2MTIsImV4cCI6MTc0NDI2NzAxMn0.uhLhUHzlKc9K6THqYPcCUxzcfORBksafiNj7xti8hRAdLhkQ9D5YynFORaRrfDHT882_VPO8P7Tyj4pivZ2OeQ',
+    }
+  });
+  const responseData = await response.json();
+  const reservations = responseData.data.content;
+  console.log(reservations);
+
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">예약 내역</h1>

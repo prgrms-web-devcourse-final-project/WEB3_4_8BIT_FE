@@ -1,37 +1,24 @@
 import type React from "react";
 import ReviewCard from "@/components/ReviewCard";
+import {cookies} from "next/headers";
+import {UserReview} from "@/types/user.interface";
 
-export default function Review() {
-  // 리뷰 데이터
-  const reviews = [
-    {
-      id : 'a',
-      user: "바다사랑",
-      date: "2023.10.15",
-      rating: 5,
-      content:
-        "정말 좋은 경험이었습니다. 선장님이 친절하시고 물고기도 많이 잡았어요. 특히 참돔 대물을 낚아서 기분이 좋았습니다. 다음에도 꼭 이용할 예정입니다.",
-      images: ["/placeholder.svg?height=100&width=100", "/placeholder.svg?height=100&width=100"],
+export default async function Review() {
+  const cookieStore = await cookies();
+  const cookieHeader = cookieStore.toString();
+
+  const response = await fetch('https://api.mikki.kr/api/v1/members/reviews?size=999', {
+    headers: {
+      Cookie: cookieHeader,
+      // TODO 추후 쿠키로 통일해야함
+      Authorization : 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIzIiwiYXV0aCI6IkNBUFRBSU4iLCJlbWFpbCI6InRveWF6eEBuYXZlci5jb20iLCJpYXQiOjE3NDQxODA2MTIsImV4cCI6MTc0NDI2NzAxMn0.uhLhUHzlKc9K6THqYPcCUxzcfORBksafiNj7xti8hRAdLhkQ9D5YynFORaRrfDHT882_VPO8P7Tyj4pivZ2OeQ',
     },
-    {
-      id : 'b',
-      user: "낚시초보",
-      date: "2023.10.08",
-      rating: 4,
-      content:
-        "처음 선상 낚시를 해봤는데 선장님이 친절하게 알려주셔서 즐겁게 낚시했습니다. 다만 배가 좀 흔들려서 멀미가 살짝 있었네요.",
-      images: [],
-    },
-    {
-      id : 'c',
-      user: "물고기헌터",
-      date: "2023.09.25",
-      rating: 5,
-      content:
-        "여러 선상 낚시를 다녀봤지만 이곳이 가장 좋았습니다. 시설도 깨끗하고 물고기도 많이 잡혔어요. 특히 도시락이 맛있었습니다!",
-      images: ["/placeholder.svg?height=100&width=100"],
-    },
-  ]
+    cache : 'no-cache',
+    next: { revalidate: 0 },
+  });
+  const responseData = await response.json();
+  const reviews : UserReview[] = responseData.data.content;
+  console.log(reviews);
 
   return (
     <div className="space-y-6">
@@ -40,14 +27,14 @@ export default function Review() {
       <div className="grid gap-5">
         {reviews.map((review, index) => (
           <ReviewCard
-            id={review.id}
+            id={review.reviewId}
             key={index}
-            user={review.user}
-            date={review.date}
+            user={review.nickname}
+            date={new Date(review.createdAt).toLocaleString()}
             content={review.content}
-            images={review.images}
+            images={review.fileUrlList}
             rating={review.rating}
-            enableDelete={true}
+            enableDelete={review.isAuthor}
           />
         ))}
       </div>
