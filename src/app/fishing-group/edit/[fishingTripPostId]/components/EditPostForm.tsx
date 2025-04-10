@@ -30,8 +30,13 @@ import { useState, useRef, useEffect } from "react";
 import { uploadImagesToS3 } from "@/lib/api/uploadImageAPI";
 import { getFishingPost, updateFishingPost } from "@/lib/api/fishingPostAPI";
 import { useRouter } from "next/navigation";
+import {
+  FileInfo,
+  EditPostFormProps,
+  PostData,
+} from "@/types/EditPostFormType";
 
-// 낚시 포인트 임시 데이터
+// TODO: API에서 가져오도록 수정
 const fishingPoints = [
   { id: 1, name: "인천 송도" },
   { id: 2, name: "인천 영종도" },
@@ -45,7 +50,7 @@ const fishingPoints = [
   { id: 10, name: "경기 부천" },
 ];
 
-// 지역 임시 데이터
+// TODO: API에서 가져오도록 수정
 const regions = [
   { id: 1, name: "서울" },
   { id: 2, name: "인천" },
@@ -58,30 +63,6 @@ const regions = [
   { id: 9, name: "경북" },
   { id: 10, name: "경남" },
 ];
-
-interface FileInfo {
-  fileId: number;
-  fileUrl: string;
-}
-
-interface EditPostFormProps {
-  postId: number;
-}
-
-interface PostData {
-  fishingTripPostId: number;
-  subject: string;
-  content: string;
-  recruitmentCount: number;
-  isShipFish: boolean;
-  fishingDate: string;
-  fishingPointId: number;
-  regionId: number;
-  fileList?: Array<{ fileId: number; fileUrl: string }>;
-  fileIdList?: number[];
-  fileUrlList?: string[];
-  files?: Array<{ fileId: number; fileUrl: string }>;
-}
 
 export default function EditPostForm({ postId }: EditPostFormProps) {
   const router = useRouter();
@@ -103,32 +84,27 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
   const [selectedRegion, setSelectedRegion] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // 게시글 데이터 불러오기
   useEffect(() => {
     const fetchPostData = async () => {
       try {
         setIsLoading(true);
         const response = await getFishingPost(postId);
-        console.log("📄 게시글 데이터 응답:", response);
+        // console.log("📄 게시글 데이터 응답:", response);
 
         if (response.success) {
           const postData = response.data as PostData;
-          console.log("📄 게시글 데이터 상세:", postData);
+          // console.log("📄 게시글 데이터 상세:", postData);
 
-          // 폼 필드 초기화
           setTitle(postData.subject);
           setContent(postData.content);
 
-          // 날짜 및 시간 설정
           const fishingDate = new Date(postData.fishingDate);
           setDate(fishingDate);
           setSelectedHour(String(fishingDate.getHours()).padStart(2, "0"));
           setSelectedMinute(String(fishingDate.getMinutes()).padStart(2, "0"));
 
-          // 모집 인원 설정
           setMemberCount(postData.recruitmentCount);
 
-          // 낚시 포인트 및 지역 설정
           if (postData.fishingPointId) {
             setSelectedFishingPoint(String(postData.fishingPointId));
           }
@@ -136,56 +112,28 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
             setSelectedRegion(String(postData.regionId));
           }
 
-          // 선상낚시 여부 설정
           if (postData.isShipFish !== undefined) {
             setIsBoatFishing(postData.isShipFish);
           }
 
-          // 기존 이미지 처리
           let fileIds: number[] = [];
           let fileUrls: string[] = [];
           let fileInfos: FileInfo[] = [];
 
-          // 1. fileList 형태로 있는 경우
           if (postData.fileList && postData.fileList.length > 0) {
-            console.log("📷 파일 리스트 데이터:", postData.fileList);
             fileInfos = postData.fileList;
-            fileIds = postData.fileList.map((f) => f.fileId);
-            fileUrls = postData.fileList.map((f) => f.fileUrl);
-          }
-          // 2. files 형태로 있는 경우
-          else if (postData.files && postData.files.length > 0) {
-            console.log("📷 files 데이터:", postData.files);
+            fileIds = postData.fileList.map((f: FileInfo) => f.fileId);
+            fileUrls = postData.fileList.map((f: FileInfo) => f.fileUrl);
+          } else if (postData.files && postData.files.length > 0) {
             fileInfos = postData.files;
-            fileIds = postData.files.map((f) => f.fileId);
-            fileUrls = postData.files.map((f) => f.fileUrl);
-          }
-          // 3. fileUrlList와 fileIdList가 별도로 있는 경우
-          else if (postData.fileUrlList && postData.fileUrlList.length > 0) {
-            console.log("📷 파일 URL 리스트:", postData.fileUrlList);
-            console.log("📷 파일 ID 리스트:", postData.fileIdList || []);
-
+            fileIds = postData.files.map((f: FileInfo) => f.fileId);
+            fileUrls = postData.files.map((f: FileInfo) => f.fileUrl);
+          } else if (postData.fileUrlList && postData.fileUrlList.length > 0) {
             fileUrls = postData.fileUrlList;
-            fileIds = postData.fileIdList || [];
-
-            // URL과 ID 개수가 일치하는 경우 매핑
-            if (fileIds.length === fileUrls.length) {
-              fileInfos = fileUrls.map((url, index) => ({
-                fileId: fileIds[index],
-                fileUrl: url,
-              }));
-            } else {
-              console.log("⚠️ 파일 URL과 ID 개수가 불일치합니다");
-            }
+            fileIds = [];
+            fileInfos = [];
           }
 
-          console.log("📷 설정할 기존 이미지 정보:", {
-            fileIds,
-            fileUrls,
-            fileInfos,
-          });
-
-          // 상태 업데이트
           setExistingFiles(fileInfos);
           setExistingFileUrls(fileUrls);
           setExistingFileIds(fileIds);
@@ -225,51 +173,29 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
 
   const removeImage = (index: number, isExisting: boolean = false) => {
     if (isExisting) {
-      console.log("🗑️ 기존 이미지 삭제:", index);
-      // 기존 이미지 데이터
-      console.log("🗑️ 삭제 전 기존 이미지:", {
-        urls: existingFileUrls,
-        ids: existingFileIds,
-        files: existingFiles,
-      });
-
       if (existingFiles.length > 0) {
-        // 선택한 인덱스의 파일 정보 기록
-        const removedFile = existingFiles[index];
-        console.log("🗑️ 삭제할 파일:", removedFile);
-
-        // 기존 파일 정보를 사용하여 제거
         const updatedFiles = existingFiles.filter((_, i) => i !== index);
         setExistingFiles(updatedFiles);
-        setExistingFileUrls(updatedFiles.map((f) => f.fileUrl));
-        setExistingFileIds(updatedFiles.map((f) => f.fileId));
-
-        console.log("🗑️ 삭제 후 남은 파일:", updatedFiles);
+        setExistingFileUrls(updatedFiles.map((f: FileInfo) => f.fileUrl));
+        setExistingFileIds(updatedFiles.map((f: FileInfo) => f.fileId));
       } else {
-        // 기존 방식으로 URL과 ID 개별 관리
         const updatedExistingUrls = existingFileUrls.filter(
           (_, i) => i !== index
         );
         setExistingFileUrls(updatedExistingUrls);
-
-        // 기존 이미지 ID도 함께 제거
         const updatedExistingIds = existingFileIds.filter(
           (_, i) => i !== index
         );
-        console.log("🗑️ 삭제 후 남은 ID:", updatedExistingIds);
+
         setExistingFileIds(updatedExistingIds);
       }
     } else {
-      // 새로 추가한 이미지 제거
-      console.log("🗑️ 새 이미지 삭제:", index);
       const updatedFiles = selectedFiles.filter((_, i) => i !== index);
       setSelectedFiles(updatedFiles);
       const updatedUrls = updatedFiles.map((file) => URL.createObjectURL(file));
       setPreviewUrls(updatedUrls);
-      console.log("🗑️ 삭제 후 남은 새 이미지:", updatedFiles.length);
     }
 
-    // 파일 input 초기화
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -298,30 +224,17 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
     }
 
     try {
-      // 최종 제출에 사용할 파일 ID 배열
       let finalFileIds: number[] = [...existingFileIds];
-      console.log("🔄 기존 이미지 ID:", finalFileIds);
 
-      // 새 이미지 업로드 (있는 경우)
       if (selectedFiles.length > 0) {
-        console.log("🔄 새 이미지 업로드 시작 (개수):", selectedFiles.length);
-
-        // S3에 이미지 업로드 및 파일 ID 받기
         const newImageFileIds = await uploadImagesToS3(selectedFiles, "post");
-        console.log("🔄 새 이미지 업로드 완료 (ID):", newImageFileIds);
-
-        // 새 이미지 ID 추가
         finalFileIds = [...finalFileIds, ...newImageFileIds];
       }
 
-      console.log("🔄 최종 이미지 ID 목록:", finalFileIds);
-
-      // 선택된 날짜와 시간을 합쳐서 fishingDate 생성
       const fishingDateTime = new Date(date);
       fishingDateTime.setHours(parseInt(selectedHour, 10));
       fishingDateTime.setMinutes(parseInt(selectedMinute, 10));
 
-      // API 문서 형식에 맞게 요청 본문 구성
       const requestBody = {
         subject: title,
         content: content,
@@ -333,15 +246,11 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
         fileIdList: finalFileIds,
       };
 
-      console.log("🔄 게시글 수정 요청 데이터:", requestBody);
-
-      // 게시글 수정 API 호출
-      const result = await updateFishingPost({
+      // const result = await updateFishingPost({
+      await updateFishingPost({
         fishingTripPostId: postId,
         ...requestBody,
       });
-
-      console.log("✅ 게시글 수정 성공:", result);
 
       alert("게시글이 수정되었습니다!");
       router.push(`/fishing-group/post/${postId}`);
@@ -353,7 +262,6 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
     }
   };
 
-  // 오늘 이전 날짜를 비활성화하는 함수
   const disablePastDates = (date: Date) => {
     return isBefore(date, startOfDay(new Date()));
   };
@@ -745,7 +653,7 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
               disabled={isSubmitting}
               className="bg-primary text-white cursor-pointer"
             >
-              {isSubmitting ? "등록 중..." : "등록하기"}
+              {isSubmitting ? "수정 중..." : "수정하기"}
             </Button>
           </div>
         </form>
