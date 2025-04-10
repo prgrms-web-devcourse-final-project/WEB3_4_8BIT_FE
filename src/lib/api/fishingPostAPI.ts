@@ -252,3 +252,24 @@ export const deleteFishingPost = async (fishingTripPostId: number) => {
     return { success: false, message: error.message };
   }
 };
+
+export const addComment = async (
+  fishingTripPostId: number,
+  content: string,
+  parentId?: number
+) => {
+  try {
+    const response = await axiosInstance.post(
+      `/fishing-trip-post/${fishingTripPostId}/comment`,
+      {
+        content,
+        parentId: parentId || null,
+      }
+    );
+    console.log("댓글 추가 성공:", response.data);
+    return { success: true, data: response.data };
+  } catch (error: unknown) {
+    console.error("댓글 추가 실패:", error as Error);
+    return { success: false, message: error.message };
+  }
+};
