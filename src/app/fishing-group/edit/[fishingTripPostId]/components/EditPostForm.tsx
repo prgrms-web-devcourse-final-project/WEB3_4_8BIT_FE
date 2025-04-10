@@ -16,19 +16,20 @@ import {
   CalendarIcon,
   MinusCircle,
   PlusCircle,
+  AlertCircle,
+  Search,
   MapPin,
   Clock,
-  X,
-  AlertCircle,
   Upload,
+  X,
 } from "lucide-react";
 
-import { format, isBefore, startOfDay } from "date-fns";
+import { format, isBefore, startOfDay, parseISO } from "date-fns";
 import { ko } from "date-fns/locale";
 import { cn } from "@/lib/utils";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { uploadImagesToS3 } from "@/lib/api/uploadImageAPI";
-import { createFishingPost } from "@/lib/api/fishingPostAPI";
+import { getFishingPost, updateFishingPost } from "@/lib/api/fishingPostAPI";
 import { useRouter } from "next/navigation";
 
 // 낚시 포인트 임시 데이터
@@ -59,7 +60,11 @@ const regions = [
   { id: 10, name: "경남" },
 ];
 
-export default function WritePostForm() {
+interface EditPostFormProps {
+  postId: number;
+}
+
+export default function EditPostForm({ postId }: EditPostFormProps) {
   const router = useRouter();
   const [date, setDate] = useState<Date>();
   const [selectedHour, setSelectedHour] = useState("09");
@@ -67,7 +72,9 @@ export default function WritePostForm() {
   const [memberCount, setMemberCount] = useState(2);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const [existingFileUrls, setExistingFileUrls] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [isBoatFishing, setIsBoatFishing] = useState(false);
@@ -75,15 +82,72 @@ export default function WritePostForm() {
   const [selectedRegion, setSelectedRegion] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // 게시글 데이터 불러오기
+  useEffect(() => {
+    const fetchPostData = async () => {
+      try {
+        setIsLoading(true);
+        const response = await getFishingPost(postId);
+        if (response.success) {
+          const postData = response.data;
+
+          // 폼 필드 초기화
+          setTitle(postData.subject);
+          setContent(postData.content);
+
+          // 날짜 및 시간 설정
+          const fishingDate = new Date(postData.fishingDate);
+          setDate(fishingDate);
+          setSelectedHour(String(fishingDate.getHours()).padStart(2, "0"));
+          setSelectedMinute(String(fishingDate.getMinutes()).padStart(2, "0"));
+
+          // 모집 인원 설정
+          setMemberCount(postData.recruitmentCount);
+
+          // 낚시 포인트 및 지역 설정
+          // postData에 fishingPointId 또는 regionId가 존재한다고 가정
+          if (postData.fishingPointId) {
+            setSelectedFishingPoint(String(postData.fishingPointId));
+          }
+          if (postData.regionId) {
+            setSelectedRegion(String(postData.regionId));
+          }
+
+          // 선상낚시 여부 설정
+          if (postData.isShipFish !== undefined) {
+            setIsBoatFishing(postData.isShipFish);
+          }
+
+          // 기존 이미지 URL 설정
+          if (postData.fileUrlList && postData.fileUrlList.length > 0) {
+            setExistingFileUrls(postData.fileUrlList);
+          }
+        } else {
+          alert("게시글을 불러오는데 실패했습니다.");
+          router.push("/fishing-group");
+        }
+      } catch (error) {
+        console.error("게시글 불러오기 오류:", error);
+        alert("게시글을 불러오는데 실패했습니다.");
+        router.push("/fishing-group");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchPostData();
+  }, [postId, router]);
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
     const newFiles = Array.from(files);
-    const totalCount = selectedFiles.length + newFiles.length;
+    const totalCount =
+      selectedFiles.length + newFiles.length + existingFileUrls.length;
 
     if (totalCount > 10) {
       alert("최대 10장까지 업로드 가능합니다.");
-      newFiles.splice(10 - selectedFiles.length);
+      newFiles.splice(10 - selectedFiles.length - existingFileUrls.length);
     }
 
     const updatedFiles = [...selectedFiles, ...newFiles];
@@ -92,11 +156,20 @@ export default function WritePostForm() {
     setPreviewUrls(urls);
   };
 
-  const removeImage = (index: number) => {
-    const updatedFiles = selectedFiles.filter((_, i) => i !== index);
-    setSelectedFiles(updatedFiles);
-    const updatedUrls = updatedFiles.map((file) => URL.createObjectURL(file));
-    setPreviewUrls(updatedUrls);
+  const removeImage = (index: number, isExisting: boolean = false) => {
+    if (isExisting) {
+      // 기존 이미지 제거
+      const updatedExistingUrls = existingFileUrls.filter(
+        (_, i) => i !== index
+      );
+      setExistingFileUrls(updatedExistingUrls);
+    } else {
+      // 새로 추가한 이미지 제거
+      const updatedFiles = selectedFiles.filter((_, i) => i !== index);
+      setSelectedFiles(updatedFiles);
+      const updatedUrls = updatedFiles.map((file) => URL.createObjectURL(file));
+      setPreviewUrls(updatedUrls);
+    }
 
     // 파일 input 초기화
     if (fileInputRef.current) {
@@ -139,6 +212,7 @@ export default function WritePostForm() {
       fishingDateTime.setMinutes(parseInt(selectedMinute, 10));
 
       const requestBody = {
+        fishingTripPostId: postId,
         subject: title,
         fishingDate: fishingDateTime.toISOString(),
         fishingPointId: parseInt(selectedFishingPoint),
@@ -147,16 +221,17 @@ export default function WritePostForm() {
         isShipFish: isBoatFishing,
         content: content,
         fileIdList: imageFileIds,
+        // 기존 파일 URL을 유지하는 정보가 필요할 수 있음
       };
 
       console.log("✅ 최종 전송 데이터:", requestBody);
-      await createFishingPost(requestBody);
+      await updateFishingPost(requestBody);
 
-      alert("게시글이 등록되었습니다!");
-      router.push("/fishing-group");
+      alert("게시글이 수정되었습니다!");
+      router.push(`/fishing-group/post/${postId}`);
     } catch (err) {
-      console.error("게시글 등록 중 오류:", err);
-      alert("게시글 등록 중 오류가 발생했습니다.");
+      console.error("게시글 수정 중 오류:", err);
+      alert("게시글 수정 중 오류가 발생했습니다.");
     } finally {
       setIsSubmitting(false);
     }
@@ -166,6 +241,14 @@ export default function WritePostForm() {
   const disablePastDates = (date: Date) => {
     return isBefore(date, startOfDay(new Date()));
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center py-10">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -194,8 +277,6 @@ export default function WritePostForm() {
               onChange={(e) => setTitle(e.target.value)}
               required
               placeholder="제목을 입력하세요"
-              className="text-base"
-              style={{ fontSize: "16px" }}
             />
           </div>
 
@@ -211,11 +292,11 @@ export default function WritePostForm() {
                       type="button"
                       variant="outline"
                       className={cn(
-                        "w-full justify-start text-left font-normal h-12 cursor-pointer text-base",
+                        "w-full justify-start text-left font-normal h-12",
                         !date && "text-muted-foreground"
                       )}
                     >
-                      <CalendarIcon className="mr-2 h-5 w-5" />
+                      <CalendarIcon className="mr-2 h-4 w-4" />
                       {date
                         ? format(date, "PPP", { locale: ko })
                         : "날짜를 선택하세요"}
@@ -234,14 +315,12 @@ export default function WritePostForm() {
                   </PopoverContent>
                 </Popover>
               </div>
-
-              {/* 시간 선택 */}
-              <div className="relative w-[120px]">
+              <div className="flex gap-2 items-center relative">
                 <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
                 <select
                   value={selectedHour}
                   onChange={(e) => setSelectedHour(e.target.value)}
-                  className="h-12 w-full rounded-md border border-input bg-background pl-10 pr-8 cursor-pointer text-base appearance-none"
+                  className="h-12 rounded-md border border-input bg-background pl-10 pr-3"
                 >
                   {Array.from({ length: 24 }, (_, i) =>
                     String(i).padStart(2, "0")
@@ -251,32 +330,12 @@ export default function WritePostForm() {
                     </option>
                   ))}
                 </select>
-                <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                  <svg
-                    width="12"
-                    height="12"
-                    viewBox="0 0 12 12"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M2.5 4.5L6 8L9.5 4.5"
-                      stroke="#6B7280"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </div>
               </div>
-
-              {/* 분 선택 */}
-              <div className="relative w-[120px]">
-                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
+              <div className="relative">
                 <select
                   value={selectedMinute}
                   onChange={(e) => setSelectedMinute(e.target.value)}
-                  className="h-12 w-full rounded-md border border-input bg-background pl-10 pr-8 cursor-pointer text-base appearance-none"
+                  className="h-12 rounded-md border border-input bg-background px-3"
                 >
                   {["00", "10", "20", "30", "40", "50"].map((minute) => (
                     <option key={minute} value={minute}>
@@ -284,23 +343,6 @@ export default function WritePostForm() {
                     </option>
                   ))}
                 </select>
-                <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                  <svg
-                    width="12"
-                    height="12"
-                    viewBox="0 0 12 12"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M2.5 4.5L6 8L9.5 4.5"
-                      stroke="#6B7280"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </div>
               </div>
             </div>
           </div>
@@ -315,7 +357,7 @@ export default function WritePostForm() {
                   id="region"
                   value={selectedRegion}
                   onChange={(e) => setSelectedRegion(e.target.value)}
-                  className="w-full h-12 pl-10 pr-8 rounded-md border border-gray-200 bg-white text-base cursor-pointer appearance-none"
+                  className="w-full h-12 pl-10 pr-4 rounded-md border-gray-60 bg-white text-base cursor-pointer"
                   required
                 >
                   <option value="">지역을 선택하세요</option>
@@ -326,23 +368,6 @@ export default function WritePostForm() {
                   ))}
                 </select>
                 <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
-                <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                  <svg
-                    width="12"
-                    height="12"
-                    viewBox="0 0 12 12"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M2.5 4.5L6 8L9.5 4.5"
-                      stroke="#6B7280"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </div>
               </div>
             </div>
 
@@ -355,7 +380,7 @@ export default function WritePostForm() {
                   id="fishingPoint"
                   value={selectedFishingPoint}
                   onChange={(e) => setSelectedFishingPoint(e.target.value)}
-                  className="w-full h-12 pl-10 pr-8 rounded-md border border-gray-200 bg-white text-base cursor-pointer appearance-none"
+                  className="w-full h-12 pl-10 pr-4 rounded-md border-gray-60 bg-white text-base cursor-pointer"
                   required
                 >
                   <option value="">낚시 포인트를 선택하세요</option>
@@ -366,23 +391,6 @@ export default function WritePostForm() {
                   ))}
                 </select>
                 <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
-                <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                  <svg
-                    width="12"
-                    height="12"
-                    viewBox="0 0 12 12"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M2.5 4.5L6 8L9.5 4.5"
-                      stroke="#6B7280"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </div>
               </div>
             </div>
           </div>
@@ -397,19 +405,19 @@ export default function WritePostForm() {
                   type="button"
                   variant="outline"
                   size="icon"
-                  className="h-12 w-12 rounded-md border-gray-200 bg-white cursor-pointer"
+                  className="h-12 w-12 rounded-md border-gray-60 bg-white"
                   onClick={() => setMemberCount(Math.max(1, memberCount - 1))}
                 >
                   <MinusCircle className="h-5 w-5 text-gray-600" />
                 </Button>
-                <div className="h-12 w-16 flex items-center justify-center text-center text-base">
+                <div className="h-12 w-16 flex items-center justify-center text-center text-lg">
                   {memberCount}명
                 </div>
                 <Button
                   type="button"
                   variant="outline"
                   size="icon"
-                  className="h-12 w-12 rounded-md border-gray-200 bg-white cursor-pointer"
+                  className="h-12 w-12 rounded-md border-gray-60 bg-white"
                   onClick={() => setMemberCount(Math.min(10, memberCount + 1))}
                 >
                   <PlusCircle className="h-5 w-5 text-gray-600" />
@@ -446,34 +454,15 @@ export default function WritePostForm() {
               onChange={(e) => setContent(e.target.value)}
               placeholder="게시글 내용을 입력하세요"
               required
-              className="h-60 rounded-md border-gray-70 bg-white text-base"
-              style={{ fontSize: "16px" }}
+              className="h-60 rounded-md border-gray-60 bg-white text-base"
             />
           </div>
 
-          <div className="bg-blue-50 p-4 rounded-lg text-sm text-primary">
-            <div className="flex items-center space-x-2 mb-2">
-              <AlertCircle className="h-4 w-4" />
-              <p>동출 모집 시 안내사항</p>
-            </div>
-            <ul className="list-disc pl-5 space-y-1">
-              <li>모든 인원이 모집되면 채팅방이 개설됩니다.</li>
-              <li>허위 정보 작성 시 이용이 제한될 수 있습니다.</li>
-              <li>게시글 작성자는 책임감을 가지고 작성해주세요.</li>
-            </ul>
-          </div>
-
           <div className="space-y-2">
-            <p className="font-medium">이미지 첨부 (선택사항)</p>
-            <div className="border border-dashed rounded-lg p-6 text-center">
-              <div className="flex flex-col items-center justify-center">
-                <Upload className="h-10 w-10 text-gray-400 mb-2" />
-                <p className="text-gray-500 mb-2">
-                  이미지를 드래그하여 업로드하거나 클릭하여 파일을 선택하세요
-                </p>
-                <p className="text-gray-500 mb-4">
-                  (최대 10장까지 업로드 가능)
-                </p>
+            <div className="flex items-center justify-between">
+              <label className="block font-medium">이미지 업로드</label>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-500">최대 10장</span>
                 <input
                   id="file-upload"
                   type="file"
@@ -494,7 +483,33 @@ export default function WritePostForm() {
               </div>
             </div>
 
-            {/* 이미지 미리보기 */}
+            {/* 기존 이미지 미리보기 */}
+            {existingFileUrls.length > 0 && (
+              <div className="grid grid-cols-5 gap-4 mt-4">
+                {existingFileUrls.map((url, index) => (
+                  <div
+                    key={`existing-${index}`}
+                    className="relative aspect-square"
+                  >
+                    <Image
+                      src={url}
+                      alt={`existing-${index}`}
+                      fill
+                      className="object-cover rounded-lg"
+                    />
+                    <button
+                      type="button"
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                      onClick={() => removeImage(index, true)}
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* 새로 추가된 이미지 미리보기 */}
             {previewUrls.length > 0 && (
               <div className="grid grid-cols-5 gap-4 mt-4">
                 {previewUrls.map((url, index) => (

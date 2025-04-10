@@ -94,15 +94,21 @@ export const createFishingPost = async (postData: CreateFishingPostParams) => {
   }
 };
 
+// 게시글 수정 파라미터 인터페이스
+interface UpdateFishingPostParams
+  extends Omit<CreateFishingPostParams, "fishingPointId"> {
+  fishingTripPostId: number;
+  fishingPointId: number;
+  regionId: number;
+}
+
 // 게시글 수정
-export const updateFishingPost = async (
-  postId: number,
-  postData: Partial<CreateFishingPostParams>
-) => {
+export const updateFishingPost = async (postData: UpdateFishingPostParams) => {
   try {
+    const { fishingTripPostId, ...updateData } = postData;
     const response = await axiosInstance.patch(
-      `/fishing-trip-post/${postId}`,
-      postData
+      `${API_BASE_URL}/fishing-trip-post/${fishingTripPostId}`,
+      updateData
     );
     return response.data;
   } catch (error) {
