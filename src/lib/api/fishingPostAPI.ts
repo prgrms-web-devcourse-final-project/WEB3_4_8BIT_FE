@@ -273,3 +273,23 @@ export const addComment = async (
     return { success: false, message: error.message };
   }
 };
+
+export const updateComment = async (
+  fishingTripPostId: number,
+  commentId: number,
+  content: string
+) => {
+  try {
+    const response = await axiosInstance.patch(
+      `/fishing-trip-post/${fishingTripPostId}/comment/${commentId}`,
+      {
+        content,
+      }
+    );
+    console.log("댓글 수정 성공:", response.data);
+    return { success: true, data: response.data };
+  } catch (error: unknown) {
+    console.error("댓글 수정 실패:", error as Error);
+    return { success: false, message: (error as Error).message };
+  }
+};
