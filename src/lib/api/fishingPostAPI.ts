@@ -185,3 +185,72 @@ export const getFishingPostsByCursor = async (
     throw error;
   }
 };
+
+// 게시글 참여 정보 인터페이스
+export interface PostParticipationInfo {
+  fishingTripPostId: number;
+  recruitmentCount: number;
+  currentCount: number;
+  postStatus: string; // "RECRUITING", "COMPLETED" 등
+  isApplicant: boolean; // 현재 사용자가 신청했는지 여부
+  isCurrentUserOwner: boolean; // 현재 사용자가 작성자인지 여부
+  postOwnerId: number; // 게시글 작성자 ID
+  ownerNickname: string | null; // 작성자 닉네임
+  ownerProfileImageUrl: string | null; // 작성자 프로필 이미지 URL
+  participants: Array<{
+    // 참여자 목록
+    memberId: number;
+    nickname: string;
+    profileImageUrl: string | null;
+  }>;
+}
+
+// 게시글 참여 정보 조회
+export const getPostParticipation = async (fishingTripPostId: number) => {
+  try {
+    console.log(
+      `📊 게시글 참여 정보 조회 요청: fishingTripPostId=${fishingTripPostId}`
+    );
+
+    const response = await axiosInstance.get(
+      `/fishing-trip-post/participation`,
+      {
+        params: { fishingTripPostId },
+      }
+    );
+
+    console.log("📊 게시글 참여 정보 응답:", response.data);
+
+    // 응답 데이터 구조 확인 및 로깅
+    if (response.data && response.data.data) {
+      console.log(
+        "📊 응답 데이터 구조:",
+        JSON.stringify(response.data.data, null, 2)
+      );
+    }
+
+    return response.data as {
+      timestamp: string;
+      success: boolean;
+      data: PostParticipationInfo;
+    };
+  } catch (error) {
+    console.error("❌ 게시글 참여 정보 조회 중 오류:", error);
+    throw error;
+  }
+};
+
+// 게시글 삭제
+export const deleteFishingPost = async (fishingTripPostId: number) => {
+  try {
+    console.log(`🗑️ 게시글 삭제 요청: ${fishingTripPostId}`);
+    const response = await axiosInstance.delete(
+      `/fishing-trip-post/${fishingTripPostId}`
+    );
+    console.log("🗑️ 게시글 삭제 응답:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("❌ 게시글 삭제 중 오류:", error);
+    throw error;
+  }
+};

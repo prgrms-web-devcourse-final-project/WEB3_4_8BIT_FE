@@ -1,14 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
 import { applyFishingTripRecruitment } from "@/lib/api/fishingTripRecruitmentAPI";
+import { Button } from "@/components/ui/button";
 
 interface JoinInfoCardProps {
-  currentCount: number;
+  postId: number;
   recruitmentCount: number;
+  currentCount: number;
   fishingDate: string;
   fishPointName: string;
   fishPointDetailName: string;
@@ -17,11 +19,20 @@ interface JoinInfoCardProps {
   latitude: number;
   author: string;
   fishingTripPostId: number;
+  isOwner?: boolean;
+  isApplicant?: boolean;
+  participants: Array<{
+    memberId: number;
+    nickname: string;
+    profileImageUrl: string | null;
+  }>;
+  onApplicationSuccess?: () => void;
 }
 
 export default function JoinInfoCard({
-  currentCount,
+  postId,
   recruitmentCount,
+  currentCount,
   fishingDate,
   fishPointName,
   fishPointDetailName,
@@ -30,10 +41,19 @@ export default function JoinInfoCard({
   latitude,
   author,
   fishingTripPostId,
+  isOwner = false,
+  isApplicant = false,
+  participants,
+  onApplicationSuccess,
 }: JoinInfoCardProps) {
   // 참여 여부 및 모달 오픈 상태 관리
-  const [isJoined, setIsJoined] = useState(false);
+  const [isJoined, setIsJoined] = useState(isApplicant);
   const [showModal, setShowModal] = useState(false);
+
+  // isApplicant prop이 변경될 때마다 isJoined 상태 업데이트
+  useEffect(() => {
+    setIsJoined(isApplicant);
+  }, [isApplicant]);
 
   // 모달 내부 폼 상태
   const [experience, setExperience] = useState("BEGINNER");
@@ -78,6 +98,7 @@ export default function JoinInfoCard({
         toast.success(response.message || "참여 신청이 완료되었습니다.");
         setIsJoined(true);
         setShowModal(false);
+        onApplicationSuccess?.();
       } else {
         toast.error(response.message || "참여 신청에 실패했습니다.");
       }
@@ -122,7 +143,16 @@ export default function JoinInfoCard({
             disabled
             className="w-full py-2 rounded-lg text-green-500 border border-green-500 cursor-not-allowed"
           >
-            참여 완료
+            참여 신청 완료
+          </button>
+        )}
+
+        {!isJoined && currentCount >= recruitmentCount && (
+          <button
+            disabled
+            className="w-full py-2 rounded-lg text-gray-500 border border-gray-300 cursor-not-allowed"
+          >
+            모집 인원 마감
           </button>
         )}
 
@@ -165,6 +195,26 @@ export default function JoinInfoCard({
           <button className="w-full py-2 border border-gray-70 rounded-lg text-base hover:bg-gray-80 cursor-pointer">
             1:1 채팅 보내기
           </button>
+        </div>
+
+        <div className="mt-4">
+          <h3 className="text-lg font-semibold mb-2">참여자 목록</h3>
+          <ul className="space-y-2">
+            {participants.map((participant) => (
+              <li key={participant.memberId} className="flex items-center">
+                {participant.profileImageUrl ? (
+                  <img
+                    src={participant.profileImageUrl}
+                    alt={participant.nickname}
+                    className="w-8 h-8 rounded-full mr-2"
+                  />
+                ) : (
+                  <div className="w-8 h-8 bg-gray-200 rounded-full mr-2" />
+                )}
+                <span>{participant.nickname}</span>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
 

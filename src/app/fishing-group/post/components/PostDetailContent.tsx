@@ -1,15 +1,30 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getFishingPost } from "@/lib/api/fishingPostAPI";
+import {
+  getFishingPost,
+  getPostParticipation,
+  PostParticipationInfo,
+  deleteFishingPost,
+} from "@/lib/api/fishingPostAPI";
 import PostImages from "../components/PostImage";
 import PostContent from "../components/PostContent";
 import JoinInfoCard from "../components/JoinInfoCard";
 import MapCard from "../components/MapCard";
 import CommentSection from "../components/CommentSection";
-import { MapPin, Calendar, Clock, Users, ArrowLeft } from "lucide-react";
+import {
+  MapPin,
+  Calendar,
+  Clock,
+  Users,
+  ArrowLeft,
+  Edit,
+  Trash,
+} from "lucide-react";
 import React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 interface PostDetailContentProps {
   postId: number;
@@ -33,17 +48,41 @@ interface PostData {
 }
 
 export default function PostDetailContent({ postId }: PostDetailContentProps) {
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [post, setPost] = useState<PostData | null>(null);
+  const [participation, setParticipation] =
+    useState<PostParticipationInfo | null>(null);
+  const [isOwner, setIsOwner] = useState(false);
+
+  // 참여 정보를 다시 불러오는 함수
+  const fetchParticipationInfo = async () => {
+    try {
+      console.log("참여 정보 조회 시작: postId=", postId);
+      const participationResponse = await getPostParticipation(postId);
+
+      if (participationResponse.success) {
+        setParticipation(participationResponse.data);
+        setIsOwner(participationResponse.data.isCurrentUserOwner);
+        console.log("📌 참여 정보 업데이트됨:", participationResponse.data);
+      } else {
+        console.error("참여 정보 조회 실패:", participationResponse);
+      }
+    } catch (participationError) {
+      console.error("참여 정보 조회 오류:", participationError);
+    }
+  };
 
   useEffect(() => {
-    const fetchPost = async () => {
+    const fetchPostData = async () => {
       try {
         setLoading(true);
-        const response = await getFishingPost(postId);
-        if (response.success) {
-          setPost(response.data);
+        const postResponse = await getFishingPost(postId);
+
+        if (postResponse.success) {
+          setPost(postResponse.data);
+          await fetchParticipationInfo(); // 참여 정보 초기 로딩
           setError(null);
         } else {
           setError("게시글을 불러오는데 실패했습니다.");
@@ -56,7 +95,7 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
       }
     };
 
-    fetchPost();
+    fetchPostData();
   }, [postId]);
 
   if (loading) {
@@ -98,6 +137,28 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
     },
   ];
 
+  // 게시글 삭제 처리 함수
+  const handleDeletePost = async () => {
+    if (!confirm("정말로 이 게시글을 삭제하시겠습니까?")) {
+      return;
+    }
+
+    try {
+      // 게시글 삭제 API 호출
+      const response = await deleteFishingPost(postId);
+
+      if (response.success) {
+        toast.success("게시글이 삭제되었습니다.");
+        router.push("/fishing-group");
+      } else {
+        toast.error(response.message || "게시글 삭제에 실패했습니다.");
+      }
+    } catch (error) {
+      console.error("게시글 삭제 중 오류 발생:", error);
+      toast.error("게시글 삭제 중 오류가 발생했습니다.");
+    }
+  };
+
   return (
     <div className="max-w-screen-xl mx-auto px-4 pt-[90px]">
       <div className="mb-4">
@@ -130,19 +191,29 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
                 <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center">
                   <span className="text-xs text-gray-600">이미지</span>
                 </div>
-                <span>{post.name}</span>
+                <span>{participation?.ownerNickname || post.name}</span>
                 <span>·</span>
                 <span>{new Date(post.createDate).toLocaleDateString()}</span>
               </div>
-              <div className="flex gap-2">
-                <Link
-                  href={`/fishing-group/edit/${post.fishingTripPostId}`}
-                  className="text-blue-500 hover:underline"
-                >
-                  수정
-                </Link>
-                <button className="text-red-500 hover:underline">삭제</button>
-              </div>
+
+              {isOwner && (
+                <div className="flex gap-2">
+                  <Link
+                    href={`/fishing-group/edit/${post.fishingTripPostId}`}
+                    className="text-blue-500 hover:underline inline-flex items-center"
+                  >
+                    <Edit className="w-3.5 h-3.5 mr-1" />
+                    수정
+                  </Link>
+                  <button
+                    className="text-red-500 hover:underline inline-flex items-center"
+                    onClick={handleDeletePost}
+                  >
+                    <Trash className="w-3.5 h-3.5 mr-1" />
+                    삭제
+                  </button>
+                </div>
+              )}
             </div>
 
             {post.fileUrlList && post.fileUrlList.length > 0 ? (
@@ -201,16 +272,24 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
         </div>
         <div className="col-span-4">
           <JoinInfoCard
-            currentCount={post.currentCount}
+            postId={postId}
             recruitmentCount={post.recruitmentCount}
+            currentCount={participation?.currentCount ?? post.currentCount}
+            postStatus={participation?.postStatus ?? post.postStatus}
+            isOwner={isOwner}
+            isApplicant={participation?.isApplicant || false}
+            participants={participation?.participants || []}
+            fishingTripPostId={post.fishingTripPostId}
             fishingDate={post.fishingDate}
             fishPointName={post.fishPointName}
             fishPointDetailName={post.fishPointDetailName}
-            postStatus={isRecruiting ? "RECRUITING" : "CLOSED"}
             longitude={post.longitude}
             latitude={post.latitude}
             author={post.name}
-            fishingTripPostId={post.fishingTripPostId}
+            onApplicationSuccess={() => {
+              // 500ms 지연 후 참여 정보 다시 불러오기
+              setTimeout(fetchParticipationInfo, 500);
+            }}
           />
 
           <MapCard
