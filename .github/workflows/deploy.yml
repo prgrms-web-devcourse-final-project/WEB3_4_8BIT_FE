@@ -32,6 +32,7 @@ jobs:
       - name: Build Docker image
         run: |
           docker build \
+          --platform linux/arm64 \
           --build-arg NEXT_PUBLIC_BADANORI_API_KEY=${{ secrets.NEXT_PUBLIC_BADANORI_API_KEY }} \
           --build-arg NEXT_PUBLIC_KAKAO_MAP_API_KEY=${{ secrets.NEXT_PUBLIC_KAKAO_MAP_API_KEY }} \
           --build-arg NEXT_PUBLIC_OPENWEATHER_API_KEY=${{ secrets.NEXT_PUBLIC_OPENWEATHER_API_KEY }} \
