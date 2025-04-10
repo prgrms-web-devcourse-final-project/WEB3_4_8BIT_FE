@@ -8,9 +8,8 @@ export const axiosInstance = axios.create({
   },
 });
 
-// Set the token directly without 'Bearer' prefix
 const token =
-  "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIyIiwiYXV0aCI6IlVTRVIiLCJlbWFpbCI6ImNqMjE3NEBuYXZlci5jb20iLCJpYXQiOjE3NDQxNjg1NjIsImV4cCI6MTc0NDI1NDk2Mn0.iT-Zv_SvmTPi9E6xz69PR6GAWCXXyAcE3s7fId1yB5gqFEqJs1RNsgieOSsLnP8N5tkhsN1gY9yT2QXdghC9Gg";
+  "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIyIiwiYXV0aCI6IlVTRVIiLCJlbWFpbCI6ImNqMjE3NEBuYXZlci5jb20iLCJpYXQiOjE3NDQxNzc3NTksImV4cCI6MTc0NDI2NDE1OX0.utUjVHxSMZoeaSpe6JIEQRGljrfwAkqLLKj4RrKZ5UVubAm-0ML940XWbcYAu11MMcVGV2xBOFabKlqCtxq_hg";
 
 axiosInstance.interceptors.request.use(
   (config) => {

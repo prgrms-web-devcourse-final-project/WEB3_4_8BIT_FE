@@ -7,8 +7,9 @@ import PostContent from "../components/PostContent";
 import JoinInfoCard from "../components/JoinInfoCard";
 import MapCard from "../components/MapCard";
 import CommentSection from "../components/CommentSection";
-import { MapPin, Calendar, Clock, Users } from "lucide-react";
+import { MapPin, Calendar, Clock, Users, ArrowLeft } from "lucide-react";
 import React from "react";
+import Link from "next/link";
 
 interface PostDetailContentProps {
   postId: number;
@@ -99,6 +100,15 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
 
   return (
     <div className="max-w-screen-xl mx-auto px-4 pt-[90px]">
+      <div className="mb-4">
+        <Link
+          href="/fishing-group"
+          className="inline-flex items-center text-blue-500 hover:text-blue-700"
+        >
+          <ArrowLeft className="w-4 h-4 mr-1" />
+          목록으로 돌아가기
+        </Link>
+      </div>
       <div className="grid grid-cols-12 gap-4">
         <div className="col-span-8">
           <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-md">
@@ -130,11 +140,13 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
               </div>
             </div>
 
-            <div className="bg-gray-200 h-64 flex items-center justify-center">
-              <span className="text-gray-500">낚시 이미지 Placeholder</span>
-            </div>
-
-            {/* <PostImages images={post.fileUrlList} /> */}
+            {post.fileUrlList && post.fileUrlList.length > 0 ? (
+              <PostImages images={post.fileUrlList} />
+            ) : (
+              <div className="bg-gray-200 h-64 flex items-center justify-center">
+                <span className="text-gray-500">낚시 이미지 Placeholder</span>
+              </div>
+            )}
 
             <div className="grid grid-cols-2 gap-4 my-6 bg-gray-70 rounded-lg p-4">
               <div className="flex items-start gap-3">
@@ -196,7 +208,11 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
             fishingTripPostId={post.fishingTripPostId}
           />
 
-          <MapCard fishPointName={post.fishPointName} />
+          <MapCard
+            fishPointName={post.fishPointName}
+            latitude={post.latitude}
+            longitude={post.longitude}
+          />
         </div>
       </div>
       <div className="mt-6">

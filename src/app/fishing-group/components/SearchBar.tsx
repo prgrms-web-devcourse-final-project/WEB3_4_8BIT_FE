@@ -9,8 +9,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import Link from "next/link";
+import React, { useState } from "react";
 
-export function SearchBar() {
+export function SearchBar({
+  handleSearch,
+}: {
+  handleSearch: (searchTerm: string) => void;
+}) {
+  const [searchTerm, setSearchTerm] = useState("");
+
   return (
     <div className="flex gap-2 mt-10 mb-10 items-center max-w-4xl mx-auto">
       <Select defaultValue="all">
@@ -39,6 +46,13 @@ export function SearchBar() {
         <Input
           type="search"
           placeholder="검색어를 입력하세요"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          onKeyPress={(e) => {
+            if (e.key === "Enter") {
+              handleSearch(searchTerm);
+            }
+          }}
           className="w-full pl-10 pr-4 py-2 border-gray-60 rounded-md text-base h-full"
         />
         <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
@@ -59,7 +73,10 @@ export function SearchBar() {
           </svg>
         </div>
       </div>
-      <button className="px-6 py-2 bg-primary text-white rounded-md hover:bg-blue-500 text-base cursor-pointer">
+      <button
+        onClick={() => handleSearch(searchTerm)}
+        className="px-6 py-2 bg-primary text-white rounded-md hover:bg-blue-500 text-base cursor-pointer"
+      >
         검색
       </button>
       <Link
