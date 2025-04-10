@@ -7,8 +7,9 @@ import PostContent from "../components/PostContent";
 import JoinInfoCard from "../components/JoinInfoCard";
 import MapCard from "../components/MapCard";
 import CommentSection from "../components/CommentSection";
-import { MapPin, Calendar, Clock, Users } from "lucide-react";
+import { MapPin, Calendar, Clock, Users, ArrowLeft } from "lucide-react";
 import React from "react";
+import Link from "next/link";
 
 interface PostDetailContentProps {
   postId: number;
@@ -99,6 +100,15 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
 
   return (
     <div className="max-w-screen-xl mx-auto px-4 pt-[90px]">
+      <div className="mb-4">
+        <Link
+          href="/fishing-group"
+          className="inline-flex items-center text-blue-500 hover:text-blue-700"
+        >
+          <ArrowLeft className="w-4 h-4 mr-1" />
+          목록으로 돌아가기
+        </Link>
+      </div>
       <div className="grid grid-cols-12 gap-4">
         <div className="col-span-8">
           <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-md">

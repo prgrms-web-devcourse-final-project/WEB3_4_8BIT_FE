@@ -127,6 +127,9 @@ export function PostList({ filter, searchKeyword = "" }: PostListProps) {
             fileUrlList={post.fileUrlList}
             imageUrl={post.imageUrl}
             postStatus={post.postStatus}
+            latitude={post.latitude}
+            longitude={post.longitude}
+            regionType={post.regionType}
           />
         ))}
       </div>
