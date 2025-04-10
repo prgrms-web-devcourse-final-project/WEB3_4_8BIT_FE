@@ -60,4 +60,4 @@ ENV PORT=3000
 
 # 아래거 서버 ip
 ENV HOSTNAME="0.0.0.0"
-CMD ["node", "server.js"]
+CMD ["npm", "run", "start"]
