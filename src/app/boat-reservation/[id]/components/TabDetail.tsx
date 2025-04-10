@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import type React from "react";
-import { PostDetailPost, PostDetailShip } from "@/types/boatPostType";
+import { ShipFishingPostDetailData } from "@/types/boatPostType";
 import { useEffect } from "react";
 
 declare global {
@@ -25,15 +25,13 @@ declare global {
 }
 
 export default function TabDetail({
-  detailShipFishingPost,
   detailShip,
 }: {
-  detailShipFishingPost: PostDetailPost;
-  detailShip: PostDetailShip;
+  detailShip: ShipFishingPostDetailData;
 }) {
   // 편의시설 정보
   const amenityConfig = {
-    publicRestroom: {
+    restroomType: {
       icon: <Droplets className="h-5 w-5" />,
       name: "화장실",
       description: "깨끗한 화장실 구비",
@@ -75,36 +73,69 @@ export default function TabDetail({
     },
   };
 
-  const availableAmenities = Object.entries(detailShip)
-    .filter(
-      ([key, value]) =>
-        amenityConfig[key as keyof typeof amenityConfig] && value === true
-    )
-    .map(([key]) => amenityConfig[key as keyof typeof amenityConfig]);
+  const availableAmenities = Object.entries(detailShip.detailShip)
+    .filter(([key, value]) => {
+      // 화장실은 "없음"이 아닌 경우에만 표시
+      if (key === "restroomType") {
+        return value !== "없음";
+      }
+      // 다른 편의시설은 true인 경우에만 표시
+      return amenityConfig[key as keyof typeof amenityConfig] && value === true;
+    })
+    .map(([key, value]) => {
+      const amenity = amenityConfig[key as keyof typeof amenityConfig];
+      // 화장실인 경우 description을 화장실 유형으로 변경
+      if (key === "restroomType") {
+        return {
+          ...amenity,
+          description: value as string,
+        };
+      }
+      return amenity;
+    });
 
   useEffect(() => {
     if (typeof window === "undefined" || !window.kakao) return;
 
-    kakao.maps.load(() => {
+    window.kakao.maps.load(() => {
       const container = document.getElementById("map");
       if (!container) return;
 
       const options = {
-        center: new kakao.maps.LatLng(37.566295, 126.977945), // 서울시청 좌표
+        center: new window.kakao.maps.LatLng(37.566295, 126.977945), // 서울시청 좌표
         level: 3,
       };
 
-      const map = new kakao.maps.Map(container, options);
+      const map = new window.kakao.maps.Map(container, options);
 
-      // 마커 생성
-      const marker = new kakao.maps.Marker({
-        position: new kakao.maps.LatLng(37.566295, 126.977945),
-      });
+      const geocoder = new window.kakao.maps.services.Geocoder();
 
-      // 마커를 지도에 표시
-      marker.setMap(map);
+      geocoder.addressSearch(
+        `${detailShip.detailShip.departurePort}`,
+        (result: any, status: any) => {
+          if (status === window.kakao.maps.services.Status.OK) {
+            const coords = new window.kakao.maps.LatLng(
+              result[0].y,
+              result[0].x
+            );
+
+            const marker = new window.kakao.maps.Marker({
+              map: map,
+              position: coords,
+            });
+
+            const infowindow = new window.kakao.maps.InfoWindow({
+              content: `${detailShip.detailShip.departurePort}`,
+            });
+
+            infowindow.open(map, marker);
+
+            map.setCenter(coords);
+          }
+        }
+      );
     });
-  }, []);
+  }, [detailShip]);
 
   return (
     <Card>
@@ -119,19 +150,17 @@ export default function TabDetail({
               <MapPin className="h-5 w-5 text-gray-500 mr-2 mt-0.5" />
               <div>
                 <p className="font-medium">출항지</p>
-                <p className="text-gray-600">{detailShip.departurePort}</p>
+                <p className="text-gray-600">
+                  {detailShip.detailShip.departurePort}
+                </p>
               </div>
             </div>
             <div className="flex items-start">
               <Clock className="h-5 w-5 text-gray-500 mr-2 mt-0.5" />
               <div>
                 <p className="font-medium">출-입항 시간</p>
-                <p className="text-gray-600">
-                  출항: {detailShipFishingPost.startTime}
-                </p>
-                <p className="text-gray-600">
-                  입항: {detailShipFishingPost.durationTime}
-                </p>
+                <p className="text-gray-600">출항: {detailShip.startTime}</p>
+                <p className="text-gray-600">입항: {detailShip.durationTime}</p>
               </div>
             </div>
             <div className="flex items-start">
@@ -139,8 +168,8 @@ export default function TabDetail({
               <div>
                 <p className="font-medium">선박 정보</p>
                 <p className="text-gray-600">
-                  {detailShip.shipName} (정원{" "}
-                  {detailShipFishingPost.maxGuestCount}명)
+                  {detailShip.detailShip.shipName} (정원{" "}
+                  {detailShip.maxGuestCount}명)
                 </p>
               </div>
             </div>
@@ -160,7 +189,7 @@ export default function TabDetail({
 
         <div>
           <h3 className="font-medium mb-2">낚시 정보</h3>
-          <p className="text-gray-700">{detailShipFishingPost.content}</p>
+          <p className="text-gray-700">{detailShip.content}</p>
         </div>
 
         <Separator />
@@ -169,7 +198,7 @@ export default function TabDetail({
           <div className="flex flex-col gap-2 mb-2">
             <h3 className="font-medium">위치</h3>
             <p className="text-gray-700">
-              부산광역시 기장군 기장읍 연화리 어촌계 선착장
+              {detailShip.detailShip.departurePort}
             </p>
           </div>
           <div id="map" className="w-full h-[400px] rounded-lg"></div>
