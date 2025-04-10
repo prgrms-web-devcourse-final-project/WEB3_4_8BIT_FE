@@ -1,4 +1,4 @@
-FROM --platform=linux/arm64 node:18-alpine AS base
+FROM node:18-alpine AS base
 
 # 빌드 시 환경 변수로 전달받을 인자를 정의
 ARG NEXT_PUBLIC_BADANORI_API_KEY
