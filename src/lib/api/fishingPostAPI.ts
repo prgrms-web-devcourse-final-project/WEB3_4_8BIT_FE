@@ -270,7 +270,7 @@ export const addComment = async (
     return { success: true, data: response.data };
   } catch (error: unknown) {
     console.error("댓글 추가 실패:", error as Error);
-    return { success: false, message: error.message };
+    return { success: false, message: (error as Error).message };
   }
 };
 
@@ -290,6 +290,22 @@ export const updateComment = async (
     return { success: true, data: response.data };
   } catch (error: unknown) {
     console.error("댓글 수정 실패:", error as Error);
+    return { success: false, message: (error as Error).message };
+  }
+};
+
+export const deleteComment = async (
+  fishingTripPostId: number,
+  commentId: number
+) => {
+  try {
+    const response = await axiosInstance.delete(
+      `/fishing-trip-post/${fishingTripPostId}/comment/${commentId}`
+    );
+    console.log("댓글 삭제 성공:", response.data);
+    return { success: true, data: response.data };
+  } catch (error: unknown) {
+    console.error("댓글 삭제 실패:", error as Error);
     return { success: false, message: (error as Error).message };
   }
 };
