@@ -106,18 +106,25 @@ interface UpdateFishingPostParams
 export const updateFishingPost = async (postData: UpdateFishingPostParams) => {
   try {
     const { fishingTripPostId, ...updateData } = postData;
-    console.log(`수정 요청 URL: /fishing-trip-post/${fishingTripPostId}`);
-    console.log("수정 요청 데이터:", updateData);
+    console.log(`📝 수정 요청 URL: /fishing-trip-post/${fishingTripPostId}`);
+    console.log("📝 수정 요청 데이터:", updateData);
+
+    // fileIdList가 빈 배열이면 제거 (API에 따라 필요할 수 있음)
+    if (updateData.fileIdList && updateData.fileIdList.length === 0) {
+      console.log("⚠️ fileIdList가 비어있어 요청에서 제외합니다");
+      delete updateData.fileIdList;
+    }
 
     // axios.patch의 URL을 직접 설정
     const url = `/fishing-trip-post/${fishingTripPostId}`;
-    console.log("최종 요청 URL:", url);
+    console.log("📝 최종 요청 URL:", url);
+    console.log("📝 최종 요청 데이터:", JSON.stringify(updateData));
 
     const response = await axiosInstance.patch(url, updateData);
-    console.log("게시글 수정 응답:", response.data);
+    console.log("📝 게시글 수정 응답:", response.data);
     return response.data;
   } catch (error) {
-    console.error("게시글 수정 중 오류:", error);
+    console.error("❌ 게시글 수정 중 오류:", error);
     throw error;
   }
 };

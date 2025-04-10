@@ -69,7 +69,7 @@ interface EditPostFormProps {
   postId: number;
 }
 
-// 서버 응답 타입 정의
+// 서버 응답 타입 정의를 확장하여 파일 관련 필드 추가
 interface PostData {
   fishingTripPostId: number;
   subject: string;
@@ -82,6 +82,7 @@ interface PostData {
   fileList?: Array<{ fileId: number; fileUrl: string }>;
   fileIdList?: number[];
   fileUrlList?: string[];
+  files?: Array<{ fileId: number; fileUrl: string }>; // 추가된 필드: 일부 API는 이 형식을 사용할 수 있음
 }
 
 export default function EditPostForm({ postId }: EditPostFormProps) {
@@ -110,10 +111,11 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
       try {
         setIsLoading(true);
         const response = await getFishingPost(postId);
-        console.log("게시글 데이터 응답:", response);
+        console.log("📄 게시글 데이터 응답:", response);
+
         if (response.success) {
           const postData = response.data as PostData;
-          console.log("게시글 데이터:", postData);
+          console.log("📄 게시글 데이터 상세:", postData);
 
           // 폼 필드 초기화
           setTitle(postData.subject);
@@ -141,40 +143,60 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
             setIsBoatFishing(postData.isShipFish);
           }
 
-          // 기존 이미지 처리 (서버 응답 구조 적응)
+          // 기존 이미지 처리 (다양한 API 응답 구조에 대응)
+          let fileIds: number[] = [];
+          let fileUrls: string[] = [];
+          let fileInfos: FileInfo[] = [];
+
+          // 1. fileList 형태로 있는 경우 (id와 url이 함께 있는 경우)
           if (postData.fileList && postData.fileList.length > 0) {
-            // fileList 형태로 응답 (id와 url이 함께 있는 경우)
-            console.log("파일 리스트 데이터:", postData.fileList);
-            setExistingFiles(postData.fileList);
-            setExistingFileUrls(postData.fileList.map((f) => f.fileUrl));
-            setExistingFileIds(postData.fileList.map((f) => f.fileId));
-          } else if (postData.fileUrlList && postData.fileUrlList.length > 0) {
-            // fileUrlList와 fileIdList가 별도로 있는 경우
-            console.log("파일 URL 리스트:", postData.fileUrlList);
-            console.log("파일 ID 리스트:", postData.fileIdList || []);
+            console.log("📷 파일 리스트 데이터:", postData.fileList);
+            fileInfos = postData.fileList;
+            fileIds = postData.fileList.map((f) => f.fileId);
+            fileUrls = postData.fileList.map((f) => f.fileUrl);
+          }
+          // 2. files 형태로 있는 경우
+          else if (postData.files && postData.files.length > 0) {
+            console.log("📷 files 데이터:", postData.files);
+            fileInfos = postData.files;
+            fileIds = postData.files.map((f) => f.fileId);
+            fileUrls = postData.files.map((f) => f.fileUrl);
+          }
+          // 3. fileUrlList와 fileIdList가 별도로 있는 경우
+          else if (postData.fileUrlList && postData.fileUrlList.length > 0) {
+            console.log("📷 파일 URL 리스트:", postData.fileUrlList);
+            console.log("📷 파일 ID 리스트:", postData.fileIdList || []);
 
-            const fileUrls = postData.fileUrlList;
-            const fileIds = postData.fileIdList || [];
+            fileUrls = postData.fileUrlList;
+            fileIds = postData.fileIdList || [];
 
-            // URL과 ID 개수가 일치하는 경우만 매핑
+            // URL과 ID 개수가 일치하는 경우 매핑
             if (fileIds.length === fileUrls.length) {
-              const files = fileUrls.map((url, index) => ({
+              fileInfos = fileUrls.map((url, index) => ({
                 fileId: fileIds[index],
                 fileUrl: url,
               }));
-              setExistingFiles(files);
             } else {
-              console.log("파일 URL과 ID 개수가 불일치합니다");
-              setExistingFileUrls(fileUrls);
-              setExistingFileIds(fileIds);
+              console.log("⚠️ 파일 URL과 ID 개수가 불일치합니다");
             }
           }
+
+          console.log("📷 설정할 기존 이미지 정보:", {
+            fileIds,
+            fileUrls,
+            fileInfos,
+          });
+
+          // 상태 업데이트
+          setExistingFiles(fileInfos);
+          setExistingFileUrls(fileUrls);
+          setExistingFileIds(fileIds);
         } else {
           alert("게시글을 불러오는데 실패했습니다.");
           router.push("/fishing-group");
         }
       } catch (error) {
-        console.error("게시글 불러오기 오류:", error);
+        console.error("❌ 게시글 불러오기 오류:", error);
         alert("게시글을 불러오는데 실패했습니다.");
         router.push("/fishing-group");
       } finally {
@@ -205,33 +227,48 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
 
   const removeImage = (index: number, isExisting: boolean = false) => {
     if (isExisting) {
+      console.log("🗑️ 기존 이미지 삭제:", index);
+      // 기존 이미지 데이터
+      console.log("🗑️ 삭제 전 기존 이미지:", {
+        urls: existingFileUrls,
+        ids: existingFileIds,
+        files: existingFiles,
+      });
+
       if (existingFiles.length > 0) {
+        // 선택한 인덱스의 파일 정보 기록
+        const removedFile = existingFiles[index];
+        console.log("🗑️ 삭제할 파일:", removedFile);
+
         // 기존 파일 정보를 사용하여 제거
         const updatedFiles = existingFiles.filter((_, i) => i !== index);
         setExistingFiles(updatedFiles);
         setExistingFileUrls(updatedFiles.map((f) => f.fileUrl));
         setExistingFileIds(updatedFiles.map((f) => f.fileId));
-        console.log("이미지 제거 후 남은 파일:", updatedFiles);
+
+        console.log("🗑️ 삭제 후 남은 파일:", updatedFiles);
       } else {
-        // 기존 방식으로 URL과 ID 개별 관리
+        // 기존 방식으로 URL과 ID 개별 관리 (URL과 ID가 동일한 인덱스에 있다고 가정)
         const updatedExistingUrls = existingFileUrls.filter(
           (_, i) => i !== index
         );
         setExistingFileUrls(updatedExistingUrls);
 
-        // 기존 이미지 ID도 함께 제거
+        // 기존 이미지 ID도 함께 제거 (동일한 인덱스 가정)
         const updatedExistingIds = existingFileIds.filter(
           (_, i) => i !== index
         );
-        console.log("이미지 제거 후 남은 ID:", updatedExistingIds);
+        console.log("🗑️ 삭제 후 남은 ID:", updatedExistingIds);
         setExistingFileIds(updatedExistingIds);
       }
     } else {
       // 새로 추가한 이미지 제거
+      console.log("🗑️ 새 이미지 삭제:", index);
       const updatedFiles = selectedFiles.filter((_, i) => i !== index);
       setSelectedFiles(updatedFiles);
       const updatedUrls = updatedFiles.map((file) => URL.createObjectURL(file));
       setPreviewUrls(updatedUrls);
+      console.log("🗑️ 삭제 후 남은 새 이미지:", updatedFiles.length);
     }
 
     // 파일 input 초기화
@@ -263,20 +300,28 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
     }
 
     try {
-      let imageFileIds: number[] = [];
+      // 최종 제출에 사용할 파일 ID 배열
+      let finalFileIds: number[] = [...existingFileIds];
+      console.log("🔄 기존 이미지 ID:", finalFileIds);
+
+      // 새 이미지 업로드 (있는 경우)
       if (selectedFiles.length > 0) {
-        console.log("✅ 선택된 이미지 수:", selectedFiles.length);
-        imageFileIds = await uploadImagesToS3(selectedFiles, "post");
+        console.log("🔄 새 이미지 업로드 시작 (개수):", selectedFiles.length);
+
+        // S3에 이미지 업로드 및 파일 ID 받기
+        const newImageFileIds = await uploadImagesToS3(selectedFiles, "post");
+        console.log("🔄 새 이미지 업로드 완료 (ID):", newImageFileIds);
+
+        // 새 이미지 ID 추가
+        finalFileIds = [...finalFileIds, ...newImageFileIds];
       }
+
+      console.log("🔄 최종 이미지 ID 목록:", finalFileIds);
 
       // 선택된 날짜와 시간을 합쳐서 fishingDate 생성
       const fishingDateTime = new Date(date);
       fishingDateTime.setHours(parseInt(selectedHour, 10));
       fishingDateTime.setMinutes(parseInt(selectedMinute, 10));
-
-      // 기존 이미지 ID와 새로 업로드된 이미지 ID를 합침
-      const allFileIds = [...existingFileIds, ...imageFileIds];
-      console.log("전송할 모든 파일 ID:", allFileIds);
 
       // API 문서 형식에 맞게 요청 본문 구성
       const requestBody = {
@@ -287,20 +332,23 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
         fishingDate: fishingDateTime.toISOString(),
         fishingPointId: parseInt(selectedFishingPoint),
         regionId: parseInt(selectedRegion),
-        fileIdList: allFileIds,
+        fileIdList: finalFileIds,
       };
 
-      console.log("✅ 최종 전송 데이터:", requestBody);
+      console.log("🔄 게시글 수정 요청 데이터:", requestBody);
+
+      // 게시글 수정 API 호출
       const result = await updateFishingPost({
         fishingTripPostId: postId,
         ...requestBody,
       });
-      console.log("게시글 수정 응답:", result);
+
+      console.log("✅ 게시글 수정 성공:", result);
 
       alert("게시글이 수정되었습니다!");
       router.push(`/fishing-group/post/${postId}`);
     } catch (err) {
-      console.error("게시글 수정 중 오류:", err);
+      console.error("❌ 게시글 수정 중 오류:", err);
       alert("게시글 수정 중 오류가 발생했습니다.");
     } finally {
       setIsSubmitting(false);
