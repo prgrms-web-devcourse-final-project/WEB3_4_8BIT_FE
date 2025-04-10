@@ -171,8 +171,8 @@ export default function KaKaoMap({
         const markers = fishingPoints.map((location) => createMarker(location));
         markersRef.current = markers;
         applyClusterer(markers);
-      } else {
-        const markers = locationData.map((location) => {
+      } else if (locationData && locationData.length > 0) {
+        const markers = locationData?.map((location) => {
           const marker = createRegionMarker(location);
           marker.setMap(mapRef.current);
           return marker;
