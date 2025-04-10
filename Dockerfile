@@ -7,7 +7,7 @@ ARG NEXT_PUBLIC_OPENWEATHER_API_KEY
 
 # 디펜던시 설치
 FROM base AS deps
-RUN apk add --no-cache libc6-compat
+#RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
