@@ -66,7 +66,6 @@ export default async function BoatReservationDetail({
   );
 
   console.log(boatPostDetail);
-  console.log(reservationUnavailableDate);
 
   // 리뷰 데이터
   const reviews = [
@@ -139,10 +138,12 @@ export default async function BoatReservationDetail({
                 <TabDetail detailShip={boatPostDetail.data} />
               </TabsContent>
               <TabsContent value="fish" className="mt-6">
-                <TabFish />
+                <TabFish fishNameList={boatPostDetail.data.detailFish} />
               </TabsContent>
               <TabsContent value="tide" className="mt-6">
-                <TabWater />
+                <TabWater
+                  departurePort={boatPostDetail.data.detailShip.departurePort}
+                />
               </TabsContent>
             </Tabs>
 
@@ -186,7 +187,9 @@ export default async function BoatReservationDetail({
             <div className="sticky top-[100px] space-y-6">
               <ReservationInfo
                 detailShip={boatPostDetail.data}
-                reservationUnavailableDate={reservationUnavailableDate.data}
+                reservationUnavailableDate={
+                  reservationUnavailableDate.data.unAvailableDateList
+                }
               />
               <PhoneInfo />
             </div>

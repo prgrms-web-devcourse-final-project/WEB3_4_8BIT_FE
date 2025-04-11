@@ -72,11 +72,13 @@ export default function ReservationInfo({
                 onSelect={setDate}
                 initialFocus
                 locale={ko}
-                disabled={(date) =>
-                  reservationUnavailableDate.includes(
-                    dayjs(date).format("YYYY-MM-DD")
-                  )
-                }
+                disabled={(date) => {
+                  if (reservationUnavailableDate.length === 0) {
+                    return false;
+                  }
+                  const formattedDate = dayjs(date).format("YYYY-MM-DD");
+                  return reservationUnavailableDate.includes(formattedDate);
+                }}
               />
             </PopoverContent>
           </Popover>
