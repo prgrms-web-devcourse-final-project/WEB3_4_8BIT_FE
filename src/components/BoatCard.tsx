@@ -9,9 +9,9 @@ import {
 } from "@/components/ui/card";
 import Link from "next/link";
 import Image from "next/image";
-import {BoatFishing} from "@/lib/api/boatFishAPI";
+import { ShipPostData } from "@/types/boatPostType";
 
-export default function BoatCard({ boatData }: { boatData: BoatFishing }) {
+export default function BoatCard({ boatData }: { boatData: ShipPostData }) {
   // 메인페이지에서 오류 발생
   if (!boatData) {
     return <div>데이터가 없습니다.</div>;
@@ -54,14 +54,18 @@ export default function BoatCard({ boatData }: { boatData: BoatFishing }) {
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="flex flex-wrap gap-2">
-          {boatData.fishNameList.map((fish, index) => (
-            <span
-              key={index}
-              className="bg-gray-80 text-gray-800 text-xs px-2 py-1 rounded"
-            >
-              {fish}
-            </span>
-          ))}
+          {boatData.fishNameList && boatData.fishNameList.length > 0 ? (
+            boatData.fishNameList.map((fish, index) => (
+              <span
+                key={index}
+                className="bg-gray-80 text-gray-800 text-xs px-2 py-1 rounded"
+              >
+                {fish}
+              </span>
+            ))
+          ) : (
+            <span className="text-gray-500">정보가 없습니다.</span>
+          )}
         </div>
         <div className="flex items-center justify-between">
           <div>

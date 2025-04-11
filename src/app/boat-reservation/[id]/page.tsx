@@ -10,12 +10,47 @@ import TabFish from "@/app/boat-reservation/[id]/components/TabFish";
 import TabWater from "@/app/boat-reservation/[id]/components/TabWater";
 import ReviewCard from "@/components/ReviewCard";
 import ImageGallery from "@/app/boat-reservation/[id]/components/ImageGallery";
-import { PostDetailType } from "@/types/boatPostType";
+import {
+  ReservationUnavailableDateAPIResponse,
+  ShipFishingPostDetailAPIResponse,
+} from "@/types/boatPostType";
+import dayjs from "dayjs";
 
-async function getBoatPostDetail(id: string): Promise<PostDetailType> {
-  const response = await fetch(`http://localhost:3000/api/boatPostMock/${id}`, {
-    cache: "no-store",
-  });
+// 배 상세 정보 조회
+async function getBoatPostDetail(
+  id: string
+): Promise<ShipFishingPostDetailAPIResponse> {
+  const token = process.env.NEXT_PUBLIC_API_TOKEN || "기본_토큰_값";
+
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/ship-fishing-posts/${id}`,
+    {
+      cache: "no-store",
+      headers: {
+        Authorization: token,
+      },
+    }
+  );
+  const data = await response.json();
+  return data;
+}
+
+// 예약 불가능 날짜 조회
+async function getReservationUnavailableDate(
+  id: string
+): Promise<ReservationUnavailableDateAPIResponse> {
+  const token = process.env.NEXT_PUBLIC_API_TOKEN || "기본_토큰_값";
+  const date = dayjs().format("YYYY-MM-DD");
+
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/reservation-dates/${id}/dates?reservationDate=${date}`,
+    {
+      cache: "no-store",
+      headers: {
+        Authorization: token,
+      },
+    }
+  );
   const data = await response.json();
   return data;
 }
@@ -26,6 +61,11 @@ export default async function BoatReservationDetail({
   params: { id: string };
 }) {
   const boatPostDetail = await getBoatPostDetail(params.id);
+  const reservationUnavailableDate = await getReservationUnavailableDate(
+    params.id
+  );
+
+  console.log(boatPostDetail);
 
   // 리뷰 데이터
   const reviews = [
@@ -73,7 +113,7 @@ export default async function BoatReservationDetail({
         </div>
 
         <div className="mb-6 font-bold text-4xl">
-          {boatPostDetail.data.detailShipFishingPost.subject}
+          {boatPostDetail.data.subject}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -95,18 +135,15 @@ export default async function BoatReservationDetail({
                 </TabsTrigger>
               </TabsList>
               <TabsContent value="info" className="mt-6">
-                <TabDetail
-                  detailShipFishingPost={
-                    boatPostDetail.data.detailShipFishingPost
-                  }
-                  detailShip={boatPostDetail.data.detailShip}
-                />
+                <TabDetail detailShip={boatPostDetail.data} />
               </TabsContent>
               <TabsContent value="fish" className="mt-6">
-                <TabFish />
+                <TabFish fishNameList={boatPostDetail.data.detailFish} />
               </TabsContent>
               <TabsContent value="tide" className="mt-6">
-                <TabWater />
+                <TabWater
+                  departurePort={boatPostDetail.data.detailShip.departurePort}
+                />
               </TabsContent>
             </Tabs>
 
@@ -117,7 +154,7 @@ export default async function BoatReservationDetail({
                 <div className="flex items-center bg-sub-2 text-gray-30 px-3 py-1 rounded-full">
                   <Star className="h-5 w-5 fill-amber-400 text-amber-400 mr-1" />
                   <span className="font-semibold">
-                    {boatPostDetail.data.detailShipFishingPost.reviewEverRate}
+                    {boatPostDetail.data.reviewEverRate}
                   </span>
                   <span className="text-sm font-medium text-gray-500 ml-1">
                     ({reviews.length})
@@ -129,7 +166,7 @@ export default async function BoatReservationDetail({
                 {reviews.map((review, index) => (
                   <ReviewCard
                     key={index}
-                    id={review.id}
+                    id={+review.id}
                     user={review.user}
                     date={review.date}
                     content={review.content}
@@ -149,8 +186,9 @@ export default async function BoatReservationDetail({
           <div className="lg:col-span-1">
             <div className="sticky top-[100px] space-y-6">
               <ReservationInfo
-                detailShipFishingPost={
-                  boatPostDetail.data.detailShipFishingPost
+                detailShip={boatPostDetail.data}
+                reservationUnavailableDate={
+                  reservationUnavailableDate.data.unAvailableDateList
                 }
               />
               <PhoneInfo />
