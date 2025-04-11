@@ -5,13 +5,13 @@ import Link from "next/link"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Home, Fish, Calendar, Bookmark, Users, Star, Settings, LogOut } from "lucide-react"
+import { Home, Fish, Calendar, Users, Star, Settings, LogOut, Heart } from "lucide-react"
 
 const navItems = [
   { name: "홈", href: "/user/mypage", icon: Home },
   { name: "어류 도감", href: "/user/mypage/fish-encyclopedia", icon: Fish },
   { name: "예약 내역", href: "/user/mypage/reservation", icon: Calendar },
-  { name: "위시리스트", href: "/user/mypage/wishlist", icon: Bookmark },
+  { name: "내 좋아요", href: "/user/mypage/likes", icon: Heart },
   { name: "동출 모집", href: "/user/mypage/fishing-group", icon: Users },
   { name: "내 리뷰", href: "/user/mypage/review", icon: Star },
 ]

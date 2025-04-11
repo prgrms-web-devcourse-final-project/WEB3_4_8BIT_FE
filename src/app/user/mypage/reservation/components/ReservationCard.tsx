@@ -1,14 +1,16 @@
-"use client"
-
 import {Card} from "@/components/ui/card";
-import {Calendar, Clock, FishSymbol, MapPin, Star, Trash2, Users} from "lucide-react";
+import {Calendar, Clock, FishSymbol, MapPin, Star, Trash2, Users, Eye} from "lucide-react";
 import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
 import React, {useState} from "react";
 import Image from "next/image";
 import ReviewModal from "@/app/user/mypage/reservation/components/ReviewModal";
+import Link from "next/link";
+import {useRouter} from "next/navigation";
 
 export default function ReservationCard({
+  postId,
+  reservationId,
   title,
   date,
   time,
@@ -18,7 +20,10 @@ export default function ReservationCard({
   status,
   image,
   cancellationReason,
+  handleCancel,
 }: {
+  postId: number;
+  reservationId: number;
   title: string
   date: string
   time: string
@@ -28,8 +33,10 @@ export default function ReservationCard({
   status: "confirmed" | "completed" | "cancelled"
   image: string
   cancellationReason?: string
+  handleCancel: (id : number) => void
 }) {
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false)
+  const router = useRouter();
 
   const statusColors = {
     confirmed: "bg-green-100 text-green-800",
@@ -55,7 +62,7 @@ export default function ReservationCard({
             width={300}
           />
         </div>
-        <div className="p-6 md:w-2/3">
+        <div className="relative p-6 md:w-2/3">
           <div className="flex justify-between items-start">
             <div>
               <h3 className="text-xl font-bold">{title}</h3>
@@ -83,15 +90,16 @@ export default function ReservationCard({
           </div>
 
           <div className="mt-6 flex flex-wrap gap-2">
+            <Link href={`/boat-reservation/${postId}`}>
+              <Button variant="outline" className="gap-2 cursor-pointer">
+                <Eye className="h-4 w-4" /> 낚시 상세 보기
+              </Button>
+            </Link>
+
             {status === "confirmed" && (
-              <>
-                <Button variant="outline" className="gap-2 cursor-pointer">
-                  <Calendar className="h-4 w-4" /> 일정 변경
-                </Button>
-                <Button variant="outline" className="gap-2 text-red-600 hover:text-red-700 hover:bg-red-50 cursor-pointer">
-                  <Trash2 className="h-4 w-4" /> 취소
-                </Button>
-              </>
+              <Button variant="outline" onClick={() => handleCancel(reservationId)} className="gap-2 text-red-600 hover:text-red-700 hover:bg-red-50 cursor-pointer">
+                <Trash2 className="h-4 w-4" /> 취소
+              </Button>
             )}
 
             {status === "completed" && (
@@ -99,7 +107,7 @@ export default function ReservationCard({
                 <Button variant="outline" className="gap-2 cursor-pointer" onClick={() => setIsReviewModalOpen(true)}>
                   <Star className="h-4 w-4 text-amber-500" /> 리뷰 작성
                 </Button>
-                <Button variant="outline" className="gap-2 cursor-pointer">
+                <Button className="gap-2 cursor-pointer">
                   <FishSymbol className="h-4 w-4" />다시 예약하기
                 </Button>
               </>
@@ -110,6 +118,8 @@ export default function ReservationCard({
 
       {isReviewModalOpen && (
         <ReviewModal
+          reservationId={reservationId}
+          postId={postId}
           setIsReviewModalOpen={setIsReviewModalOpen}
         />
       )}
