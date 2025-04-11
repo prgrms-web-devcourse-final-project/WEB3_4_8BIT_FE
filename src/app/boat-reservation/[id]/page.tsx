@@ -10,8 +10,13 @@ import TabFish from "@/app/boat-reservation/[id]/components/TabFish";
 import TabWater from "@/app/boat-reservation/[id]/components/TabWater";
 import ReviewCard from "@/components/ReviewCard";
 import ImageGallery from "@/app/boat-reservation/[id]/components/ImageGallery";
-import { ShipFishingPostDetailAPIResponse } from "@/types/boatPostType";
+import {
+  ReservationUnavailableDateAPIResponse,
+  ShipFishingPostDetailAPIResponse,
+} from "@/types/boatPostType";
+import dayjs from "dayjs";
 
+// 배 상세 정보 조회
 async function getBoatPostDetail(
   id: string
 ): Promise<ShipFishingPostDetailAPIResponse> {
@@ -30,14 +35,38 @@ async function getBoatPostDetail(
   return data;
 }
 
+// 예약 불가능 날짜 조회
+async function getReservationUnavailableDate(
+  id: string
+): Promise<ReservationUnavailableDateAPIResponse> {
+  const token = process.env.NEXT_PUBLIC_API_TOKEN || "기본_토큰_값";
+  const date = dayjs().format("YYYY-MM-DD");
+
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/reservation-dates/${id}/dates?reservationDate=${date}`,
+    {
+      cache: "no-store",
+      headers: {
+        Authorization: token,
+      },
+    }
+  );
+  const data = await response.json();
+  return data;
+}
+
 export default async function BoatReservationDetail({
   params,
 }: {
   params: { id: string };
 }) {
   const boatPostDetail = await getBoatPostDetail(params.id);
+  const reservationUnavailableDate = await getReservationUnavailableDate(
+    params.id
+  );
 
   console.log(boatPostDetail);
+  console.log(reservationUnavailableDate);
 
   // 리뷰 데이터
   const reviews = [
@@ -155,7 +184,10 @@ export default async function BoatReservationDetail({
           {/* 예약 관련 정보 */}
           <div className="lg:col-span-1">
             <div className="sticky top-[100px] space-y-6">
-              <ReservationInfo detailShip={boatPostDetail.data} />
+              <ReservationInfo
+                detailShip={boatPostDetail.data}
+                reservationUnavailableDate={reservationUnavailableDate.data}
+              />
               <PhoneInfo />
             </div>
           </div>

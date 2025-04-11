@@ -20,15 +20,17 @@ import { ko } from "date-fns/locale";
 import { Calendar } from "@/components/ui/calendar";
 import React, { useState } from "react";
 import { ShipFishingPostDetailData } from "@/types/boatPostType";
+import dayjs from "dayjs";
 
 export default function ReservationInfo({
   detailShip,
+  reservationUnavailableDate,
 }: {
   detailShip: ShipFishingPostDetailData;
+  reservationUnavailableDate: string[];
 }) {
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [selectedPeople, setSelectedPeople] = useState(1);
-
   return (
     <Card className="shadow-lg">
       <CardHeader>
@@ -70,6 +72,11 @@ export default function ReservationInfo({
                 onSelect={setDate}
                 initialFocus
                 locale={ko}
+                disabled={(date) =>
+                  reservationUnavailableDate.includes(
+                    dayjs(date).format("YYYY-MM-DD")
+                  )
+                }
               />
             </PopoverContent>
           </Popover>
