@@ -63,7 +63,7 @@ const FishingPoint = () => {
       </div>
 
       <div
-        className="md:w-1/2 mt-6 md:mt-0 flex justify-center items-center bg-white p-6 rounded-lg shadow-md cursor-pointer transition-all duration-300 hover:shadow-lg"
+        className="md:w-1/2 mt-6 md:mt-0 flex justify-center items-center bg-white p-6 rounded-lg shadow-md cursor-pointer border-1 transition-all duration-300 hover:shadow-lg"
         onClick={handleMapClick}
       >
         <div className="w-full h-[300px] rounded-lg overflow-hidden border border-gray-200">

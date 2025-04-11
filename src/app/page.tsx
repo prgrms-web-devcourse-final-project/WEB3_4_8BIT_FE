@@ -78,7 +78,7 @@ export default function Home() {
       <FishingPoint />
 
       {/* 3개의 카드 섹션 */}
-      <section className="py-12">
+      <section className="py-5">
         <div className="mx-auto max-w-7xl px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <FishingPointCard />
@@ -90,7 +90,7 @@ export default function Home() {
 
       <BoatCardSection />
 
-      <section className="py-12">
+      <section className="py-4">
         <div className="mx-auto max-w-7xl px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             <BoatReservationSection />

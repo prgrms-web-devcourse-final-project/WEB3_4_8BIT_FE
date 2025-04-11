@@ -103,7 +103,7 @@ export default function CurrentLocationWeather() {
   const current = weatherData.current;
 
   return (
-    <section className="w-full bg-white py-5 mb-2 mt-6">
+    <section className="w-full bg-white py-5 mt-6">
       <div className="max-w-7xl w-full mx-auto px-4">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-900">실시간 날씨 정보</h2>

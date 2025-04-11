@@ -36,21 +36,21 @@ export default function Header() {
           </div>
           <nav className="hidden md:block">
             <ul className="flex lg:gap-[51px] gap-[30px]">
-              <li className="text-[18px] text-[#fff] font-semibold cursor-pointer">
-                menu1
-              </li>
-              <li className="text-[18px] text-[#fff] font-semibold cursor-pointer">
-                menu2
-              </li>
-              <li className="text-[18px] text-[#fff] font-semibold cursor-pointer">
-                menu3
-              </li>
-              <li className="text-[18px] text-[#fff] font-semibold cursor-pointer">
-                menu4
-              </li>
-              <li className="text-[18px] text-[#fff] font-semibold cursor-pointer">
-                menu5
-              </li>
+              <Link href={'/boat-reservation'} className="text-[18px] text-[#fff] font-semibold cursor-pointer">
+                선상 낚시 예약
+              </Link>
+              <Link href={'/fishing-group'} className="text-[18px] text-[#fff] font-semibold cursor-pointer">
+                낚시 동출 모집
+              </Link>
+              <Link href={'/fishing-point'} className="text-[18px] text-[#fff] font-semibold cursor-pointer">
+                낚시 포인트
+              </Link>
+              <Link href={'/user/mypage/fish-encyclopedia'} className="text-[18px] text-[#fff] font-semibold cursor-pointer">
+                어류 도감
+              </Link>
+              <Link href={'/user/mypage'} className="text-[18px] text-[#fff] font-semibold cursor-pointer">
+                마이페이지
+              </Link>
             </ul>
           </nav>
         </div>
