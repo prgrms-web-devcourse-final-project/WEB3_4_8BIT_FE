@@ -66,47 +66,20 @@ export default function ReplyItem({
               )}
             </div>
             <div className="flex space-x-2">
-              {isAuthor && (
+              {isAuthor && !isEditing && (
                 <>
-                  {isEditing ? (
-                    <div className="flex-1">
-                      <textarea
-                        value={editContent}
-                        onChange={(e) => setEditContent(e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded-md text-gray-800 bg-white"
-                        rows={2}
-                      />
-                      <div className="flex justify-end mt-2 space-x-2">
-                        <button
-                          onClick={handleUpdateComment}
-                          className="px-2 py-0.5 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 cursor-pointer"
-                        >
-                          저장
-                        </button>
-                        <button
-                          onClick={cancelEditing}
-                          className="px-2 py-0.5 text-xs bg-gray-500 text-white rounded hover:bg-gray-600 cursor-pointer"
-                        >
-                          취소
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                      <button
-                        onClick={startEditing}
-                        className="text-sm text-blue-500 hover:text-blue-700"
-                      >
-                        수정
-                      </button>
-                      <button
-                        onClick={() => onDelete(reply.id)}
-                        className="text-sm text-red-500 hover:text-red-700"
-                      >
-                        삭제
-                      </button>
-                    </>
-                  )}
+                  <button
+                    onClick={startEditing}
+                    className="text-sm text-blue-500 hover:text-blue-700 cursor-pointer"
+                  >
+                    수정
+                  </button>
+                  <button
+                    onClick={() => onDelete(reply.id)}
+                    className="text-sm text-red-500 hover:text-red-700 cursor-pointer"
+                  >
+                    삭제
+                  </button>
                 </>
               )}
             </div>
@@ -123,13 +96,13 @@ export default function ReplyItem({
                 <div className="flex justify-end mt-2 space-x-2">
                   <button
                     onClick={handleUpdateComment}
-                    className="px-2 py-0.5 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 cursor-pointer"
+                    className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 cursor-pointer"
                   >
                     저장
                   </button>
                   <button
                     onClick={cancelEditing}
-                    className="px-2 py-0.5 text-xs bg-gray-500 text-white rounded hover:bg-gray-600 cursor-pointer"
+                    className="px-3 py-1 text-xs bg-gray-500 text-white rounded hover:bg-gray-600 cursor-pointer"
                   >
                     취소
                   </button>

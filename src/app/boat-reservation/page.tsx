@@ -8,29 +8,48 @@ import {
 import BoatCard from "@/components/BoatCard";
 import SearchBox from "@/app/boat-reservation/components/SearchBox";
 import FilterBox from "@/app/boat-reservation/components/FilterBox";
-import { PostType } from "@/types/boatPostType";
+import {
+  ShipFishingPostParams,
+  ShipPostListAPIResponse,
+} from "@/types/boatPostType";
 
-// 더미 API 함수
-async function getBoatPosts(): Promise<PostType[]> {
+async function getShipPosts(
+  params?: ShipFishingPostParams
+): Promise<ShipPostListAPIResponse> {
   try {
-    const response = await fetch("http://localhost:3000/api/boatPostMock", {
-      cache: "no-store",
+    const token = process.env.NEXT_PUBLIC_API_TOKEN || "기본_토큰_값";
+
+    const query = new URLSearchParams({
+      order: params?.order || "desc",
+      sort: params?.sort || "createdAt",
+      type: params?.type || "next",
+      fieldValue: params?.fieldValue ?? "",
+      id: params?.id?.toString() ?? "",
+      size: params?.size?.toString() || "10",
     });
 
-    if (!response.ok) {
-      throw new Error("데이터를 불러오는데 실패했습니다");
-    }
+    const response = await fetch(
+      `${
+        process.env.NEXT_PUBLIC_API_URL
+      }/ship-fishing-posts?${query.toString()}`,
+      {
+        cache: "no-store",
+        headers: {
+          Authorization: token,
+        },
+      }
+    );
 
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error("API 호출 에러:", error);
-    return []; // 에러 시 빈 배열 반환
+    console.error("선상 낚시 게시글 조회에 실패했습니다.", error);
+    throw error;
   }
 }
 
 export default async function BoatReservation() {
-  const boatPostsData = await getBoatPosts();
+  const shipPostsData = await getShipPosts();
 
   return (
     <div className="min-h-screen">
@@ -50,7 +69,7 @@ export default async function BoatReservation() {
           <div className="lg:col-span-3 space-y-6">
             <div className="flex justify-between items-center">
               <h2 className="text-xl font-bold">
-                검색 결과 ({boatPostsData.length})
+                검색 결과 ({shipPostsData.data.numberOfElements})
               </h2>
               <Select defaultValue="recommended">
                 <SelectTrigger className="w-[180px] cursor-pointer">
@@ -66,8 +85,8 @@ export default async function BoatReservation() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {boatPostsData.map((boat) => (
-                <BoatCard key={boat.shipFishingPostId} boatData={boat} />
+              {shipPostsData.data.content.map((post) => (
+                <BoatCard key={post.shipFishingPostId} boatData={post} />
               ))}
             </div>
           </div>

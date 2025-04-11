@@ -8,7 +8,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Droplets, Moon, Sun } from "lucide-react";
-import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   DailyTideData,
@@ -16,53 +15,43 @@ import {
 } from "@/lib/api/getSeaTemperatureAPI";
 import TideChart from "@/app/fishing-point/[pointId]/component/TideChart";
 import dayjs from "dayjs";
+import { getCoordinatesFromAddress } from "@/lib/api/getCoordinatesFromAddress";
+import { WeatherResponse } from "@/types/weatherTypes";
+import { getWeatherData } from "@/lib/api/weatherDataAPI";
 
-export default function TabWater() {
-  const [currentTideIndex, setCurrentTideIndex] = useState(0);
-  const { data: tideChartData } = useQuery<DailyTideData[]>({
-    queryKey: ["tideChartData"],
-    queryFn: () => getTideChartData(37.2688889, 126.2919444),
+export default function TabWater({ departurePort }: { departurePort: string }) {
+  const { data: coordinates } = useQuery<{
+    latitude: number;
+    longitude: number;
+  } | null>({
+    queryKey: ["coordinates", departurePort],
+    queryFn: () => getCoordinatesFromAddress(departurePort),
   });
 
-  // 물때 정보
-  const tideInfo = [
-    {
-      date: "2023.11.01",
-      sunrise: "06:32",
-      sunset: "17:45",
-      highTide: ["09:15", "21:45"],
-      lowTide: ["03:20", "15:50"],
-    },
-    {
-      date: "2023.11.02",
-      sunrise: "06:33",
-      sunset: "17:44",
-      highTide: ["10:00", "22:30"],
-      lowTide: ["04:05", "16:35"],
-    },
-    {
-      date: "2023.11.03",
-      sunrise: "06:34",
-      sunset: "17:43",
-      highTide: ["10:45", "23:15"],
-      lowTide: ["04:50", "17:20"],
-    },
-    {
-      date: "2023.11.04",
-      sunrise: "06:35",
-      sunset: "17:42",
-      highTide: ["11:30", "23:59"],
-      lowTide: ["05:35", "18:05"],
-    },
-    {
-      date: "2023.11.05",
-      sunrise: "06:36",
-      sunset: "17:41",
-      highTide: ["12:15", "--:--"],
-      lowTide: ["06:20", "18:50"],
-    },
-  ];
+  const { data: tideChartData, isLoading: tideChartLoading } = useQuery<
+    DailyTideData[]
+  >({
+    queryKey: ["tideChartData"],
+    queryFn: () =>
+      getTideChartData(coordinates!.latitude, coordinates!.longitude),
+    enabled: !!coordinates,
+  });
 
+  const { data: currentWeather, isLoading: currentWeatherLoading } =
+    useQuery<WeatherResponse>({
+      queryKey: ["currentWeather"],
+      queryFn: () =>
+        getWeatherData(coordinates!.longitude, coordinates!.latitude),
+      enabled: !!coordinates,
+    });
+
+  if (tideChartLoading || currentWeatherLoading) {
+    return <div>Loading...</div>;
+  }
+
+  console.log(currentWeather);
+
+  const tideInfo = tideChartData?.[1];
   return (
     <Card>
       <CardHeader>
@@ -71,63 +60,92 @@ export default function TabWater() {
       </CardHeader>
       <CardContent>
         <div className="relative">
-          {/* Tide Carousel */}
           <div className="overflow-hidden">
-            <div
-              className="flex transition-transform duration-300 ease-in-out"
-              style={{ transform: `translateX(-${currentTideIndex * 100}%)` }}
-            >
-              {tideInfo.map((info, index) => (
-                <div key={index} className="w-full flex-shrink-0 px-1">
-                  <div className="border rounded-lg p-4 bg-white">
-                    <div className="flex justify-between items-center mb-4">
-                      <h3 className="text-lg font-medium flex items-center">
-                        <span className="ml-2 text-sm bg-cyan-100 text-cyan-800 px-2 py-0.5 rounded-full">
-                          {dayjs(info.date).format("MM월 DD일")}
-                        </span>
-                      </h3>
-                      <div className="flex space-x-4">
-                        <div className="flex items-center text-amber-500">
-                          <Sun className="h-4 w-4 mr-1" /> {info.sunrise}
-                        </div>
-                        <div className="flex items-center text-indigo-500">
-                          <Moon className="h-4 w-4 mr-1" /> {info.sunset}
-                        </div>
+            <div className="flex transition-transform duration-300 ease-in-out">
+              <div className="w-full flex-shrink-0 px-1">
+                <div className="border rounded-lg p-4 bg-white">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg font-medium flex items-center">
+                      <span className="ml-2 text-sm bg-cyan-100 text-cyan-800 px-2 py-0.5 rounded-full">
+                        {dayjs(tideInfo?.date).format("M월 D일")}
+                      </span>
+                    </h3>
+                    <div className="flex space-x-4">
+                      <div className="flex items-center text-amber-500">
+                        <Sun className="h-4 w-4 mr-1" />{" "}
+                        {currentWeather &&
+                          dayjs
+                            .unix(+currentWeather.current.sunrise!)
+                            .format("HH:mm")}
+                      </div>
+                      <div className="flex items-center text-indigo-500">
+                        <Moon className="h-4 w-4 mr-1" />
+                        {currentWeather &&
+                          dayjs
+                            .unix(+currentWeather.current.sunset!)
+                            .format("HH:mm")}
                       </div>
                     </div>
+                  </div>
 
-                    {/* Tide Visualization */}
-                    <div className="mb-6">
-                      <TideChart tideChartData={tideChartData} />
-                    </div>
+                  <div className="mb-6">
+                    <TideChart tideChartData={tideChartData} />
+                  </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <h4 className="text-sm font-medium mb-1">만조 시간</h4>
-                        <div className="space-y-1">
-                          {info.highTide.map((time, i) => (
-                            <div key={i} className="flex items-center">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <h4 className="text-sm font-medium mb-1">만조 시간</h4>
+                      <div className="space-y-1">
+                        {tideInfo?.tides
+                          .filter((time) => time.hl_code === "고조")
+                          .map((time) => (
+                            <div
+                              key={time.tph_time}
+                              className="flex items-center"
+                            >
                               <Droplets className="h-4 w-4 text-blue-600 mr-2" />
-                              <span>{time !== "--:--" ? time : "-"}</span>
+                              <span>
+                                {new Date(time.tph_time).toLocaleTimeString(
+                                  "ko-KR",
+                                  {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                    hour12: false,
+                                  }
+                                )}
+                              </span>
                             </div>
                           ))}
-                        </div>
                       </div>
-                      <div>
-                        <h4 className="text-sm font-medium mb-1">간조 시간</h4>
-                        <div className="space-y-1">
-                          {info.lowTide.map((time, i) => (
-                            <div key={i} className="flex items-center">
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-medium mb-1">간조 시간</h4>
+                      <div className="space-y-1">
+                        {tideInfo?.tides
+                          .filter((time) => time.hl_code === "저조")
+                          .map((time) => (
+                            <div
+                              key={time.tph_time}
+                              className="flex items-center"
+                            >
                               <Droplets className="h-4 w-4 text-blue-300 mr-2" />
-                              <span>{time}</span>
+                              <span>
+                                {new Date(time.tph_time).toLocaleTimeString(
+                                  "ko-KR",
+                                  {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                    hour12: false,
+                                  }
+                                )}
+                              </span>
                             </div>
                           ))}
-                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              ))}
+              </div>
             </div>
           </div>
         </div>

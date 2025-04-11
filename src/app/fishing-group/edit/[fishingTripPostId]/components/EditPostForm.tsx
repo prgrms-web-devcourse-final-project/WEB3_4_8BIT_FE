@@ -36,6 +36,7 @@ import {
   EditPostFormProps,
   PostData,
 } from "@/types/EditPostFormType";
+import axiosInstance from "@/lib/api/axiosInstance";
 import {
   FishingPointLocation,
   FishingPoint,
@@ -286,9 +287,9 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
 
       alert("게시글이 수정되었습니다!");
       router.push(`/fishing-group/post/${postId}`);
-    } catch (err) {
-      console.error("❌ 게시글 수정 중 오류:", err);
-      alert("게시글 수정 중 오류가 발생했습니다.");
+    } catch (error: unknown) {
+      console.error("❌ 게시글 수정 중 오류:", error as Error);
+      throw error;
     } finally {
       setIsSubmitting(false);
     }
@@ -296,6 +297,33 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
 
   const disablePastDates = (date: Date) => {
     return isBefore(date, startOfDay(new Date()));
+  };
+
+  const fetchComments = async () => {
+    try {
+      const response = await axiosInstance.get(
+        `/fishing-trip-post/${postId}/comment`,
+        {
+          params: {
+            size: 10,
+            parentId: 1, // 필요한 경우 변경
+            cursorRequestDto: {
+              order: "desc",
+              sort: "createdAt",
+              type: "next",
+              fieldValue: "2025-04-08T07:24:17.138851Z",
+              id: 1,
+              size: 10,
+            },
+          },
+        }
+      );
+      if (response.data) {
+        setComments(response.data.content);
+      }
+    } catch (error) {
+      console.error("댓글 불러오기 실패:", error);
+    }
   };
 
   if (isLoading) {

@@ -172,11 +172,14 @@ export default function KaKaoMap({
         markersRef.current = markers;
         applyClusterer(markers);
       } else {
-        const markers = locationData.map((location) => {
-          const marker = createRegionMarker(location);
-          marker.setMap(mapRef.current);
-          return marker;
-        });
+        const markers =
+          locationData && locationData.length > 0
+            ? locationData.map((location) => {
+                const marker = createRegionMarker(location);
+                marker.setMap(mapRef.current);
+                return marker;
+              })
+            : [];
         markersRef.current = markers;
       }
     });

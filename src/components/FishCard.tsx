@@ -1,14 +1,15 @@
 import Image from "next/image";
-import { Badge } from "@/components/ui/badge"
+import { Badge } from "@/components/ui/badge";
 
-export default function FishCard ({
+export default function FishCard({
   name,
   season,
   imageUrl,
+  imageUrl,
 }: {
-  name: string
-  season: string
-  imageUrl: string
+  name: string;
+  season: string;
+  imageUrl: string | null;
 }) {
   return (
     <div className="flex items-center space-x-3 p-3 bg-[#FAFAFA] rounded-lg">
@@ -27,5 +28,5 @@ export default function FishCard ({
         </div>
       </div>
     </div>
-  )
+  );
 }
