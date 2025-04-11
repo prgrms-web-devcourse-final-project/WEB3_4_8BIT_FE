@@ -1,19 +1,12 @@
-import {BoatInfo, BoatInputData, NormalUserInputData, User} from "@/types/user.interface";
+ import {BoatInfo, BoatInputData, NormalUserInputData, User, UserReservationInfo} from "@/types/user.interface";
 import {apiInstance} from "@/lib/api/apiInstance";
-import {PostAPIResponse} from "@/lib/api/fishAPI";
-
-// 백엔드가 설정한 기본 API 응답
-interface APIDataResponse<T> {
-  data : T;
-  success : boolean;
-  timestamp : string;
-}
+import {APIResponse, PostAPIResponse} from "@/lib/api/fishAPI";
 
 // 사용자 관련 API 클래스
 export class UserAPI {
   public static async getMemberInfo() : Promise<User> {
     try {
-      const response = await apiInstance.get<APIDataResponse<User>>('/members')
+      const response = await apiInstance.get<APIResponse<User>>('/members')
       return response.data.data
     } catch (error) {
       console.error('getMemberInfo error:', error)
@@ -21,7 +14,7 @@ export class UserAPI {
     }
   }
 
-  public static async postMemberInfo(userInput : NormalUserInputData) : Promise<APIDataResponse<unknown>> {
+  public static async postMemberInfo(userInput : NormalUserInputData) : Promise<APIResponse<unknown>> {
     try {
       const response = await apiInstance.post('/members', userInput)
       return response.data
@@ -39,7 +32,7 @@ export class UserAPI {
 
   }
 
-  public static async postCaptainMemberInfo(boatInput : BoatInputData) : Promise<APIDataResponse<unknown>> {
+  public static async postCaptainMemberInfo(boatInput : BoatInputData) : Promise<APIResponse<unknown>> {
     try {
       const response = await apiInstance.post('/members/captains',boatInput);
       return response.data
@@ -71,6 +64,36 @@ export class UserAPI {
       console.error('deleteUserReview error:', error)
       throw error;
     }
+  }
+
+  public static async getUserBoatReservation(afterToday : boolean, isConfirm : boolean) : Promise<UserReservationInfo[]> {
+    try {
+      const response = await apiInstance.get<APIResponse<{content : UserReservationInfo[]}>>('/reservations/members',{
+        params : {
+          afterToday : afterToday,
+          isConfirm : isConfirm,
+          size : 10,
+        }
+      });
+      return response.data.data.content
+    } catch (error) {
+      console.error('getUserBoatReservation error:', error)
+      throw error;
+    }
+  }
+
+  public static async deleteUserBoatReservation(reservationId : number) : Promise<PostAPIResponse> {
+    try {
+      const response = await apiInstance.patch<PostAPIResponse>(`/reservations/${reservationId}`);
+      return response.data
+    } catch (error) {
+      console.error('deleteUserBoatReservation error:', error)
+      throw error;
+    }
+  }
+
+  public static async getUserGroupFishPost (): Promise<APIResponse<unknown>> {
+
   }
 }
 
