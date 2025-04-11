@@ -107,7 +107,7 @@ export default function ReservationCard({
                 <Button variant="outline" className="gap-2 cursor-pointer" onClick={() => setIsReviewModalOpen(true)}>
                   <Star className="h-4 w-4 text-amber-500" /> 리뷰 작성
                 </Button>
-                <Button variant="outline" className="gap-2 cursor-pointer">
+                <Button className="gap-2 cursor-pointer">
                   <FishSymbol className="h-4 w-4" />다시 예약하기
                 </Button>
               </>
@@ -118,6 +118,8 @@ export default function ReservationCard({
 
       {isReviewModalOpen && (
         <ReviewModal
+          reservationId={reservationId}
+          postId={postId}
           setIsReviewModalOpen={setIsReviewModalOpen}
         />
       )}
