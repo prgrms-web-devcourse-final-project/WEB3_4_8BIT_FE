@@ -67,6 +67,14 @@ export interface PostDetailShip {
   parkingAvailable: boolean; // 주차 가능 여부
 }
 
+export interface PostDetailFish {
+  fishId: number;
+  name: string;
+  fileUrl: string | null;
+  spawnSeasonList: number[];
+  spawnLocation: string;
+}
+
 export interface ShipFishingPostDetailData {
   shipFishingPostId: number;
   subject: string;
@@ -77,7 +85,7 @@ export interface ShipFishingPostDetailData {
   durationTime: string;
   maxGuestCount: number;
   reviewEverRate: number;
-  detailFish: string[];
+  detailFish: PostDetailFish[];
   detailShip: PostDetailShip;
   detailMember: PostDetailMember;
 }
@@ -92,6 +100,8 @@ export interface ShipFishingPostDetailAPIResponse {
 // 예약 불가능 날짜 조회 API 응답 타입
 export interface ReservationUnavailableDateAPIResponse {
   timestamp: string;
-  data: string[];
+  data: {
+    unAvailableDateList: string[];
+  };
   success: boolean;
 }
