@@ -92,7 +92,7 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
     return <div>게시글을 찾을 수 없습니다.</div>;
   }
 
-  const isRecruiting = new Date(post.fishingDate) > new Date();
+  const isRecruiting = post.postStatus === "RECRUITING";
 
   // 게시글 삭제 처리 함수
   const handleDeletePost = async () => {
@@ -135,7 +135,7 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
                 className={`px-3 py-1.5 text-sm font-medium rounded-full ${
                   isRecruiting
                     ? "bg-blue-50 text-blue-600"
-                    : "bg-orange-50 text-orange-600"
+                    : "bg-gray-70 text-gray-600"
                 }`}
               >
                 {isRecruiting ? "모집중" : "모집완료"}
