@@ -318,6 +318,8 @@ export const getComments = async (fishingTripPostId: number) => {
       {
         params: {
           size: 10,
+          order: "asc",
+          sort: "createdAt",
         },
       }
     );
