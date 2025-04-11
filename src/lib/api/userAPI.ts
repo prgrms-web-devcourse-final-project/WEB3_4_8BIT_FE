@@ -1,4 +1,12 @@
- import {BoatInfo, BoatInputData, NormalUserInputData, User, UserReservationInfo} from "@/types/user.interface";
+ import {
+  BoatInfo,
+  BoatInputData,
+  NormalUserInputData,
+  User,
+  UserActivityHistory,
+  UserReservationInfo,
+  UserReviewInput, UserWrittenGroupFishing
+} from "@/types/user.interface";
 import {apiInstance} from "@/lib/api/apiInstance";
 import {APIResponse, PostAPIResponse} from "@/lib/api/fishAPI";
 
@@ -24,8 +32,14 @@ export class UserAPI {
     }
   }
 
-  public static async patchMemberInfo(data : unknown) {
-
+  public static async patchMemberInfo(userInput : NormalUserInputData) : Promise<PostAPIResponse> {
+    try {
+      const response = await apiInstance.patch<PostAPIResponse>('/members', userInput)
+      return response.data
+    } catch (error) {
+      console.error('patchMemberInfo error:', error)
+      throw error;
+    }
   }
 
   public static async getCaptainMemberInfo(data : unknown) {
@@ -92,8 +106,96 @@ export class UserAPI {
     }
   }
 
-  public static async getUserGroupFishPost (): Promise<APIResponse<unknown>> {
+  public static async postUserBoatReservationReview(reservationId : number, reviewInput : UserReviewInput) : Promise<PostAPIResponse> {
+    try {
+      const response = await apiInstance.post<PostAPIResponse>(`/reservations/${reservationId}/reviews`,reviewInput);
+      return response.data
+    } catch (error) {
+      console.error('review submit error:', error)
+      throw error;
+    }
+  }
 
+  public static async getUserGroupFish(status : 'RECRUITING' | 'COMPLETED'): Promise<UserWrittenGroupFishing[]> {
+    try {
+      const response = await apiInstance.get<APIResponse<{content : UserWrittenGroupFishing[]}>>(`/fishing-trip-post/my-post`,{
+        params : {
+          status : status,
+          size : 20,
+        }
+      });
+      return response.data.data.content
+    } catch(error) {
+      console.error('getUserGroupFishPost error:', error)
+      throw error;
+    }
+  }
+
+  public static async deleteUserGroupFish(fishingTripPostId : number) : Promise<PostAPIResponse> {
+    try {
+      const response = await apiInstance.delete<PostAPIResponse>(`/fishing-trip-post/${fishingTripPostId}`);
+      return response.data
+    } catch (error) {
+      console.error('deleteUserGroupFish error:', error)
+      throw error;
+    }
+  }
+
+  public static async getUserParticipateGroupFish(status : 'RECRUITING' | 'COMPLETED'): Promise<UserWrittenGroupFishing[]> {
+    try {
+      const response = await apiInstance.get<APIResponse<{content : UserWrittenGroupFishing[]}>>(`/fishing-trip-post/my-participate`,{
+        params : {
+          status : status,
+          size : 20,
+        }
+      });
+      return response.data.data.content
+    } catch(error) {
+      console.error('getUserGroupFishPost error:', error)
+      throw error;
+    }
+  }
+
+  public static async getUserActivityHistories(activityType : 'FISHING_TRIP_POST' | 'RESERVATION' | 'FISH_ENCYCLOPEDIA' | 'ALL') : Promise<UserActivityHistory[]> {
+    let params = {};
+    if(activityType === 'ALL') {
+      params = {
+        size : 20,
+      }
+    } else {
+      params = {
+        activityType : activityType,
+        size : 20,
+      }
+    }
+    try {
+      const response = await apiInstance.get<APIResponse<{content : UserActivityHistory[]}>>('/activity-histories',{
+        params : params
+      });
+      return response.data.data.content
+    } catch (error) {
+      console.error('getUserActivityHistoriesError:', error)
+      throw error;
+    }
+  }
+
+  public static async getUserFishEncyclopediaCount() : Promise<number> {
+    try {
+      const response = await apiInstance.get<APIResponse<number>>('/fishes/my-count');
+      return response.data.data;
+    } catch (error) {
+      console.error('getMyFishEncyclopediaCount error:', error)
+      throw error;
+    }
+  }
+
+  public static async getUserReservationCount() : Promise<number> {
+    try {
+      const response = await apiInstance.get<APIResponse<number>>('/reservations/count');
+      return response.data.data;
+    } catch (error) {
+      console.error('getMyReservationCount error:', error)
+      throw error;
+    }
   }
 }
-
