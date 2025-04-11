@@ -72,3 +72,18 @@ export interface UserReview {
   isAuthor: boolean;
   createdAt: string;
 }
+
+export interface UserReservationInfo {
+  reservationId: number;
+  shipFishingPostId: number;
+  reservationNumber: string;
+  subject: string;
+  reservationDate: string;
+  startTime: string;
+  location: string;
+  guestCount: number;
+  totalPrice: number;
+  reservationStatus: 'CONFIRMED' | 'CANCELLED' ; // 예시: 상태가 다양할 수 있으므로 유니언 타입 지정
+  fileUrlList: string[];
+  createdAt: string;
+}
