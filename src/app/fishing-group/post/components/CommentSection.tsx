@@ -18,6 +18,7 @@ interface ApiComment {
   isAuthor: boolean;
   authorProfileImg?: string;
   replies?: ApiComment[];
+  childCount: number;
 }
 
 export interface Comment {
@@ -28,15 +29,7 @@ export interface Comment {
   isAuthor: boolean;
   authorImageUrl?: string;
   childCount: number;
-}
-
-interface Reply {
-  id: string;
-  author: string;
-  content: string;
-  date: string;
-  isAuthor: boolean;
-  authorImageUrl?: string;
+  replies?: Comment[];
 }
 
 interface CommentSectionProps {
@@ -45,31 +38,31 @@ interface CommentSectionProps {
 
 export default function CommentSection({ postId }: CommentSectionProps) {
   const [comments, setComments] = useState<Comment[]>([]);
-  const [replies, setReplies] = useState<Record<string, Reply[]>>({});
   const [newComment, setNewComment] = useState("");
   const [replyContents, setReplyContents] = useState<Record<string, string>>(
     {}
   );
 
-  const fetchComments = async () => {
+  const fetchParentComments = async () => {
     try {
-      const comments = await getComments(Number(postId));
-      const formattedComments = comments.map((comment: ApiComment) => ({
+      const parentComments = await getComments(Number(postId));
+      const formattedComments = parentComments.map((comment: ApiComment) => ({
         id: comment.commentId.toString(),
         author: comment.nickname,
         content: comment.content,
         date: comment.createdAt,
         isAuthor: comment.isAuthor,
         authorImageUrl: comment.authorProfileImg,
-        childCount: comment.replies?.length || 0,
+        childCount: comment.childCount,
+        replies: [],
       }));
       setComments(formattedComments);
     } catch (error) {
-      console.error("댓글 불러오기 실패:", error);
+      console.error("부모 댓글 불러오기 실패:", error);
     }
   };
 
-  const fetchReplies = async (parentId: string) => {
+  const fetchChildComments = async (parentId: string) => {
     try {
       const response = await axiosInstance.get(
         `/fishing-trip-post/${postId}/comment`,
@@ -80,8 +73,8 @@ export default function CommentSection({ postId }: CommentSectionProps) {
           },
         }
       );
-      const replies = response.data.data.content;
-      const formattedReplies = replies.map((reply: ApiComment) => ({
+      const childComments = response.data.data.content;
+      const formattedReplies = childComments.map((reply: ApiComment) => ({
         id: reply.commentId.toString(),
         author: reply.nickname,
         content: reply.content,
@@ -89,11 +82,27 @@ export default function CommentSection({ postId }: CommentSectionProps) {
         isAuthor: reply.isAuthor,
         authorImageUrl: reply.authorProfileImg,
       }));
-      setReplies((prev) => ({ ...prev, [parentId]: formattedReplies }));
+      setComments((prevComments) =>
+        prevComments.map((comment) =>
+          comment.id === parentId
+            ? { ...comment, replies: formattedReplies }
+            : comment
+        )
+      );
     } catch (error) {
       console.error("대댓글 불러오기 실패:", error);
     }
   };
+
+  useEffect(() => {
+    fetchParentComments().then(() => {
+      comments.forEach((comment) => {
+        if (comment.childCount > 0) {
+          fetchChildComments(comment.id);
+        }
+      });
+    });
+  }, [postId]);
 
   const handleAddComment = async (content: string, parentId?: string) => {
     const response = await addComment(
@@ -102,9 +111,9 @@ export default function CommentSection({ postId }: CommentSectionProps) {
       parentId ? Number(parentId) : undefined
     );
     if (response.success) {
-      fetchComments();
+      await fetchParentComments();
       if (parentId) {
-        fetchReplies(parentId);
+        await fetchChildComments(parentId);
       }
     }
   };
@@ -112,20 +121,16 @@ export default function CommentSection({ postId }: CommentSectionProps) {
   const handleUpdateComment = async (commentId: number, content: string) => {
     const response = await updateComment(Number(postId), commentId, content);
     if (response.success) {
-      fetchComments();
+      fetchParentComments();
     }
   };
 
   const handleDeleteComment = async (commentId: number) => {
     const response = await deleteComment(Number(postId), commentId);
     if (response.success) {
-      fetchComments();
+      fetchParentComments();
     }
   };
-
-  useEffect(() => {
-    fetchComments();
-  }, [postId]);
 
   const handleCommentSubmit = () => {
     if (newComment.trim()) {
@@ -194,49 +199,54 @@ export default function CommentSection({ postId }: CommentSectionProps) {
                 )}
               </div>
               <p className="text-base text-gray-700 mt-2">{comment.content}</p>
-              <div className="flex justify-end mt-2">
+              <div className="flex justify-between mt-2">
+                <span className="text-xs text-gray-500">
+                  답글 {comment.childCount}개
+                </span>
                 <span className="text-xs text-gray-400">
                   {new Date(comment.date).toLocaleDateString()}
                 </span>
               </div>
               {/* Display replies */}
-              {comment.childCount > 0 && (
-                <div className="ml-10 mt-4">
-                  {replies[comment.id]?.map((reply) => (
-                    <div
-                      key={reply.id}
-                      className="flex items-start space-x-3 bg-gray-50 p-2 rounded-lg"
-                    >
-                      <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200">
-                        {reply.authorImageUrl ? (
-                          <Image
-                            src={reply.authorImageUrl}
-                            alt={reply.author}
-                            width={32}
-                            height={32}
-                            className="object-cover w-full h-full"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-gray-400 rounded-full" />
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between">
-                          <span className="font-medium text-sm">
-                            {reply.author}
-                          </span>
-                          <span className="text-xs text-gray-400">
-                            {new Date(reply.date).toLocaleDateString()}
-                          </span>
+              {comment.childCount > 0 &&
+                comment.replies &&
+                comment.replies.length > 0 && (
+                  <div className="ml-10 mt-4">
+                    {comment.replies.map((reply) => (
+                      <div
+                        key={reply.id}
+                        className="flex items-start space-x-3 bg-gray-50 p-2 rounded-lg"
+                      >
+                        <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200">
+                          {reply.authorImageUrl ? (
+                            <Image
+                              src={reply.authorImageUrl}
+                              alt={reply.author}
+                              width={32}
+                              height={32}
+                              className="object-cover w-full h-full"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gray-400 rounded-full" />
+                          )}
                         </div>
-                        <p className="text-sm text-gray-700 mt-1">
-                          {reply.content}
-                        </p>
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between">
+                            <span className="font-medium text-sm">
+                              {reply.author}
+                            </span>
+                            <span className="text-xs text-gray-400">
+                              {new Date(reply.date).toLocaleDateString()}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-700 mt-1">
+                            {reply.content}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+                    ))}
+                  </div>
+                )}
               {/* Reply input */}
               <div className="ml-10 mt-2">
                 <textarea
