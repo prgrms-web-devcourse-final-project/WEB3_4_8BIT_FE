@@ -9,7 +9,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { getRegions } from "@/lib/api/fishingPointAPI";
+import { FishingPointLocation } from "@/types/fishingPointLocationType";
 
 export function SearchBar({
   handleSearch,
@@ -17,29 +19,51 @@ export function SearchBar({
   handleSearch: (searchTerm: string) => void;
 }) {
   const [searchTerm, setSearchTerm] = useState("");
+  const [regions, setRegions] = useState<FishingPointLocation[]>([]);
+  const [selectedRegion, setSelectedRegion] = useState("all");
+
+  useEffect(() => {
+    const fetchRegions = async () => {
+      try {
+        const regionsData = await getRegions();
+        setRegions(regionsData);
+      } catch (error) {
+        console.error("지역 정보를 불러오는데 실패했습니다:", error);
+      }
+    };
+
+    fetchRegions();
+  }, []);
+
+  const handleRegionChange = (value: string) => {
+    setSelectedRegion(value);
+    // 지역 선택 시 검색 로직 추가 가능
+  };
 
   return (
     <div className="flex gap-2 mt-10 mb-10 items-center max-w-4xl mx-auto">
-      <Select defaultValue="all">
+      <Select value={selectedRegion} onValueChange={handleRegionChange}>
         <SelectTrigger className="w-[180px] bg-white border-gray-60 text-base h-full cursor-pointer">
           <SelectValue placeholder="지역을 선택하세요" />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent
+          side="bottom"
+          align="start"
+          className="w-[180px] z-50"
+          sideOffset={4}
+        >
           <SelectItem value="all" className="text-base">
-            지역을 선택하세요
+            전체 지역
           </SelectItem>
-          <SelectItem value="seoul" className="text-base">
-            서울
-          </SelectItem>
-          <SelectItem value="gyeonggi" className="text-base">
-            경기
-          </SelectItem>
-          <SelectItem value="incheon" className="text-base">
-            인천
-          </SelectItem>
-          <SelectItem value="busan" className="text-base">
-            부산
-          </SelectItem>
+          {regions.map((region) => (
+            <SelectItem
+              key={region.regionId}
+              value={region.regionId}
+              className="text-base"
+            >
+              {region.regionName}
+            </SelectItem>
+          ))}
         </SelectContent>
       </Select>
       <div className="relative flex-1">
