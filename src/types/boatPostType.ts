@@ -88,3 +88,10 @@ export interface ShipFishingPostDetailAPIResponse {
   data: ShipFishingPostDetailData;
   success: boolean;
 }
+
+// 예약 불가능 날짜 조회 API 응답 타입
+export interface ReservationUnavailableDateAPIResponse {
+  timestamp: string;
+  data: string[];
+  success: boolean;
+}
