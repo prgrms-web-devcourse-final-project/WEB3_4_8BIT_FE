@@ -55,4 +55,14 @@ export class FishAPI {
       throw error;
     }
   }
+
+  public static async getPopularFish() : Promise<FishDictionaryInfo[]> {
+    try {
+      const response = await apiInstance.get<APIResponse<FishDictionaryInfo[]>>('/fishes/popular?size=4');
+      return response.data.data
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
 }

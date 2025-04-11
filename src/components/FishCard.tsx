@@ -4,15 +4,17 @@ import { Badge } from "@/components/ui/badge"
 export default function FishCard ({
   name,
   season,
+  imageUrl,
 }: {
   name: string
   season: string
+  imageUrl: string
 }) {
   return (
     <div className="flex items-center space-x-3 p-3 bg-[#FAFAFA] rounded-lg">
       <Image
-        src="/placeholder.svg?height=60&width=60"
-        alt="참돔"
+        src={imageUrl || "/images/test.png"}
+        alt="어류 사진"
         className="w-14 h-14 rounded-full object-cover"
         width={56}
         height={56}

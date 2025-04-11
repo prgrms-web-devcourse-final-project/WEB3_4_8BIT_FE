@@ -2,10 +2,18 @@
 
 import React from "react";
 import Link from "next/link";
-import { ArrowRightCircle, Users } from "lucide-react";
-import Image from "next/image";
+import { Users } from "lucide-react";
+import MainFishGroupCard from "@/components/MainFishGroupCard";
+import {getNearFishingPoints, GroupFishPost} from "@/lib/api/groupFishingAPI";
+import {useQuery} from "@tanstack/react-query";
 
 export default function FishingGroupSection() {
+  const { data, isSuccess } = useQuery<GroupFishPost[]>({
+    queryKey: ['fishGroupMainPage'],
+    queryFn: getNearFishingPoints,
+    staleTime: 1000 * 60 * 5,
+  });
+
   return (
     <section className="py-12">
       <div className="mx-auto max-w-7xl px-4">
@@ -30,75 +38,13 @@ export default function FishingGroupSection() {
         {/* 카드 레이아웃 */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* 첫 번째 카드 */}
-          <div className="relative overflow-hidden rounded-lg shadow-lg cursor-pointer h-[408px] transition-transform duration-300 transform hover:scale-105">
-            <div className="relative w-full h-full">
-              <Image
-                src="/images/test.png"
-                alt="갓잡은 광어"
-                fill
-                priority
-                sizes="(max-width: 768px) 100vw, 50vw"
-                className="object-cover"
-              />
-            </div>
-            <div className="absolute bottom-4 left-4 text-white">
-              <h3 className="text-xl font-semibold">갓잡은 광어</h3>
-              <p className="text-sm">드시러 갈 분 구함</p>
-            </div>
-            <div className="absolute right-4 bottom-4">
-              <div className="flex items-center justify-center w-10 h-10 bg-blue-500 rounded-full">
-                <ArrowRightCircle className="h-5 w-5 text-white" />
-              </div>
-            </div>
-          </div>
+          {isSuccess && data[0] && (
+            <MainFishGroupCard height={408} postData={data[0]} />
+          )}
           {/* 오른쪽 카드 */}
           <div className="flex flex-col gap-6">
-            {/* 상단 카드 */}
-            <div className="relative overflow-hidden rounded-lg shadow-lg cursor-pointer h-[192px] transition-transform duration-300 transform hover:scale-105">
-              <div className="relative w-full h-full">
-                <Image
-                  src="/images/test.png"
-                  alt="갓잡은 광어"
-                  fill
-                  priority
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  className="object-cover"
-                />
-              </div>
-              <div className="absolute bottom-4 left-4 text-white">
-                <h3 className="text-lg font-semibold">갓잡은 광어</h3>
-                <p className="text-sm">드시러 갈 분 구함</p>
-              </div>
-              <div className="absolute right-4 bottom-4">
-                <div className="flex items-center justify-center w-10 h-10 bg-blue-500 rounded-full">
-                  <ArrowRightCircle className="h-5 w-5 text-white" />
-                </div>
-              </div>
-            </div>
-            {/* 하단 카드 */}
-            <div className="relative overflow-hidden rounded-lg shadow-lg cursor-pointer h-[192px] transition-transform duration-300 transform hover:scale-105">
-              <div className="relative w-full h-full">
-                <Image
-                  src="/images/test.png"
-                  alt="갓잡은 광어"
-                  fill
-                  priority
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  className="object-cover"
-                />
-              </div>
-              <div className="absolute bottom-4 left-4 text-white">
-                <h3 className="text-lg font-semibold">갓잡은 광어</h3>
-                <p className="text-sm">
-                  함께 출조할 낚시 동출을 찾아 더욱 즐거운 낚시를 즐겨보세요!
-                </p>
-              </div>
-              <div className="absolute right-4 bottom-4">
-                <div className="flex items-center justify-center w-10 h-10 bg-blue-500 rounded-full">
-                  <ArrowRightCircle className="h-5 w-5 text-white" />
-                </div>
-              </div>
-            </div>
+            {isSuccess && data[1] && <MainFishGroupCard height={192} postData={data[1]} />}
+            {isSuccess && data[2] && <MainFishGroupCard height={192} postData={data[2]} />}
           </div>
         </div>
       </div>
