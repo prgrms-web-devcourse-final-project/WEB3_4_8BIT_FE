@@ -1,14 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
 import { applyFishingTripRecruitment } from "@/lib/api/fishingTripRecruitmentAPI";
+import { Button } from "@/components/ui/button";
+import { User } from "lucide-react";
 
 interface JoinInfoCardProps {
-  currentCount: number;
+  postId: number;
   recruitmentCount: number;
+  currentCount: number;
   fishingDate: string;
   fishPointName: string;
   fishPointDetailName: string;
@@ -17,11 +20,20 @@ interface JoinInfoCardProps {
   latitude: number;
   author: string;
   fishingTripPostId: number;
+  isOwner?: boolean;
+  isApplicant?: boolean;
+  participants: Array<{
+    memberId: number;
+    nickname: string;
+    profileImageUrl: string | null;
+  }>;
+  onApplicationSuccess?: () => void;
 }
 
 export default function JoinInfoCard({
-  currentCount,
+  postId,
   recruitmentCount,
+  currentCount,
   fishingDate,
   fishPointName,
   fishPointDetailName,
@@ -30,20 +42,23 @@ export default function JoinInfoCard({
   latitude,
   author,
   fishingTripPostId,
+  isOwner = false,
+  isApplicant = false,
+  participants,
+  onApplicationSuccess,
 }: JoinInfoCardProps) {
   // 참여 여부 및 모달 오픈 상태 관리
-  const [isJoined, setIsJoined] = useState(false);
+  const [isJoined, setIsJoined] = useState(isApplicant);
   const [showModal, setShowModal] = useState(false);
+
+  // isApplicant prop이 변경될 때마다 isJoined 상태 업데이트
+  useEffect(() => {
+    setIsJoined(isApplicant);
+  }, [isApplicant]);
 
   // 모달 내부 폼 상태
   const [experience, setExperience] = useState("BEGINNER");
   const [applicationText, setApplicationText] = useState("");
-
-  // 현재 사용자 더미 데이터
-  const currentUser = {
-    nickname: "테스트 사용자",
-    profileImageUrl: "/default-user.png",
-  };
 
   // 현재 날짜 (YYYY-MM-DD)
   const currentDate = new Date().toISOString().split("T")[0];
@@ -78,6 +93,7 @@ export default function JoinInfoCard({
         toast.success(response.message || "참여 신청이 완료되었습니다.");
         setIsJoined(true);
         setShowModal(false);
+        onApplicationSuccess?.();
       } else {
         toast.error(response.message || "참여 신청에 실패했습니다.");
       }
@@ -122,34 +138,22 @@ export default function JoinInfoCard({
             disabled
             className="w-full py-2 rounded-lg text-green-500 border border-green-500 cursor-not-allowed"
           >
-            참여 완료
+            참여 신청 완료
+          </button>
+        )}
+
+        {!isJoined && currentCount >= recruitmentCount && (
+          <button
+            disabled
+            className="w-full py-2 rounded-lg text-gray-500 border border-gray-300 cursor-not-allowed"
+          >
+            모집 인원 마감
           </button>
         )}
 
         <button className="w-full py-2 border border-gray-70 rounded-lg text-base hover:bg-gray-80 cursor-pointer">
           참여자 채팅방
         </button>
-
-        {/* 참여자 정보 */}
-        <div>
-          <h4 className="font-medium text-base mb-2 mt-4">참여자 정보</h4>
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200">
-              <Image
-                src={currentUser.profileImageUrl}
-                alt="Profile"
-                width={32}
-                height={32}
-                className="object-cover"
-              />
-            </div>
-            <div>
-              <p className="font-medium text-base text-gray-700">
-                {currentUser.nickname}
-              </p>
-            </div>
-          </div>
-        </div>
 
         {/* 작성자 정보 */}
         <div>
@@ -165,6 +169,38 @@ export default function JoinInfoCard({
           <button className="w-full py-2 border border-gray-70 rounded-lg text-base hover:bg-gray-80 cursor-pointer">
             1:1 채팅 보내기
           </button>
+        </div>
+
+        {/* 수정된 참여자 목록 */}
+        <div className="mt-4">
+          <h3 className="text-lg font-semibold mb-2">참여자 목록</h3>
+          {participants && participants.length > 0 ? (
+            <ul className="space-y-2">
+              {participants.map((participant) => (
+                <li key={participant.memberId} className="flex items-center">
+                  {participant.profileImageUrl ? (
+                    <Image
+                      src={participant.profileImageUrl}
+                      alt={participant.nickname ?? "참여자 프로필"}
+                      width={32}
+                      height={32}
+                      className="w-8 h-8 rounded-full mr-2 object-cover"
+                      onError={(e) => {
+                        e.currentTarget.src = "/default-user.png";
+                      }}
+                    />
+                  ) : (
+                    <div className="w-8 h-8 bg-gray-200 rounded-full mr-2 flex items-center justify-center">
+                      <User className="w-5 h-5 text-gray-400" />
+                    </div>
+                  )}
+                  <span>{participant.nickname ?? "이름 없음"}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-gray-500">참여자가 없습니다.</p>
+          )}
         </div>
       </div>
 
@@ -187,75 +223,45 @@ export default function JoinInfoCard({
             </button>
             <h3 className="text-xl font-bold mb-4">참여 신청하기</h3>
             <form onSubmit={handleJoinSubmit} className="space-y-4">
-              {/* 사용자 프로필 및 닉네임 상단 배치 */}
-              <div className="flex items-center space-x-3 mb-4">
-                <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200">
-                  <Image
-                    src={currentUser.profileImageUrl}
-                    alt="Profile"
-                    width={40}
-                    height={40}
-                    className="object-cover"
-                  />
-                </div>
-                <span className="text-base font-medium">
-                  {currentUser.nickname}
-                </span>
-              </div>
-              {/* 경험 선택 */}
+              {/* 자기소개 입력 */}
               <div>
-                <label className="block text-sm font-medium mb-1">경험</label>
+                <label
+                  htmlFor="applicationText"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  자기소개 및 신청 내용
+                </label>
+                <textarea
+                  id="applicationText"
+                  value={applicationText}
+                  onChange={(e) => setApplicationText(e.target.value)}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
+                  placeholder="간단한 자기소개나 참여하고 싶은 이유를 작성해주세요."
+                  required
+                />
+              </div>
+
+              {/* 낚시 경험 선택 */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  낚시 경험
+                </label>
                 <select
                   value={experience}
                   onChange={(e) => setExperience(e.target.value)}
-                  className="w-full border border-gray-300 rounded-md p-2"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
                 >
-                  <option value="BEGINNER">초급</option>
-                  <option value="INTERMEDIATE">중급</option>
-                  <option value="ADVANCED">고급</option>
+                  <option value="BEGINNER">초급 (낚시 경험 거의 없음)</option>
+                  <option value="INTERMEDIATE">중급 (취미로 즐김)</option>
+                  <option value="ADVANCED">고급 (전문가 수준)</option>
                 </select>
               </div>
-              {/* 신청 내용 */}
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  신청 내용
-                </label>
-                <textarea
-                  value={applicationText}
-                  onChange={(e) => setApplicationText(e.target.value)}
-                  placeholder="신청 내용을 작성해주세요."
-                  className="w-full border border-gray-300 rounded-md p-2"
-                  rows={4}
-                />
-              </div>
-              {/* 신청일자 - 현재 날짜 표시 (수정 불가) */}
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  신청일자
-                </label>
-                <div className="w-full border border-gray-300 rounded-md p-2">
-                  {currentDate}
-                </div>
-              </div>
-              {/* 버튼 */}
-              <div className="flex justify-end space-x-2">
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="py-2 px-4 border border-gray-300 rounded-md hover:bg-gray-100 cursor-pointer"
-                >
-                  취소
-                </button>
-                <button
-                  type="submit"
-                  disabled={!applicationText.trim()}
-                  className={`py-2 px-4 bg-primary text-white rounded-md cursor-pointer hover:bg-[#2f8ae0] ${
-                    !applicationText.trim() && "opacity-50 cursor-not-allowed"
-                  }`}
-                >
-                  신청하기
-                </button>
-              </div>
+
+              {/* 제출 버튼 */}
+              <Button type="submit" className="w-full">
+                신청 제출
+              </Button>
             </form>
           </div>
         </div>

@@ -24,7 +24,7 @@ export default function BoatCard({ boatData }: { boatData: ShipPostData }) {
           src={
             boatData.fileUrlList && boatData.fileUrlList.length > 0
               ? boatData.fileUrlList[0]
-              : "/placeholder.svg"
+              : "/images/fishing-point-dummy.png"
           }
           alt={boatData.subject}
           className="w-full h-full object-cover"

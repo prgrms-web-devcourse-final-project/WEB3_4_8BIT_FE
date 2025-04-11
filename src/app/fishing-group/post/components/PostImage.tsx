@@ -25,12 +25,12 @@ export default function PostImages({ images }: PostImagesProps) {
     >
       {images.map((image: string, index: number) => (
         <SwiperSlide key={index}>
-          <div className="relative w-full h-[250px]">
+          <div className="relative w-full h-[500px]">
             <Image
               src={image || "/placeholder.svg"}
               alt={`낚시 이미지 ${index + 1}`}
               fill
-              className="object-cover"
+              className="object-contain"
             />
           </div>
         </SwiperSlide>

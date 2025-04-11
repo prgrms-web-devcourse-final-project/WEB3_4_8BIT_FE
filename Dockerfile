@@ -7,7 +7,7 @@ ARG NEXT_PUBLIC_OPENWEATHER_API_KEY
 
 # 디펜던시 설치
 FROM base AS deps
-#RUN apk add --no-cache libc6-compat
+RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
@@ -42,10 +42,12 @@ ENV NEXT_PUBLIC_OPENWEATHER_API_KEY=${NEXT_PUBLIC_OPENWEATHER_API_KEY}
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
+#COPY --from=builder /app/package.json ./
+#COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/public ./public
 
-RUN mkdir .next
-RUN chown nextjs:nodejs .next
+#RUN mkdir .next
+#RUN chown nextjs:nodejs .next
 
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static

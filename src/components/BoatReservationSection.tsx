@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { Ship, Calendar, ChevronRight } from "lucide-react";
+import {Ship, Calendar, ChevronRight, Star} from "lucide-react";
 import {
   Card,
   CardContent,
@@ -12,8 +12,18 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {useQuery} from "@tanstack/react-query";
+import {BoatFishing, getTodayBoatFishing, ISODateString} from "@/lib/api/boatFishAPI";
+
+const today: ISODateString = new Date().toISOString().split('T')[0] as ISODateString;
 
 export default function BoatReservation() {
+  const { data, isSuccess } = useQuery<BoatFishing[]>({
+    queryKey: ['upcomingBoatFishing'],
+    queryFn: () => getTodayBoatFishing(today),
+    staleTime: 1000 * 60 * 5,
+  });
+
   return (
     <div className="mx-auto w-full px-4 py-8">
       <div className="flex items-center mb-4">
@@ -21,62 +31,46 @@ export default function BoatReservation() {
         <h2 className="text-2xl font-bold text-gray-900">다가오는 선상 낚시</h2>
       </div>
 
-      <Card className="border-none shadow-xl">
+      <Card className="shadow-xl h-[382px]">
         <CardHeader>
           <CardTitle className="text-lg font-semibold">
-            다가오는 출조 일정
+            바로 출항
           </CardTitle>
           <CardDescription className="text-gray-500">
-            곧 출발하는 선상 낚시 일정입니다
+            오늘 곧바로 출발할 수 있는 선상 낚시 일정입니다
           </CardDescription>
         </CardHeader>
-        <CardContent className="pb-2">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-3 rounded-lg hover:bg-cyan-50 transition-colors cursor-pointer">
-              <div className="flex items-center">
-                <div className="bg-cyan-100 p-3 rounded-full mr-3">
-                  <Calendar className="h-5 w-5 text-cyan-700" />
-                </div>
-                <div>
-                  <p className="font-medium">기장 참돔 출조</p>
-                  <p className="text-sm text-gray-500">11월 18일 (토) 05:00</p>
-                </div>
-              </div>
-              <Badge className="bg-green-100 text-green-800">
-                부산시 기장군
-              </Badge>
-            </div>
-
-            <div className="flex items-center justify-between p-3 rounded-lg hover:bg-cyan-50 transition-colors cursor-pointer">
-              <div className="flex items-center">
-                <div className="bg-gray-100 p-3 rounded-full mr-3">
-                  <Calendar className="h-5 w-5 text-gray-700" />
-                </div>
-                <div>
-                  <p className="font-medium">속초 오징어 출조</p>
-                  <p className="text-sm text-gray-500">11월 25일 (토) 17:00</p>
-                </div>
-              </div>
-              <Badge className="bg-green-100 text-green-800">
-                부산시 기장군
-              </Badge>
-            </div>
-
-            <div className="flex items-center justify-between p-3 rounded-lg hover:bg-cyan-50 transition-colors cursor-pointer">
-              <div className="flex items-center">
-                <div className="bg-gray-100 p-3 rounded-full mr-3">
-                  <Calendar className="h-5 w-5 text-gray-700" />
-                </div>
-                <div>
-                  <p className="font-medium">제주 다금바리 출조</p>
-                  <p className="text-sm text-gray-500">12월 2일 (토) 06:00</p>
-                </div>
-              </div>
-              <Badge className="bg-green-100 text-green-800">
-                부산시 기장군
-              </Badge>
-            </div>
-          </div>
+        <CardContent className="pb-2 h-[211px]">
+          {isSuccess && data?.length > 0 && (
+            data.map(item => {
+              return (
+                <Link href={`/boat-reservation/${item.shipFishingPostId}`} className="space-y-4" key={item.shipFishingPostId}>
+                  <div className="flex items-center justify-between p-3 rounded-lg hover:bg-cyan-50 transition-colors cursor-pointer">
+                    <div className="flex items-center">
+                      <div className="bg-cyan-100 p-3 rounded-full mr-3">
+                        <Calendar className="h-5 w-5 text-cyan-700" />
+                      </div>
+                      <div>
+                        <p className="font-medium">{item.subject}</p>
+                        <div className="flex gap-2 items-center">
+                          <p className="text-sm text-gray-500">{item.location}</p>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center">
+                              <Star className="h-3 w-3 text-sm fill-amber-400 text-amber-400 mr-1" />
+                              <span className="text-sm">{item.reviewEverRate}점</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <Badge className="bg-green-100 text-green-800">
+                      {item.location}
+                    </Badge>
+                  </div>
+                </Link>
+              )
+            })
+          )}
         </CardContent>
         <CardFooter>
           <Link

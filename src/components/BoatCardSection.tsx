@@ -4,8 +4,16 @@ import React from "react";
 import Link from "next/link";
 import { Anchor } from "lucide-react";
 import BoatCard from "@/components/BoatCard";
+import {useQuery} from "@tanstack/react-query";
+import {BoatFishing, getLowestPriceBoatFishing} from "@/lib/api/boatFishAPI";
 
 export default function BoatCardSection() {
+  const { data, isSuccess } = useQuery<BoatFishing[]>({
+    queryKey: ['lowestPriceBoatReservations'],
+    queryFn: getLowestPriceBoatFishing,
+    staleTime: 1000 * 60 * 5,
+  });
+
   return (
     <section className="py-12">
       <div className="mx-auto max-w-7xl px-4">
@@ -13,7 +21,7 @@ export default function BoatCardSection() {
           <div className="flex items-center">
             <Anchor className="h-6 w-6 text-blue-500 mr-2" />
             <h2 className="text-2xl font-bold text-gray-900">
-              선상낚시 예약하기
+              가성비 선상 낚시 예약하기
             </h2>
           </div>
           <Link
@@ -24,37 +32,21 @@ export default function BoatCardSection() {
           </Link>
         </div>
 
+        <h2 className="text-gray-20 mb-3">
+          예약할 수 있는 가장 저렴한 선상 낚시 입니다
+        </h2>
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <BoatCard
-            id="1"
-            image="/images/test.png"
-            name="미끼미끼호1"
-            location="서울시 강남구"
-            rating={4.5}
-            reviews={100}
-            price={50000}
-            fishTypes={["연어", "참치"]}
-          />
-          <BoatCard
-            id="2"
-            image="/images/test.png"
-            name="미끼미끼호2"
-            location="부산시 해운대구"
-            rating={4.7}
-            reviews={120}
-            price={60000}
-            fishTypes={["광어", "우럭"]}
-          />
-          <BoatCard
-            id="3"
-            image="/images/test.png"
-            name="미끼미끼호3"
-            location="인천시 연수구"
-            rating={4.8}
-            reviews={80}
-            price={70000}
-            fishTypes={["대구", "농어"]}
-          />
+          {isSuccess && data?.length > 0 && (
+            data.map(item => {
+              return (
+                <BoatCard
+                  boatData={item}
+                  key={item.shipFishingPostId}
+                />
+              )
+            })
+          )}
         </div>
       </div>
     </section>
