@@ -161,6 +161,7 @@ export interface CursorRequestParams {
   size: number;
   status?: string;
   keyword?: string;
+  regionId?: string;
 }
 
 export const getFishingPostsByCursor = async (

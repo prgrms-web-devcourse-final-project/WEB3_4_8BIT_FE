@@ -15,8 +15,10 @@ import { FishingPointLocation } from "@/types/fishingPointLocationType";
 
 export function SearchBar({
   handleSearch,
+  onRegionChange,
 }: {
   handleSearch: (searchTerm: string) => void;
+  onRegionChange: (regionId: string) => void;
 }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [regions, setRegions] = useState<FishingPointLocation[]>([]);
@@ -36,8 +38,16 @@ export function SearchBar({
   }, []);
 
   const handleRegionChange = (value: string) => {
+    console.log("=== 지역 선택 변경 ===");
+    console.log("선택된 지역 ID:", value);
+    console.log(
+      "선택된 지역 이름:",
+      regions.find((region) => region.regionId === value)?.regionName ||
+        "전체 지역"
+    );
     setSelectedRegion(value);
-    // 지역 선택 시 검색 로직 추가 가능
+    // 지역 선택 시 부모 컴포넌트에 알림
+    onRegionChange(value);
   };
 
   return (

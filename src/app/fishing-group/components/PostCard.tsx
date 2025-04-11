@@ -3,6 +3,11 @@
 import { Calendar, MapPin, UserRound } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { getRegions, getFishingRegion } from "@/lib/api/fishingPointAPI";
+import {
+  FishingPoint,
+  FishingPointLocation,
+} from "@/types/fishingPointLocationType";
 
 interface PostCardProps {
   fishingTripPostId: number;
@@ -46,6 +51,40 @@ export function PostCard({
   // 지도 표시 여부 상태
   const [showMap, setShowMap] = useState(false);
   const mapRef = useRef<HTMLDivElement>(null);
+
+  // 지역 정보 상태
+  const [regionData, setRegionData] = useState<{
+    regions: FishingPointLocation[];
+    fishingRegion: FishingPoint[];
+  } | null>(null);
+
+  // 지역 정보 가져오기
+  useEffect(() => {
+    const fetchRegionData = async () => {
+      try {
+        if (latitude && longitude) {
+          const regions = await getRegions();
+          // 위도/경도로 가장 가까운 지역을 찾아서 해당 지역 ID로 낚시 포인트를 조회
+          const nearestRegion = regions.find(
+            (region) =>
+              Math.abs(region.latitude - latitude) < 0.1 &&
+              Math.abs(region.longitude - longitude) < 0.1
+          );
+
+          if (nearestRegion) {
+            const fishingRegion = await getFishingRegion(
+              nearestRegion.regionId
+            );
+            setRegionData({ regions, fishingRegion });
+          }
+        }
+      } catch (error) {
+        console.error("지역 정보를 가져오는 중 오류 발생:", error);
+      }
+    };
+
+    fetchRegionData();
+  }, [latitude, longitude]);
 
   // 지도 초기화 함수
   useEffect(() => {
@@ -175,6 +214,12 @@ export function PostCard({
                   {regionType && (
                     <span className="text-gray-500 ml-1">{regionType}</span>
                   )}
+                  {regionData?.fishingRegion &&
+                    regionData.fishingRegion.length > 0 && (
+                      <span className="text-blue-500 ml-1">
+                        (지역 ID: {regionData.fishingRegion[0].fishPointId})
+                      </span>
+                    )}
                 </span>
               </div>
             </div>

@@ -15,8 +15,10 @@ import { FishingPointLocation } from "@/types/fishingPointLocationType";
 
 export function SearchBar({
   handleSearch,
+  handleRegionChange,
 }: {
   handleSearch: (searchTerm: string) => void;
+  handleRegionChange: (regionId: string) => void;
 }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [regions, setRegions] = useState<FishingPointLocation[]>([]);
@@ -35,14 +37,27 @@ export function SearchBar({
     fetchRegions();
   }, []);
 
-  const handleRegionChange = (value: string) => {
+  const onRegionChange = (value: string) => {
+    console.log("선택된 지역 ID:", value);
+    console.log(
+      "선택된 지역 이름:",
+      regions.find((region) => region.regionId === value)?.regionName
+    );
     setSelectedRegion(value);
-    // 지역 선택 시 검색 로직 추가 가능
+    handleRegionChange(value);
   };
 
   return (
     <div className="flex gap-2 mt-10 mb-10 items-center max-w-4xl mx-auto">
-      <Select value={selectedRegion} onValueChange={handleRegionChange}>
+      <Select
+        value={selectedRegion}
+        onValueChange={(value) => {
+          console.log("=== 지역 선택 이벤트 발생 ===");
+          console.log("이전 선택 지역:", selectedRegion);
+          console.log("새로 선택된 지역:", value);
+          onRegionChange(value);
+        }}
+      >
         <SelectTrigger className="w-[180px] bg-white border-gray-60 text-base h-full cursor-pointer">
           <SelectValue placeholder="지역을 선택하세요" />
         </SelectTrigger>
