@@ -6,6 +6,8 @@ import {
   getPostParticipation,
   PostParticipationInfo,
   deleteFishingPost,
+  // import { addComment, updateComment, deleteComment, getComments } from "@/lib/api/fishingPostAPI";
+  // import Image from "next/image";
 } from "@/lib/api/fishingPostAPI";
 import PostImages from "../components/PostImage";
 import PostContent from "../components/PostContent";
@@ -91,31 +93,6 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
   }
 
   const isRecruiting = new Date(post.fishingDate) > new Date();
-
-  // 임시 댓글 데이터
-  const mockComments = [
-    {
-      id: "1",
-      author: post.name,
-      content: "안녕하세요! 낚시 경험이 있으신가요?",
-      date: "2024-03-20",
-      isAuthor: true,
-    },
-    {
-      id: "2",
-      author: "참가자1",
-      content: "처음이라 걱정이 되네요. 장비는 모두 대여 가능한가요?",
-      date: "2024-03-20",
-      isAuthor: false,
-    },
-    {
-      id: "3",
-      author: post.name,
-      content: "네, 걱정마세요! 모든 장비 대여 가능합니다.",
-      date: "2024-03-20",
-      isAuthor: true,
-    },
-  ];
 
   // 게시글 삭제 처리 함수
   const handleDeletePost = async () => {
@@ -279,8 +256,9 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
           />
         </div>
       </div>
+
       <div className="mt-6">
-        <CommentSection comments={mockComments} />
+        <CommentSection postId={postId.toString()} />
       </div>
     </div>
   );

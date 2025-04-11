@@ -1,4 +1,4 @@
-import { axiosInstance } from "./axiosInstance";
+import { axiosInstance } from "@/lib/api/axiosInstance";
 import { MOCK_HOT_POSTS } from "../mocks/fishingPostMock";
 
 const API_BASE_URL = "https://api.mikki.kr/api/v1";
@@ -307,5 +307,28 @@ export const deleteComment = async (
   } catch (error: unknown) {
     console.error("댓글 삭제 실패:", error as Error);
     return { success: false, message: (error as Error).message };
+  }
+};
+
+export const getComments = async (fishingTripPostId: number) => {
+  try {
+    console.log(`댓글 조회 시작: fishingTripPostId=${fishingTripPostId}`);
+    const response = await axiosInstance.get(
+      `/fishing-trip-post/${fishingTripPostId}/comment`,
+      {
+        params: {
+          size: 10,
+        },
+      }
+    );
+    console.log("전체 응답 데이터:", response.data);
+    console.log("댓글 조회 성공:", response.data.data.content);
+    return response.data.data.content;
+  } catch (error: unknown) {
+    console.error("댓글 불러오기 실패:", error);
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error("Unknown error occurred");
   }
 };

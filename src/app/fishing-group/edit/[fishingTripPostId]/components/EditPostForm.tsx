@@ -35,6 +35,7 @@ import {
   EditPostFormProps,
   PostData,
 } from "@/types/EditPostFormType";
+import axiosInstance from "@/lib/api/axiosInstance";
 
 // TODO: API에서 가져오도록 수정
 const fishingPoints = [
@@ -83,6 +84,7 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
   const [selectedFishingPoint, setSelectedFishingPoint] = useState("");
   const [selectedRegion, setSelectedRegion] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [comments, setComments] = useState([]);
 
   useEffect(() => {
     const fetchPostData = async () => {
@@ -264,6 +266,33 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
 
   const disablePastDates = (date: Date) => {
     return isBefore(date, startOfDay(new Date()));
+  };
+
+  const fetchComments = async () => {
+    try {
+      const response = await axiosInstance.get(
+        `/fishing-trip-post/${postId}/comment`,
+        {
+          params: {
+            size: 10,
+            parentId: 1, // 필요한 경우 변경
+            cursorRequestDto: {
+              order: "desc",
+              sort: "createdAt",
+              type: "next",
+              fieldValue: "2025-04-08T07:24:17.138851Z",
+              id: 1,
+              size: 10,
+            },
+          },
+        }
+      );
+      if (response.data) {
+        setComments(response.data.content);
+      }
+    } catch (error) {
+      console.error("댓글 불러오기 실패:", error);
+    }
   };
 
   if (isLoading) {
