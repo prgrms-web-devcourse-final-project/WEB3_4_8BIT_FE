@@ -6,6 +6,7 @@ export const axiosInstance = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+  withCredentials: true,
 });
 
 // 하드코딩된 토큰 (폴백용)
