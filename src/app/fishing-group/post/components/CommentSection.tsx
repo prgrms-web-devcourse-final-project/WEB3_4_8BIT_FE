@@ -1,20 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  getComments,
-  addComment,
-  updateComment,
-  deleteComment,
-} from "@/lib/api/fishingPostAPI";
+import { getComments } from "@/lib/api/fishingPostAPI";
 import { axiosInstance } from "@/lib/api/axiosInstance";
-import { toast } from "sonner";
-import { AxiosError } from "axios";
 import { Comment } from "@/types/comment";
 import CommentItem from "./CommentItem";
 import ReplyItem from "./ReplyItem";
 import CommentForm from "./CommentForm";
-import ReplyForm from "./ReplyForm";
+import { useCommentMutations } from "../hooks/useCommentMutations";
 
 interface ApiComment {
   commentId: number;
@@ -81,6 +74,8 @@ export default function CommentSection({ postId }: CommentSectionProps) {
         isAuthor: reply.isAuthor,
         authorImageUrl: reply.authorProfileImg,
       }));
+
+      // 기존 댓글 목록을 유지하면서 특정 댓글의 답글만 업데이트
       setComments((prevComments) =>
         prevComments.map((comment) =>
           comment.id === parentId
@@ -96,77 +91,48 @@ export default function CommentSection({ postId }: CommentSectionProps) {
   // 부모 댓글과 대댓글 모두 불러오기
   const fetchData = async () => {
     const parentComments = await fetchParentComments();
-    setComments(parentComments);
-    // 대댓글 영역 기본 접힌 상태로 설정
-    const expandedState: Record<string, boolean> = {};
+
+    // 기존 댓글 목록과 새 댓글 목록을 비교하여 변경된 부분만 업데이트
+    setComments((prevComments) => {
+      // 새 댓글 목록에서 기존 댓글의 답글 정보를 유지
+      const updatedComments = parentComments.map((newComment) => {
+        const existingComment = prevComments.find(
+          (c) => c.id === newComment.id
+        );
+        return existingComment
+          ? { ...newComment, replies: existingComment.replies }
+          : newComment;
+      });
+
+      return updatedComments;
+    });
+
+    // 대댓글이 있는 댓글들의 답글을 불러옵니다
     parentComments.forEach((comment) => {
-      expandedState[comment.id] = false;
       if (comment.childCount > 0) {
         fetchChildComments(comment.id);
       }
     });
-    setExpandedReplies(expandedState);
   };
 
   useEffect(() => {
     fetchData();
   }, [postId]);
 
-  // 댓글 추가, 수정, 삭제 후 전체 댓글 업데이트
-  const handleAddComment = async (content: string, parentId?: string) => {
-    try {
-      const response = await addComment(
-        Number(postId),
-        content,
-        parentId ? Number(parentId) : undefined
-      );
-      if (response.success) {
-        await fetchData();
-        toast.success("댓글이 등록되었습니다.");
-      } else {
-        toast.error(response.message || "댓글 등록에 실패했습니다.");
-      }
-    } catch (error) {
-      console.error("댓글 추가 실패:", error);
-      const axiosError = error as AxiosError<{ message: string }>;
-      toast.error(
-        axiosError.response?.data?.message ||
-          "댓글 등록 중 오류가 발생했습니다."
-      );
-    }
-  };
+  // 커스텀 훅을 사용하여 mutation 로직 분리
+  const {
+    handleCommentSubmit,
+    handleReplySubmit,
+    handleUpdateComment,
+    handleDeleteComment,
+  } = useCommentMutations({
+    postId,
+    setComments,
+    setExpandedReplies,
+    fetchData,
+  });
 
-  const handleUpdateComment = async (commentId: string, content: string) => {
-    try {
-      await updateComment(Number(postId), Number(commentId), content);
-      await fetchData();
-      toast.success("댓글이 수정되었습니다.");
-    } catch (error) {
-      console.error("댓글 수정 중 오류 발생:", error);
-      toast.error("댓글 수정에 실패했습니다.");
-    }
-  };
-
-  const handleDeleteComment = async (commentId: string) => {
-    try {
-      await deleteComment(Number(postId), Number(commentId));
-      await fetchData();
-      toast.success("댓글이 삭제되었습니다.");
-    } catch (error) {
-      console.error("댓글 삭제 중 오류 발생:", error);
-      toast.error("댓글 삭제에 실패했습니다.");
-    }
-  };
-
-  const handleCommentSubmit = async (content: string) => {
-    await handleAddComment(content);
-  };
-
-  const handleReplySubmit = async (parentId: string, content: string) => {
-    await handleAddComment(content, parentId);
-  };
-
-  // 토글 버튼으로로 대댓글 영역 펼치기/접기
+  // 토글 버튼으로 대댓글 영역 펼치기/접기
   const toggleReplies = (commentId: string) => {
     setExpandedReplies((prev) => ({
       ...prev,
@@ -186,7 +152,11 @@ export default function CommentSection({ postId }: CommentSectionProps) {
       {/* 댓글 목록 */}
       <div className="space-y-4">
         {comments.length === 0 && (
-          <p className="text-gray-700">아직 작성된 댓글이 없습니다.</p>
+          <div className="flex justify-center items-center py-8">
+            <p className="text-gray-700 text-center">
+              아직 작성된 댓글이 없습니다.
+            </p>
+          </div>
         )}
         {comments.map((comment) => (
           <CommentItem
@@ -196,6 +166,7 @@ export default function CommentSection({ postId }: CommentSectionProps) {
             onUpdateComment={handleUpdateComment}
             onDeleteComment={handleDeleteComment}
             onToggleReplies={toggleReplies}
+            onAddReply={handleReplySubmit}
             isExpanded={expandedReplies[comment.id] || false}
           >
             {expandedReplies[comment.id] && (
@@ -209,15 +180,6 @@ export default function CommentSection({ postId }: CommentSectionProps) {
                     onDelete={handleDeleteComment}
                   />
                 ))}
-                <div className="mt-4">
-                  <ReplyForm
-                    onSubmit={(content) =>
-                      handleReplySubmit(comment.id, content)
-                    }
-                    placeholder="댓글을 입력하세요."
-                    buttonText="댓글 작성"
-                  />
-                </div>
               </div>
             )}
           </CommentItem>

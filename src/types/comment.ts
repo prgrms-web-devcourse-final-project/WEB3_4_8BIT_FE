@@ -36,6 +36,7 @@ export interface CommentItemProps {
   onUpdateComment: (commentId: string, content: string) => Promise<void>;
   onDeleteComment: (commentId: string) => Promise<void>;
   onToggleReplies: (commentId: string) => void;
+  onAddReply?: (parentId: string, content: string) => Promise<void>;
   isExpanded: boolean;
   children?: React.ReactNode;
 }
