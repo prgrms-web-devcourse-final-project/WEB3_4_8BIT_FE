@@ -22,6 +22,23 @@ export interface Post {
   postStatus: "RECRUITING" | "COMPLETED";
 }
 
+// PostCard 컴포넌트에서 사용하는 인터페이스
+export interface PostCardProps {
+  fishingTripPostId: number;
+  title: string;
+  content: string;
+  date: string;
+  location: string;
+  recruitmentCount: number;
+  fishPointName: string;
+  fileUrlList?: string[];
+  imageUrl?: string;
+  postStatus: string;
+  latitude?: number;
+  longitude?: number;
+  regionType?: string;
+}
+
 export interface ApiResponseData {
   content: Post[];
   last: boolean;
@@ -248,9 +265,15 @@ export const deleteFishingPost = async (fishingTripPostId: number) => {
     );
     console.log("게시글 삭제 성공:", response.data);
     return { success: true, data: response.data };
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("게시글 삭제 실패:", error);
-    return { success: false, message: error.message };
+    return {
+      success: false,
+      message:
+        error instanceof Error
+          ? error.message
+          : "알 수 없는 오류가 발생했습니다.",
+    };
   }
 };
 

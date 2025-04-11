@@ -4,26 +4,12 @@ import { Calendar, MapPin, UserRound } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { getRegions, getFishingRegion } from "@/lib/api/fishingPointAPI";
+import { PostCardProps } from "@/lib/api/fishingPostAPI";
+import { convertRegionTypeToKorean } from "@/lib/utils/regionUtils";
 import {
   FishingPoint,
   FishingPointLocation,
 } from "@/types/fishingPointLocationType";
-
-interface PostCardProps {
-  fishingTripPostId: number;
-  title: string;
-  content: string;
-  date: string;
-  location: string;
-  recruitmentCount: number;
-  fishPointName: string;
-  fileUrlList?: string[];
-  imageUrl?: string;
-  postStatus: string;
-  latitude?: number;
-  longitude?: number;
-  regionType?: string;
-}
 
 export function PostCard({
   fishingTripPostId,
@@ -174,7 +160,7 @@ export function PostCard({
           <div className="flex-1 min-w-0 flex flex-col justify-between">
             <div className="space-y-3">
               {/* 모집 상태 & 제목 */}
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
                 <span
                   className={`px-2 py-1 text-sm rounded-full ${
                     postStatus === "RECRUITING"
@@ -184,6 +170,11 @@ export function PostCard({
                 >
                   {displayStatusText}
                 </span>
+                {regionType && (
+                  <span className="text-blue-500 text-lg">
+                    [{convertRegionTypeToKorean(regionType)}]
+                  </span>
+                )}
                 <h3 className="text-lg font-medium text-gray-900">{title}</h3>
               </div>
 
@@ -210,14 +201,21 @@ export function PostCard({
                   onClick={handleLocationClick}
                 >
                   <MapPin size={16} />
+                  <span className="flex items-center gap-1">장소:</span>{" "}
                   {location}
                   {regionType && (
-                    <span className="text-gray-500 ml-1">{regionType}</span>
+                    <span className="text-gray-500 ml-0.5">
+                      {convertRegionTypeToKorean(regionType)}
+                    </span>
                   )}
                   {regionData?.fishingRegion &&
                     regionData.fishingRegion.length > 0 && (
-                      <span className="text-blue-500 ml-1">
-                        (지역 ID: {regionData.fishingRegion[0].fishPointId})
+                      <span className="text-blue-500 ml-0.5">
+                        (지역:{" "}
+                        {regionType
+                          ? convertRegionTypeToKorean(regionType)
+                          : "알 수 없음"}
+                        )
                       </span>
                     )}
                 </span>
