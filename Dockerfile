@@ -42,16 +42,17 @@ ENV NEXT_PUBLIC_OPENWEATHER_API_KEY=${NEXT_PUBLIC_OPENWEATHER_API_KEY}
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-COPY --from=builder /app/package.json ./
+#COPY --from=builder /app/package.json ./
+#COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/public ./public
 
-RUN mkdir .next
-RUN chown nextjs:nodejs .next
+#RUN mkdir .next
+#RUN chown nextjs:nodejs .next
 
-#COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-#COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
+#COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
 
 USER nextjs
 
@@ -61,4 +62,4 @@ ENV PORT=3000
 
 # 아래거 서버 ip
 ENV HOSTNAME="0.0.0.0"
-CMD ["npm", "run", "start"]
+CMD ["node", "server.js"]
