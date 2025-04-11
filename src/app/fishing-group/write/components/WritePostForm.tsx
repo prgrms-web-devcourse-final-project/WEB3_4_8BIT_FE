@@ -26,38 +26,15 @@ import {
 import { format, isBefore, startOfDay } from "date-fns";
 import { ko } from "date-fns/locale";
 import { cn } from "@/lib/utils";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { uploadImagesToS3 } from "@/lib/api/uploadImageAPI";
 import { createFishingPost } from "@/lib/api/fishingPostAPI";
+import { getRegions, getFishingRegion } from "@/lib/api/fishingPointAPI";
 import { useRouter } from "next/navigation";
-
-// 낚시 포인트 임시 데이터
-const fishingPoints = [
-  { id: 1, name: "인천 송도" },
-  { id: 2, name: "인천 영종도" },
-  { id: 3, name: "인천 강화도" },
-  { id: 4, name: "인천 옹진군" },
-  { id: 5, name: "서울 여의도" },
-  { id: 6, name: "경기 안산" },
-  { id: 7, name: "경기 시흥" },
-  { id: 8, name: "경기 화성" },
-  { id: 9, name: "경기 평택" },
-  { id: 10, name: "경기 부천" },
-];
-
-// 지역 임시 데이터
-const regions = [
-  { id: 1, name: "서울" },
-  { id: 2, name: "인천" },
-  { id: 3, name: "경기" },
-  { id: 4, name: "강원" },
-  { id: 5, name: "충북" },
-  { id: 6, name: "충남" },
-  { id: 7, name: "전북" },
-  { id: 8, name: "전남" },
-  { id: 9, name: "경북" },
-  { id: 10, name: "경남" },
-];
+import {
+  FishingPointLocation,
+  FishingPoint,
+} from "@/types/fishingPointLocationType";
 
 export default function WritePostForm() {
   const router = useRouter();
@@ -73,7 +50,52 @@ export default function WritePostForm() {
   const [isBoatFishing, setIsBoatFishing] = useState(false);
   const [selectedFishingPoint, setSelectedFishingPoint] = useState("");
   const [selectedRegion, setSelectedRegion] = useState("");
+  const [regions, setRegions] = useState<FishingPointLocation[]>([]);
+  const [fishingPoints, setFishingPoints] = useState<FishingPoint[]>([]);
+  const [isLoadingRegions, setIsLoadingRegions] = useState(true);
+  const [isLoadingFishingPoints, setIsLoadingFishingPoints] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // 지역 데이터 가져오기
+  useEffect(() => {
+    const fetchRegions = async () => {
+      try {
+        setIsLoadingRegions(true);
+        const regionsData = await getRegions();
+        setRegions(regionsData);
+      } catch (error) {
+        console.error("지역 데이터 가져오기 실패:", error);
+      } finally {
+        setIsLoadingRegions(false);
+      }
+    };
+
+    fetchRegions();
+  }, []);
+
+  // 지역 선택 시 해당 지역의 낚시 포인트 가져오기
+  useEffect(() => {
+    const fetchFishingPoints = async () => {
+      if (!selectedRegion) {
+        setFishingPoints([]);
+        setSelectedFishingPoint("");
+        return;
+      }
+
+      try {
+        setIsLoadingFishingPoints(true);
+        const points = await getFishingRegion(selectedRegion);
+        setFishingPoints(points);
+      } catch (error) {
+        console.error("낚시 포인트 가져오기 실패:", error);
+        setFishingPoints([]);
+      } finally {
+        setIsLoadingFishingPoints(false);
+      }
+    };
+
+    fetchFishingPoints();
+  }, [selectedRegion]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -305,86 +327,117 @@ export default function WritePostForm() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label htmlFor="region" className="block font-medium">
-                지역
-              </label>
-              <div className="relative">
-                <select
-                  id="region"
-                  value={selectedRegion}
-                  onChange={(e) => setSelectedRegion(e.target.value)}
-                  className="w-full h-12 pl-10 pr-8 rounded-md border border-gray-200 bg-white text-base cursor-pointer appearance-none"
-                  required
+          {/* 지역 선택 */}
+          <div className="space-y-2">
+            <label htmlFor="region" className="block font-medium">
+              지역
+            </label>
+            <div className="relative">
+              <select
+                id="region"
+                value={selectedRegion}
+                onChange={(e) => setSelectedRegion(e.target.value)}
+                className="w-full h-12 pl-10 pr-8 rounded-md border border-gray-200 bg-white text-base cursor-pointer appearance-none"
+                required
+                disabled={isLoadingRegions}
+              >
+                <option value="">지역을 선택하세요</option>
+                {regions.map((region) => (
+                  <option key={region.regionId} value={region.regionId}>
+                    {region.regionName}
+                  </option>
+                ))}
+              </select>
+              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
+              <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 12 12"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
                 >
-                  <option value="">지역을 선택하세요</option>
-                  {regions.map((region) => (
-                    <option key={region.id} value={region.id}>
-                      {region.name}
-                    </option>
-                  ))}
-                </select>
-                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
-                <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                  <svg
-                    width="12"
-                    height="12"
-                    viewBox="0 0 12 12"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M2.5 4.5L6 8L9.5 4.5"
-                      stroke="#6B7280"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </div>
+                  <path
+                    d="M2.5 4.5L6 8L9.5 4.5"
+                    stroke="#6B7280"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
               </div>
             </div>
+            {isLoadingRegions && (
+              <p className="text-sm text-gray-500">
+                지역 데이터를 불러오는 중...
+              </p>
+            )}
+          </div>
 
-            <div className="space-y-2">
-              <label htmlFor="fishingPoint" className="block font-medium">
-                낚시 포인트
-              </label>
-              <div className="relative">
-                <select
-                  id="fishingPoint"
-                  value={selectedFishingPoint}
-                  onChange={(e) => setSelectedFishingPoint(e.target.value)}
-                  className="w-full h-12 pl-10 pr-8 rounded-md border border-gray-200 bg-white text-base cursor-pointer appearance-none"
-                  required
+          {/* 낚시 포인트 선택 */}
+          <div className="space-y-2">
+            <label htmlFor="fishingPoint" className="block font-medium">
+              낚시 포인트
+            </label>
+            <div className="relative">
+              <select
+                id="fishingPoint"
+                value={selectedFishingPoint}
+                onChange={(e) => setSelectedFishingPoint(e.target.value)}
+                className="w-full h-12 pl-10 pr-8 rounded-md border border-gray-200 bg-white text-base cursor-pointer appearance-none"
+                required
+                disabled={
+                  isLoadingFishingPoints ||
+                  !selectedRegion ||
+                  fishingPoints.length === 0
+                }
+              >
+                <option value="">
+                  {!selectedRegion
+                    ? "먼저 지역을 선택하세요"
+                    : isLoadingFishingPoints
+                    ? "낚시 포인트를 불러오는 중..."
+                    : fishingPoints.length === 0
+                    ? "해당 지역에 낚시 포인트가 없습니다"
+                    : "낚시 포인트를 선택하세요"}
+                </option>
+                {fishingPoints.map((point) => (
+                  <option key={point.fishPointId} value={point.fishPointId}>
+                    {point.fishPointName} - {point.fishPointDetailName}
+                  </option>
+                ))}
+              </select>
+              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
+              <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 12 12"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
                 >
-                  <option value="">낚시 포인트를 선택하세요</option>
-                  {fishingPoints.map((point) => (
-                    <option key={point.id} value={point.id}>
-                      {point.name}
-                    </option>
-                  ))}
-                </select>
-                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
-                <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                  <svg
-                    width="12"
-                    height="12"
-                    viewBox="0 0 12 12"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M2.5 4.5L6 8L9.5 4.5"
-                      stroke="#6B7280"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </div>
+                  <path
+                    d="M2.5 4.5L6 8L9.5 4.5"
+                    stroke="#6B7280"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
               </div>
             </div>
+            {isLoadingFishingPoints && (
+              <p className="text-sm text-gray-500">
+                낚시 포인트를 불러오는 중...
+              </p>
+            )}
+            {!isLoadingFishingPoints &&
+              selectedRegion &&
+              fishingPoints.length === 0 && (
+                <p className="text-sm text-red-500">
+                  해당 지역에 낚시 포인트가 없습니다. 다른 지역을 선택해주세요.
+                </p>
+              )}
           </div>
 
           <div className="grid grid-cols-2 gap-6">

@@ -5,7 +5,6 @@ export default function FishCard({
   name,
   season,
   imageUrl,
-  imageUrl,
 }: {
   name: string;
   season: string;

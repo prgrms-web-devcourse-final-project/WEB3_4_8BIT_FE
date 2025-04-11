@@ -28,7 +28,12 @@ import { ko } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { useState, useRef, useEffect } from "react";
 import { uploadImagesToS3 } from "@/lib/api/uploadImageAPI";
-import { getFishingPost, updateFishingPost } from "@/lib/api/fishingPostAPI";
+import {
+  getFishingPost,
+  updateFishingPost,
+  getRegions,
+  getFishingPoints,
+} from "@/lib/api/fishingPostAPI";
 import { useRouter } from "next/navigation";
 import {
   FileInfo,
@@ -36,34 +41,11 @@ import {
   PostData,
 } from "@/types/EditPostFormType";
 import axiosInstance from "@/lib/api/axiosInstance";
-
-// TODO: API에서 가져오도록 수정
-const fishingPoints = [
-  { id: 1, name: "인천 송도" },
-  { id: 2, name: "인천 영종도" },
-  { id: 3, name: "인천 강화도" },
-  { id: 4, name: "인천 옹진군" },
-  { id: 5, name: "서울 여의도" },
-  { id: 6, name: "경기 안산" },
-  { id: 7, name: "경기 시흥" },
-  { id: 8, name: "경기 화성" },
-  { id: 9, name: "경기 평택" },
-  { id: 10, name: "경기 부천" },
-];
-
-// TODO: API에서 가져오도록 수정
-const regions = [
-  { id: 1, name: "서울" },
-  { id: 2, name: "인천" },
-  { id: 3, name: "경기" },
-  { id: 4, name: "강원" },
-  { id: 5, name: "충북" },
-  { id: 6, name: "충남" },
-  { id: 7, name: "전북" },
-  { id: 8, name: "전남" },
-  { id: 9, name: "경북" },
-  { id: 10, name: "경남" },
-];
+import {
+  FishingPointLocation,
+  FishingPoint,
+} from "@/types/fishingPointLocationType";
+import { getFishingRegion } from "@/lib/api/fishingPointAPI";
 
 export default function EditPostForm({ postId }: EditPostFormProps) {
   const router = useRouter();
@@ -83,55 +65,68 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
   const [isBoatFishing, setIsBoatFishing] = useState(false);
   const [selectedFishingPoint, setSelectedFishingPoint] = useState("");
   const [selectedRegion, setSelectedRegion] = useState("");
+  const [regions, setRegions] = useState<FishingPointLocation[]>([]);
+  const [fishingPoints, setFishingPoints] = useState<FishingPoint[]>([]);
+  const [isLoadingRegions, setIsLoadingRegions] = useState(true);
+  const [isLoadingFishingPoints, setIsLoadingFishingPoints] = useState(false);
+  const [regionName, setRegionName] = useState("");
+  const [fishingPointName, setFishingPointName] = useState("");
+  const [fishingPointDetailName, setFishingPointDetailName] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [comments, setComments] = useState([]);
+  const [postData, setPostData] = useState<PostData | null>(null);
 
   useEffect(() => {
     const fetchPostData = async () => {
       try {
         setIsLoading(true);
         const response = await getFishingPost(postId);
-        // console.log("📄 게시글 데이터 응답:", response);
+        console.log("📄 게시글 데이터 응답:", response);
 
         if (response.success) {
-          const postData = response.data as PostData;
-          // console.log("📄 게시글 데이터 상세:", postData);
+          const data = response.data as PostData;
+          console.log("📄 게시글 데이터 상세:", data);
+          setPostData(data);
 
-          setTitle(postData.subject);
-          setContent(postData.content);
+          setTitle(data.subject);
+          setContent(data.content);
 
-          const fishingDate = new Date(postData.fishingDate);
+          const fishingDate = new Date(data.fishingDate);
           setDate(fishingDate);
           setSelectedHour(String(fishingDate.getHours()).padStart(2, "0"));
           setSelectedMinute(String(fishingDate.getMinutes()).padStart(2, "0"));
 
-          setMemberCount(postData.recruitmentCount);
+          setMemberCount(data.recruitmentCount);
 
-          if (postData.fishingPointId) {
-            setSelectedFishingPoint(String(postData.fishingPointId));
-          }
-          if (postData.regionId) {
-            setSelectedRegion(String(postData.regionId));
+          // 지역과 낚시 포인트 ID 설정
+          if (data.regionId) {
+            console.log("지역 ID 설정:", data.regionId);
+            setSelectedRegion(String(data.regionId));
           }
 
-          if (postData.isShipFish !== undefined) {
-            setIsBoatFishing(postData.isShipFish);
+          if (data.fishingPointId) {
+            console.log("낚시 포인트 ID 설정:", data.fishingPointId);
+            setSelectedFishingPoint(String(data.fishingPointId));
+          }
+
+          if (data.isShipFish !== undefined) {
+            setIsBoatFishing(data.isShipFish);
           }
 
           let fileIds: number[] = [];
           let fileUrls: string[] = [];
           let fileInfos: FileInfo[] = [];
 
-          if (postData.fileList && postData.fileList.length > 0) {
-            fileInfos = postData.fileList;
-            fileIds = postData.fileList.map((f: FileInfo) => f.fileId);
-            fileUrls = postData.fileList.map((f: FileInfo) => f.fileUrl);
-          } else if (postData.files && postData.files.length > 0) {
-            fileInfos = postData.files;
-            fileIds = postData.files.map((f: FileInfo) => f.fileId);
-            fileUrls = postData.files.map((f: FileInfo) => f.fileUrl);
-          } else if (postData.fileUrlList && postData.fileUrlList.length > 0) {
-            fileUrls = postData.fileUrlList;
+          if (data.fileList && data.fileList.length > 0) {
+            fileInfos = data.fileList;
+            fileIds = data.fileList.map((f: FileInfo) => f.fileId);
+            fileUrls = data.fileList.map((f: FileInfo) => f.fileUrl);
+          } else if (data.files && data.files.length > 0) {
+            fileInfos = data.files;
+            fileIds = data.files.map((f: FileInfo) => f.fileId);
+            fileUrls = data.files.map((f: FileInfo) => f.fileUrl);
+          } else if (data.fileUrlList && data.fileUrlList.length > 0) {
+            fileUrls = data.fileUrlList;
             fileIds = [];
             fileInfos = [];
           }
@@ -154,6 +149,67 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
 
     fetchPostData();
   }, [postId, router]);
+
+  // 지역 데이터 가져오기
+  useEffect(() => {
+    const fetchRegions = async () => {
+      try {
+        setIsLoadingRegions(true);
+        const response = await getRegions();
+        console.log("지역 데이터:", response);
+        if (response.success && Array.isArray(response.data)) {
+          setRegions(response.data);
+        } else {
+          console.error("지역 데이터가 올바르지 않습니다:", response);
+          setRegions([]);
+        }
+      } catch (error) {
+        console.error("지역 데이터 가져오기 실패:", error);
+        setRegions([]);
+      } finally {
+        setIsLoadingRegions(false);
+      }
+    };
+
+    fetchRegions();
+  }, []);
+
+  // 지역 선택 시 해당 지역의 낚시 포인트 가져오기
+  useEffect(() => {
+    const fetchFishingPoints = async () => {
+      if (!selectedRegion) {
+        setFishingPoints([]);
+        setSelectedFishingPoint("");
+        return;
+      }
+
+      try {
+        setIsLoadingFishingPoints(true);
+        const points = await getFishingRegion(selectedRegion);
+        setFishingPoints(points);
+
+        // 낚시 포인트 데이터가 로드된 후, 기존 게시글의 낚시 포인트 ID가 있는지 확인
+        if (selectedFishingPoint && points.length > 0) {
+          const pointExists = points.some(
+            (point) => String(point.fishPointId) === selectedFishingPoint
+          );
+          if (!pointExists) {
+            console.log(
+              "기존 낚시 포인트가 현재 지역에 없습니다. 초기화합니다."
+            );
+            setSelectedFishingPoint("");
+          }
+        }
+      } catch (error) {
+        console.error("낚시 포인트 가져오기 실패:", error);
+        setFishingPoints([]);
+      } finally {
+        setIsLoadingFishingPoints(false);
+      }
+    };
+
+    fetchFishingPoints();
+  }, [selectedRegion, selectedFishingPoint]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -203,62 +259,43 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    if (!date) {
-      alert("날짜를 선택해주세요.");
-      setIsSubmitting(false);
-      return;
-    }
-
-    if (!selectedFishingPoint) {
-      alert("낚시 포인트를 선택해주세요.");
-      setIsSubmitting(false);
-      return;
-    }
-
-    if (!selectedRegion) {
-      alert("지역을 선택해주세요.");
-      setIsSubmitting(false);
-      return;
-    }
-
     try {
-      let finalFileIds: number[] = [...existingFileIds];
-
-      if (selectedFiles.length > 0) {
-        const newImageFileIds = await uploadImagesToS3(selectedFiles, "post");
-        finalFileIds = [...finalFileIds, ...newImageFileIds];
+      if (!date) {
+        alert("날짜를 선택해주세요.");
+        setIsSubmitting(false);
+        return;
       }
 
-      const fishingDateTime = new Date(date);
-      fishingDateTime.setHours(parseInt(selectedHour, 10));
-      fishingDateTime.setMinutes(parseInt(selectedMinute, 10));
+      if (!selectedRegion || !selectedFishingPoint) {
+        alert("지역과 낚시 포인트를 모두 선택해주세요.");
+        setIsSubmitting(false);
+        return;
+      }
 
       const requestBody = {
+        fishingTripPostId: Number(postId),
         subject: title,
         content: content,
         recruitmentCount: memberCount,
         isShipFish: isBoatFishing,
-        fishingDate: fishingDateTime.toISOString(),
-        fishingPointId: parseInt(selectedFishingPoint),
-        regionId: parseInt(selectedRegion),
-        fileIdList: finalFileIds,
+        fishingDate: date,
+        fileIdList: [
+          ...existingFileIds,
+          ...selectedFiles.map((file) => file.fileId),
+        ],
+        regionId: Number(selectedRegion),
+        fishingPointId: Number(selectedFishingPoint),
       };
 
-      // const result = await updateFishingPost({
-      await updateFishingPost({
-        fishingTripPostId: postId,
-        ...requestBody,
-      });
-
-      alert("게시글이 수정되었습니다!");
-      router.push(`/fishing-group/post/${postId}`);
-    } catch (error: unknown) {
-      console.error("❌ 게시글 수정 중 오류:", error as Error);
-      throw error;
+      await updateFishingPost(requestBody);
+      router.push("/fishing-group");
+    } catch (error) {
+      console.error("게시글 수정 중 오류 발생:", error);
+      alert("게시글 수정에 실패했습니다. 다시 시도해주세요.");
     } finally {
       setIsSubmitting(false);
     }
@@ -314,7 +351,7 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
         </Link>
       </div>
       <div className="bg-white rounded-lg p-8 border border-gray-70 shadow">
-        <h1 className="text-2xl font-semibold mb-2">낚시 동출 모집 글쓰기</h1>
+        <h1 className="text-2xl font-semibold mb-2">낚시 동출 모집 글 수정</h1>
         <p className="text-gray-500 mb-8">
           함께 낚시를 즐길 동료를 모집하세요.
         </p>
@@ -424,21 +461,20 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
 
           <div className="grid grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label htmlFor="region" className="block font-medium">
-                지역
-              </label>
+              <label className="block font-medium">지역</label>
               <div className="relative">
                 <select
-                  id="region"
                   value={selectedRegion}
-                  onChange={(e) => setSelectedRegion(e.target.value)}
-                  className="w-full h-12 pl-10 pr-8 rounded-md border border-gray-200 bg-white text-base cursor-pointer appearance-none"
-                  required
+                  onChange={(e) => {
+                    setSelectedRegion(e.target.value);
+                    setSelectedFishingPoint("");
+                  }}
+                  className="w-full h-12 pl-10 pr-8 rounded-md border border-gray-200 bg-white text-base appearance-none cursor-pointer"
                 >
                   <option value="">지역을 선택하세요</option>
                   {regions.map((region) => (
-                    <option key={region.id} value={region.id}>
-                      {region.name}
+                    <option key={region.regionId} value={region.regionId}>
+                      {region.regionName}
                     </option>
                   ))}
                 </select>
@@ -464,21 +500,18 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="fishingPoint" className="block font-medium">
-                낚시 포인트
-              </label>
+              <label className="block font-medium">낚시 포인트</label>
               <div className="relative">
                 <select
-                  id="fishingPoint"
                   value={selectedFishingPoint}
                   onChange={(e) => setSelectedFishingPoint(e.target.value)}
-                  className="w-full h-12 pl-10 pr-8 rounded-md border border-gray-200 bg-white text-base cursor-pointer appearance-none"
-                  required
+                  className="w-full h-12 pl-10 pr-8 rounded-md border border-gray-200 bg-white text-base appearance-none cursor-pointer"
+                  disabled={!selectedRegion}
                 >
                   <option value="">낚시 포인트를 선택하세요</option>
                   {fishingPoints.map((point) => (
-                    <option key={point.id} value={point.id}>
-                      {point.name}
+                    <option key={point.fishPointId} value={point.fishPointId}>
+                      {point.fishPointName} - {point.fishPointDetailName}
                     </option>
                   ))}
                 </select>

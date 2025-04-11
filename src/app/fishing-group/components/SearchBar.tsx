@@ -9,37 +9,71 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { getRegions } from "@/lib/api/fishingPointAPI";
+import { FishingPointLocation } from "@/types/fishingPointLocationType";
 
 export function SearchBar({
   handleSearch,
+  onRegionChange,
 }: {
   handleSearch: (searchTerm: string) => void;
+  onRegionChange: (regionId: string) => void;
 }) {
   const [searchTerm, setSearchTerm] = useState("");
+  const [regions, setRegions] = useState<FishingPointLocation[]>([]);
+  const [selectedRegion, setSelectedRegion] = useState("all");
+
+  useEffect(() => {
+    const fetchRegions = async () => {
+      try {
+        const regionsData = await getRegions();
+        setRegions(regionsData);
+      } catch (error) {
+        console.error("지역 정보를 불러오는데 실패했습니다:", error);
+      }
+    };
+
+    fetchRegions();
+  }, []);
+
+  const handleRegionChange = (value: string) => {
+    console.log("=== 지역 선택 변경 ===");
+    console.log("선택된 지역 ID:", value);
+    console.log(
+      "선택된 지역 이름:",
+      regions.find((region) => region.regionId === value)?.regionName ||
+        "전체 지역"
+    );
+    setSelectedRegion(value);
+    // 지역 선택 시 부모 컴포넌트에 알림
+    onRegionChange(value);
+  };
 
   return (
     <div className="flex gap-2 mt-10 mb-10 items-center max-w-4xl mx-auto">
-      <Select defaultValue="all">
+      <Select value={selectedRegion} onValueChange={handleRegionChange}>
         <SelectTrigger className="w-[180px] bg-white border-gray-60 text-base h-full cursor-pointer">
           <SelectValue placeholder="지역을 선택하세요" />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent
+          side="bottom"
+          align="start"
+          className="w-[180px] z-50"
+          sideOffset={4}
+        >
           <SelectItem value="all" className="text-base">
-            지역을 선택하세요
+            전체 지역
           </SelectItem>
-          <SelectItem value="seoul" className="text-base">
-            서울
-          </SelectItem>
-          <SelectItem value="gyeonggi" className="text-base">
-            경기
-          </SelectItem>
-          <SelectItem value="incheon" className="text-base">
-            인천
-          </SelectItem>
-          <SelectItem value="busan" className="text-base">
-            부산
-          </SelectItem>
+          {regions.map((region) => (
+            <SelectItem
+              key={region.regionId}
+              value={region.regionId}
+              className="text-base"
+            >
+              {region.regionName}
+            </SelectItem>
+          ))}
         </SelectContent>
       </Select>
       <div className="relative flex-1">
