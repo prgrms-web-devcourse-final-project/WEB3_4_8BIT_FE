@@ -45,7 +45,9 @@ export default function BoatCard({ boatData }: { boatData: ShipPostData }) {
           </div>
           <div className="flex items-center bg-cyan-50 text-gray-20 px-2 py-1 rounded">
             <Star className="h-4 w-4 fill-amber-400 text-amber-400 mr-1" />
-            <span className="font-medium">{boatData.reviewEverRate}</span>
+            <span className="font-medium">
+              {boatData.reviewEverRate.toFixed(1)}
+            </span>
             <span className="text-xs text-gray-500 ml-1">
               ({boatData.reviewCount})
             </span>
