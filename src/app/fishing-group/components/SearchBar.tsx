@@ -51,74 +51,86 @@ export function SearchBar({
   };
 
   return (
-    <div className="flex gap-2 mt-10 mb-10 items-center max-w-4xl mx-auto">
-      <Select value={selectedRegion} onValueChange={handleRegionChange}>
-        <SelectTrigger className="w-[180px] bg-white border-gray-60 text-base h-full cursor-pointer">
-          <SelectValue placeholder="지역을 선택하세요" />
-        </SelectTrigger>
-        <SelectContent
-          side="bottom"
-          align="start"
-          className="w-[180px] z-50"
-          sideOffset={4}
-        >
-          <SelectItem value="all" className="text-base">
-            전체 지역
-          </SelectItem>
-          {regions.map((region) => (
-            <SelectItem
-              key={region.regionId}
-              value={region.regionId}
-              className="text-base"
+    <div className="w-full py-8 px-4">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex flex-col md:flex-row gap-4 items-center">
+          <div className="w-full md:w-auto flex flex-col md:flex-row gap-4 flex-1">
+            <Select value={selectedRegion} onValueChange={handleRegionChange}>
+              <SelectTrigger className="w-full md:w-[220px] h-12 bg-white border-gray-200 text-base font-medium shadow-sm cursor-pointer">
+                <SelectValue placeholder="지역을 선택하세요" />
+              </SelectTrigger>
+              <SelectContent
+                position="item-aligned"
+                side="bottom"
+                align="start"
+                className="w-[220px] z-50"
+                sideOffset={4}
+                avoidCollisions={false}
+              >
+                <SelectItem value="all" className="text-base py-3">
+                  전체 지역
+                </SelectItem>
+                {regions.map((region) => (
+                  <SelectItem
+                    key={region.regionId}
+                    value={region.regionId}
+                    className="text-base py-2.5"
+                  >
+                    {region.regionName}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <div className="relative flex-1">
+              <input
+                type="search"
+                placeholder="제목을 검색하세요"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === "Enter") {
+                    handleSearch(searchTerm);
+                  }
+                }}
+                className="w-full h-11 pl-12 pr-4 border border-gray-200 rounded-lg text-base placeholder:text-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 shadow-sm"
+              />
+              <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z"
+                    stroke="#94A3B8"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex gap-3 w-full md:w-auto">
+            <button
+              onClick={() => handleSearch(searchTerm)}
+              className="flex-1 md:flex-none px-8 h-11 cursor-pointer bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-base font-medium transition-colors duration-200 flex items-center justify-center shadow-sm"
             >
-              {region.regionName}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      <div className="relative flex-1">
-        <Input
-          type="search"
-          placeholder="검색어를 입력하세요"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          onKeyPress={(e) => {
-            if (e.key === "Enter") {
-              handleSearch(searchTerm);
-            }
-          }}
-          className="w-full pl-10 pr-4 py-2 border-gray-60 rounded-md text-base h-full"
-        />
-        <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 20 20"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M17.5 17.5L12.5 12.5M14.1667 8.33333C14.1667 11.555 11.555 14.1667 8.33333 14.1667C5.11167 14.1667 2.5 11.555 2.5 8.33333C2.5 5.11167 5.11167 2.5 8.33333 2.5C11.555 2.5 14.1667 5.11167 14.1667 8.33333Z"
-              stroke="#94A3B8"
-              strokeWidth="1.66667"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+              검색
+            </button>
+            <Link
+              href="/fishing-group/write"
+              className="flex-1 md:flex-none px-8 h-11 cursor-pointer bg-white text-blue-600 border-2 border-blue-500 rounded-lg hover:bg-blue-50 text-base font-medium transition-colors duration-200 flex items-center justify-center shadow-sm"
+            >
+              + 글쓰기
+            </Link>
+          </div>
         </div>
       </div>
-      <button
-        onClick={() => handleSearch(searchTerm)}
-        className="px-6 py-2 bg-primary text-white rounded-md hover:bg-blue-500 text-base cursor-pointer"
-      >
-        검색
-      </button>
-      <Link
-        href="/fishing-group/write"
-        className="px-6 py-2 bg-primary text-white rounded-md hover:bg-blue-500 text-base cursor-pointer"
-      >
-        + 글쓰기
-      </Link>
     </div>
   );
 }
