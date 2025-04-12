@@ -19,6 +19,12 @@ interface LikeResponse {
   message?: string;
 }
 
+interface LikeCountResponse {
+  success: boolean;
+  data?: number;
+  message?: string;
+}
+
 export const toggleLike = async (
   params: ToggleLikeRequest
 ): Promise<LikeResponse> => {
@@ -31,6 +37,30 @@ export const toggleLike = async (
         success: false,
         message:
           error.response.data.message || "좋아요 처리 중 오류가 발생했습니다.",
+      };
+    }
+    return {
+      success: false,
+      message: "네트워크 오류가 발생했습니다.",
+    };
+  }
+};
+
+export const getLikeCount = async (
+  targetType: LikeTargetType
+): Promise<LikeCountResponse> => {
+  try {
+    const response = await axiosInstance.get(
+      `/likes/count?targetType=${targetType}`
+    );
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError && error.response) {
+      return {
+        success: false,
+        message:
+          error.response.data.message ||
+          "좋아요 개수 조회 중 오류가 발생했습니다.",
       };
     }
     return {
