@@ -6,8 +6,6 @@ import {
   getPostParticipation,
   PostParticipationInfo,
   deleteFishingPost,
-  // import { addComment, updateComment, deleteComment, getComments } from "@/lib/api/fishingPostAPI";
-  // import Image from "next/image";
 } from "@/lib/api/fishingPostAPI";
 import PostImages from "../components/PostImage";
 import PostContent from "../components/PostContent";
@@ -90,20 +88,6 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
     setIsLiked(!isLiked);
     setLikeCount(isLiked ? likeCount - 1 : likeCount + 1);
 
-    // 좋아요를 누를 때만 하트 애니메이션 표시
-    if (!isLiked) {
-      // Remove unused state update
-      // setShowHearts(true);
-      // setTimeout(() => {
-      //   setShowHearts(false);
-      // }, 1000);
-    }
-
-    // 애니메이션 효과를 위한 타이머
-    setTimeout(() => {
-      setIsAnimating(false);
-    }, 500);
-
     // 실제 API 연동은 나중에 구현
   };
 
@@ -144,16 +128,45 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
   };
 
   return (
-    <div className="max-w-screen-xl mx-auto px-4 pt-[90px]">
-      <div className="mb-4">
-        <Link
-          href="/fishing-group"
-          className="inline-flex items-center text-blue-500 hover:text-blue-700"
-        >
-          <ArrowLeft className="w-4 h-4 mr-1" />
-          목록으로 돌아가기
-        </Link>
+    <div className="max-w-screen-xl mx-auto px-4 pt-[50px]">
+      <div className="mb-6">
+        <div className="flex items-center space-x-2 text-base text-gray-500">
+          <Link
+            href="/fishing-group"
+            className="inline-flex items-center hover:text-blue-600 transition-colors duration-200"
+          >
+            <ArrowLeft className="w-4 h-4 mr-1" />
+            <span>목록으로</span>
+          </Link>
+          <span className="text-gray-300">/</span>
+          <span className="text-gray-700 font-medium">상세보기</span>
+        </div>
       </div>
+
+      {/* Banner Section */}
+      <div className="w-full bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 rounded-2xl p-8 mb-8 text-white shadow-xl">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+          <div className="space-y-2">
+            <h2 className="text-3xl font-bold">{post.fishPointName}</h2>
+            <p className="text-blue-100 text-lg">{post.fishPointDetailName}</p>
+          </div>
+          <div className="flex items-center gap-8">
+            <div className="flex items-center bg-white/10 px-4 py-2 rounded-lg">
+              <Calendar className="w-5 h-5 mr-2 text-blue-200" />
+              <span className="font-medium">
+                {new Date(post.fishingDate).toLocaleDateString()}
+              </span>
+            </div>
+            <div className="flex items-center bg-white/10 px-4 py-2 rounded-lg">
+              <Users className="w-5 h-5 mr-2 text-blue-200" />
+              <span className="font-medium">
+                {post.currentCount}/{post.recruitmentCount}명
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
         <div className="col-span-1 md:col-span-8">
           <div className="bg-white rounded-lg p-4 md:p-6 border border-gray-200 shadow-md">
@@ -293,8 +306,7 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
             latitude={post.latitude}
             author={post.name}
             onApplicationSuccess={() => {
-              // 500ms 지연 후 참여 정보 다시 불러오기
-              setTimeout(fetchParticipationInfo, 500);
+              setTimeout(fetchParticipationInfo, 300);
             }}
           />
 
