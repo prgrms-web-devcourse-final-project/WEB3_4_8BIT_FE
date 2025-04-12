@@ -22,6 +22,23 @@ export interface Post {
   postStatus: "RECRUITING" | "COMPLETED";
 }
 
+// PostCard 컴포넌트에서 사용하는 인터페이스
+export interface PostCardProps {
+  fishingTripPostId: number;
+  title: string;
+  content: string;
+  date: string;
+  location: string;
+  recruitmentCount: number;
+  fishPointName: string;
+  fileUrlList?: string[];
+  imageUrl?: string;
+  postStatus: string;
+  latitude?: number;
+  longitude?: number;
+  regionType?: string;
+}
+
 export interface ApiResponseData {
   content: Post[];
   last: boolean;
@@ -109,6 +126,27 @@ export const updateFishingPost = async (postData: UpdateFishingPostParams) => {
     console.log(`📝 수정 요청 URL: /fishing-trip-post/${fishingTripPostId}`);
     console.log("📝 수정 요청 데이터:", updateData);
 
+    // 필수 필드 확인
+    const requiredFields = [
+      "subject",
+      "content",
+      "recruitmentCount",
+      "fishingDate",
+      "fishingPointId",
+      "regionId",
+    ] as const;
+    const missingFields = requiredFields.filter((field) => {
+      const value = updateData[field as keyof typeof updateData];
+      return value === undefined || value === null;
+    });
+
+    if (missingFields.length > 0) {
+      console.error("❌ 필수 필드 누락:", missingFields);
+      throw new Error(
+        `필수 필드가 누락되었습니다: ${missingFields.join(", ")}`
+      );
+    }
+
     // fileIdList가 빈 배열이면 제거 (API에 따라 필요할 수 있음)
     if (updateData.fileIdList && updateData.fileIdList.length === 0) {
       console.log("⚠️ fileIdList가 비어있어 요청에서 제외합니다");
@@ -133,7 +171,16 @@ export const updateFishingPost = async (postData: UpdateFishingPostParams) => {
 export const getRegions = async () => {
   try {
     const response = await axiosInstance.get("/regions");
-    return response.data;
+    console.log("지역 데이터 API 응답:", response.data);
+    if (
+      response.data &&
+      response.data.success &&
+      Array.isArray(response.data.data)
+    ) {
+      return response.data;
+    } else {
+      throw new Error("Invalid regions data format");
+    }
   } catch (error) {
     console.error("Error fetching regions:", error);
     throw error;
@@ -161,6 +208,7 @@ export interface CursorRequestParams {
   size: number;
   status?: string;
   keyword?: string;
+  regionId?: string;
 }
 
 export const getFishingPostsByCursor = async (
@@ -247,9 +295,15 @@ export const deleteFishingPost = async (fishingTripPostId: number) => {
     );
     console.log("게시글 삭제 성공:", response.data);
     return { success: true, data: response.data };
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("게시글 삭제 실패:", error);
-    return { success: false, message: error.message };
+    return {
+      success: false,
+      message:
+        error instanceof Error
+          ? error.message
+          : "알 수 없는 오류가 발생했습니다.",
+    };
   }
 };
 
