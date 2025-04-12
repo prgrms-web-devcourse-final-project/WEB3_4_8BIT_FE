@@ -7,6 +7,8 @@ import { TabSection } from "./components/TabSection";
 import { SearchBar } from "./components/SearchBar";
 import { PostList } from "./components/PostList";
 import { PostFilter } from "./components/TabSection";
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 
 // 테스트용 데이터
 const hotPosts = [
@@ -109,29 +111,50 @@ export default function FishingGroupPage() {
 
   return (
     <>
-      <div className="w-full h-[350px] relative">
+      {/* Hero Section with Overlay */}
+      <div className="w-full h-[400px] relative">
         <Image
           src="/images/banner.jpg"
           alt="낚시 배너"
           fill
-          className="object-cover"
+          className="object-cover brightness-75"
           priority
           sizes="100vw"
         />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/50 to-transparent">
+          <div className="container mx-auto px-4 h-full flex flex-col justify-center">
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+              함께하는 낚시 동출
+            </h1>
+            <p className="text-xl text-white/90 max-w-2xl">
+              전국 각지의 낚시 포인트에서 새로운 낚시 파트너와 함께 즐거운
+              추억을 만들어보세요.
+            </p>
+          </div>
+        </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
-        <HotPost />
-        <SearchBar
-          handleSearch={handleSearch}
-          onRegionChange={handleRegionChange}
-        />
-        <TabSection onFilterChange={setActiveFilter} />
-        <PostList
-          filter={activeFilter}
-          searchKeyword={searchKeyword}
-          selectedRegion={selectedRegion}
-        />
+      <div className="container mx-auto px-4 py-12">
+        <div className="mb-5">
+          <div className="flex items-center justify-between mb-2"></div>
+          <HotPost />
+        </div>
+
+        <div className="bg-white rounded-2xl p-5">
+          <SearchBar
+            handleSearch={handleSearch}
+            onRegionChange={handleRegionChange}
+          />
+          <TabSection onFilterChange={setActiveFilter} />
+        </div>
+
+        <div className="bg-white rounded-2xl p-6">
+          <PostList
+            filter={activeFilter}
+            searchKeyword={searchKeyword}
+            selectedRegion={selectedRegion}
+          />
+        </div>
       </div>
     </>
   );
