@@ -14,8 +14,6 @@ import {
 } from "@/components/ui/popover";
 import {
   Calendar as CalendarIcon,
-  Clock,
-  MapPin,
   MinusCircle,
   PlusCircle,
   X,
@@ -28,24 +26,13 @@ import { ko } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { useState, useRef, useEffect } from "react";
 import { uploadImagesToS3 } from "@/lib/api/uploadImageAPI";
-import {
-  getFishingPost,
-  updateFishingPost,
-  getRegions,
-  getFishingPoints,
-} from "@/lib/api/fishingPostAPI";
+import { getFishingPost, updateFishingPost } from "@/lib/api/fishingPostAPI";
 import { useRouter } from "next/navigation";
 import {
   FileInfo,
   EditPostFormProps,
   PostData,
 } from "@/types/EditPostFormType";
-import { axiosInstance } from "@/lib/api/axiosInstance";
-import {
-  FishingPointLocation,
-  FishingPoint,
-} from "@/types/fishingPointLocationType";
-import { getFishingRegion } from "@/lib/api/fishingPointAPI";
 
 export default function EditPostForm({ postId }: EditPostFormProps) {
   const router = useRouter();
@@ -63,18 +50,7 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [isBoatFishing, setIsBoatFishing] = useState(false);
-  const [selectedFishingPoint, setSelectedFishingPoint] = useState("");
-  const [selectedRegion, setSelectedRegion] = useState("");
-  const [regions, setRegions] = useState<FishingPointLocation[]>([]);
-  const [fishingPoints, setFishingPoints] = useState<FishingPoint[]>([]);
-  const [isLoadingRegions, setIsLoadingRegions] = useState(true);
-  const [isLoadingFishingPoints, setIsLoadingFishingPoints] = useState(false);
-  const [regionName, setRegionName] = useState("");
-  const [fishingPointName, setFishingPointName] = useState("");
-  const [fishingPointDetailName, setFishingPointDetailName] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [comments, setComments] = useState([]);
-  const [postData, setPostData] = useState<PostData | null>(null);
 
   useEffect(() => {
     const fetchPostData = async () => {
@@ -86,7 +62,6 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
         if (response.success) {
           const data = response.data as PostData;
           console.log("📄 게시글 데이터 상세:", data);
-          setPostData(data);
 
           setTitle(data.subject);
           setContent(data.content);
@@ -97,17 +72,6 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
           setSelectedMinute(String(fishingDate.getMinutes()).padStart(2, "0"));
 
           setMemberCount(data.recruitmentCount);
-
-          // 지역과 낚시 포인트 ID 설정
-          if (data.regionId) {
-            console.log("지역 ID 설정:", data.regionId);
-            setSelectedRegion(String(data.regionId));
-          }
-
-          if (data.fishingPointId) {
-            console.log("낚시 포인트 ID 설정:", data.fishingPointId);
-            setSelectedFishingPoint(String(data.fishingPointId));
-          }
 
           if (data.isShipFish !== undefined) {
             setIsBoatFishing(data.isShipFish);
@@ -149,67 +113,6 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
 
     fetchPostData();
   }, [postId, router]);
-
-  // 지역 데이터 가져오기
-  useEffect(() => {
-    const fetchRegions = async () => {
-      try {
-        setIsLoadingRegions(true);
-        const response = await getRegions();
-        console.log("지역 데이터:", response);
-        if (response.success && Array.isArray(response.data)) {
-          setRegions(response.data);
-        } else {
-          console.error("지역 데이터가 올바르지 않습니다:", response);
-          setRegions([]);
-        }
-      } catch (error) {
-        console.error("지역 데이터 가져오기 실패:", error);
-        setRegions([]);
-      } finally {
-        setIsLoadingRegions(false);
-      }
-    };
-
-    fetchRegions();
-  }, []);
-
-  // 지역 선택 시 해당 지역의 낚시 포인트 가져오기
-  useEffect(() => {
-    const fetchFishingPoints = async () => {
-      if (!selectedRegion) {
-        setFishingPoints([]);
-        setSelectedFishingPoint("");
-        return;
-      }
-
-      try {
-        setIsLoadingFishingPoints(true);
-        const points = await getFishingRegion(selectedRegion);
-        setFishingPoints(points);
-
-        // 낚시 포인트 데이터가 로드된 후, 기존 게시글의 낚시 포인트 ID가 있는지 확인
-        if (selectedFishingPoint && points.length > 0) {
-          const pointExists = points.some(
-            (point) => String(point.fishPointId) === selectedFishingPoint
-          );
-          if (!pointExists) {
-            console.log(
-              "기존 낚시 포인트가 현재 지역에 없습니다. 초기화합니다."
-            );
-            setSelectedFishingPoint("");
-          }
-        }
-      } catch (error) {
-        console.error("낚시 포인트 가져오기 실패:", error);
-        setFishingPoints([]);
-      } finally {
-        setIsLoadingFishingPoints(false);
-      }
-    };
-
-    fetchFishingPoints();
-  }, [selectedRegion, selectedFishingPoint]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -270,31 +173,13 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
         return;
       }
 
-      if (!selectedRegion || !selectedFishingPoint) {
-        alert("지역과 낚시 포인트를 모두 선택해주세요.");
-        setIsSubmitting(false);
-        return;
-      }
-
       // 새로 선택한 파일이 있으면 먼저 업로드
       let uploadedFileIds: number[] = [...existingFileIds];
 
       if (selectedFiles.length > 0) {
         try {
-          const formData = new FormData();
-          selectedFiles.forEach((file) => {
-            formData.append("files", file);
-          });
-
-          const uploadResponse = await uploadImagesToS3(formData);
-          if (uploadResponse.success && uploadResponse.data) {
-            const newFileIds = uploadResponse.data.map(
-              (file: any) => file.fileId
-            );
-            uploadedFileIds = [...uploadedFileIds, ...newFileIds];
-          } else {
-            throw new Error("파일 업로드에 실패했습니다.");
-          }
+          const uploadResponse = await uploadImagesToS3(selectedFiles, "post");
+          uploadedFileIds = [...uploadedFileIds, ...uploadResponse];
         } catch (uploadError) {
           console.error("파일 업로드 중 오류 발생:", uploadError);
           alert("파일 업로드에 실패했습니다. 다시 시도해주세요.");
@@ -303,19 +188,21 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
         }
       }
 
+      // 선택된 날짜와 시간을 합쳐서 fishingDate 생성
+      const fishingDateTime = new Date(date);
+      fishingDateTime.setHours(parseInt(selectedHour, 10));
+      fishingDateTime.setMinutes(parseInt(selectedMinute, 10));
+
       const requestBody = {
-        fishingTripPostId: Number(postId),
         subject: title,
         content: content,
         recruitmentCount: memberCount,
         isShipFish: isBoatFishing,
-        fishingDate: date,
+        fishingDate: fishingDateTime.toISOString(),
         fileIdList: uploadedFileIds,
-        regionId: Number(selectedRegion),
-        fishingPointId: Number(selectedFishingPoint),
       };
 
-      await updateFishingPost(requestBody);
+      await updateFishingPost(postId, requestBody);
       router.push("/fishing-group");
     } catch (error) {
       console.error("게시글 수정 중 오류 발생:", error);
@@ -327,33 +214,6 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
 
   const disablePastDates = (date: Date) => {
     return isBefore(date, startOfDay(new Date()));
-  };
-
-  const fetchComments = async () => {
-    try {
-      const response = await axiosInstance.get(
-        `/fishing-trip-post/${postId}/comment`,
-        {
-          params: {
-            size: 10,
-            parentId: 1, // 필요한 경우 변경
-            cursorRequestDto: {
-              order: "desc",
-              sort: "createdAt",
-              type: "next",
-              fieldValue: "2025-04-08T07:24:17.138851Z",
-              id: 1,
-              size: 10,
-            },
-          },
-        }
-      );
-      if (response.data) {
-        setComments(response.data.content);
-      }
-    } catch (error) {
-      console.error("댓글 불러오기 실패:", error);
-    }
   };
 
   if (isLoading) {
@@ -399,55 +259,51 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="date" className="block font-medium">
-              낚시 날짜/시간
-            </label>
+            <label className="block font-medium">날짜 및 시간</label>
             <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1">
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal h-12 cursor-pointer text-base",
-                        !date && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-5 w-5" />
-                      {date
-                        ? format(date, "PPP", { locale: ko })
-                        : "날짜를 선택하세요"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 bg-white" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={date}
-                      onSelect={setDate}
-                      initialFocus
-                      locale={ko}
-                      className="rounded-md border"
-                      disabled={disablePastDates}
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-              <div className="flex gap-2 items-center">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full md:w-[240px] justify-start text-left font-normal",
+                      !date && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {date ? (
+                      format(date, "PPP", { locale: ko })
+                    ) : (
+                      <span>날짜 선택</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={date}
+                    onSelect={setDate}
+                    disabled={disablePastDates}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+
+              <div className="flex items-center gap-2">
                 <div className="relative w-[120px]">
-                  <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
                   <select
                     value={selectedHour}
                     onChange={(e) => setSelectedHour(e.target.value)}
-                    className="h-12 w-full rounded-md border border-input bg-background pl-10 pr-8 cursor-pointer text-base appearance-none"
+                    className="h-12 w-full rounded-md border border-input bg-background pl-3 pr-8 cursor-pointer text-base appearance-none"
                   >
-                    {Array.from({ length: 24 }, (_, i) =>
-                      String(i).padStart(2, "0")
-                    ).map((hour) => (
-                      <option key={hour} value={hour}>
-                        {hour}시
-                      </option>
-                    ))}
+                    {Array.from({ length: 24 }, (_, i) => {
+                      const hour = String(i).padStart(2, "0");
+                      return (
+                        <option key={hour} value={hour}>
+                          {hour}시
+                        </option>
+                      );
+                    })}
                   </select>
                   <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
                     <svg
@@ -467,6 +323,7 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
                     </svg>
                   </div>
                 </div>
+
                 <div className="relative w-[120px]">
                   <select
                     value={selectedMinute}
@@ -496,84 +353,6 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
                       />
                     </svg>
                   </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-            <div className="space-y-2">
-              <label className="block font-medium">지역</label>
-              <div className="relative">
-                <select
-                  value={selectedRegion}
-                  onChange={(e) => {
-                    setSelectedRegion(e.target.value);
-                    setSelectedFishingPoint("");
-                  }}
-                  className="w-full h-12 pl-10 pr-8 rounded-md border border-gray-200 bg-white text-base appearance-none cursor-pointer"
-                >
-                  <option value="">지역을 선택하세요</option>
-                  {regions.map((region) => (
-                    <option key={region.regionId} value={region.regionId}>
-                      {region.regionName}
-                    </option>
-                  ))}
-                </select>
-                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
-                <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                  <svg
-                    width="12"
-                    height="12"
-                    viewBox="0 0 12 12"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M2.5 4.5L6 8L9.5 4.5"
-                      stroke="#6B7280"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="block font-medium">낚시 포인트</label>
-              <div className="relative">
-                <select
-                  value={selectedFishingPoint}
-                  onChange={(e) => setSelectedFishingPoint(e.target.value)}
-                  className="w-full h-12 pl-10 pr-8 rounded-md border border-gray-200 bg-white text-base appearance-none cursor-pointer"
-                  disabled={!selectedRegion}
-                >
-                  <option value="">낚시 포인트를 선택하세요</option>
-                  {fishingPoints.map((point) => (
-                    <option key={point.fishPointId} value={point.fishPointId}>
-                      {point.fishPointName} - {point.fishPointDetailName}
-                    </option>
-                  ))}
-                </select>
-                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
-                <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                  <svg
-                    width="12"
-                    height="12"
-                    viewBox="0 0 12 12"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M2.5 4.5L6 8L9.5 4.5"
-                      stroke="#6B7280"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
                 </div>
               </div>
             </div>
