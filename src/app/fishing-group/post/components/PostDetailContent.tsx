@@ -41,7 +41,6 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
-  const [showHearts, setShowHearts] = useState(false);
 
   // 참여 정보를 다시 불러오는 함수
   const fetchParticipationInfo = async () => {
@@ -93,10 +92,11 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
 
     // 좋아요를 누를 때만 하트 애니메이션 표시
     if (!isLiked) {
-      setShowHearts(true);
-      setTimeout(() => {
-        setShowHearts(false);
-      }, 1000);
+      // Remove unused state update
+      // setShowHearts(true);
+      // setTimeout(() => {
+      //   setShowHearts(false);
+      // }, 1000);
     }
 
     // 애니메이션 효과를 위한 타이머
@@ -154,10 +154,10 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
           목록으로 돌아가기
         </Link>
       </div>
-      <div className="grid grid-cols-12 gap-4">
-        <div className="col-span-8">
-          <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-md">
-            <div className="flex items-center gap-3 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+        <div className="col-span-1 md:col-span-8">
+          <div className="bg-white rounded-lg p-4 md:p-6 border border-gray-200 shadow-md">
+            <div className="flex flex-wrap items-center gap-3 mb-4 md:mb-6">
               <span
                 className={`px-3 py-1.5 text-sm font-medium rounded-full ${
                   isRecruiting
@@ -167,11 +167,11 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
               >
                 {isRecruiting ? "모집중" : "모집완료"}
               </span>
-              <h1 className="text-2xl font-bold">{post.subject}</h1>
+              <h1 className="text-xl md:text-2xl font-bold">{post.subject}</h1>
             </div>
 
-            <div className="flex items-center justify-between mb-6 text-sm text-gray-500">
-              <div className="flex items-center gap-2">
+            <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 md:mb-6 text-sm text-gray-500">
+              <div className="flex items-center gap-2 mb-2 md:mb-0">
                 <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center">
                   <span className="text-xs text-gray-600">이미지</span>
                 </div>
@@ -225,12 +225,12 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
             {post.fileUrlList && post.fileUrlList.length > 0 ? (
               <PostImages images={post.fileUrlList} />
             ) : (
-              <div className="bg-gray-200 h-64 flex items-center justify-center">
+              <div className="bg-gray-200 h-48 md:h-64 flex items-center justify-center">
                 <span className="text-gray-500">낚시 이미지 Placeholder</span>
               </div>
             )}
 
-            <div className="grid grid-cols-2 gap-4 my-6 bg-gray-70 rounded-lg p-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 my-4 md:my-6 bg-gray-70 rounded-lg p-3 md:p-4">
               <div className="flex items-start gap-3">
                 <MapPin className="w-5 h-5 text-gray-500" />
                 <div>
@@ -276,7 +276,7 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
             <PostContent content={post.content} />
           </div>
         </div>
-        <div className="col-span-4">
+        <div className="col-span-1 md:col-span-4 mt-4 md:mt-0">
           <JoinInfoCard
             postId={postId}
             recruitmentCount={post.recruitmentCount}
@@ -298,11 +298,13 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
             }}
           />
 
-          <MapCard
-            fishPointName={post.fishPointName}
-            latitude={post.latitude}
-            longitude={post.longitude}
-          />
+          <div className="mt-4">
+            <MapCard
+              fishPointName={post.fishPointName}
+              latitude={post.latitude}
+              longitude={post.longitude}
+            />
+          </div>
         </div>
       </div>
 

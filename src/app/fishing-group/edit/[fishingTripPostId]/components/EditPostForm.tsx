@@ -40,7 +40,7 @@ import {
   EditPostFormProps,
   PostData,
 } from "@/types/EditPostFormType";
-import axiosInstance from "@/lib/api/axiosInstance";
+import { axiosInstance } from "@/lib/api/axiosInstance";
 import {
   FishingPointLocation,
   FishingPoint,
@@ -276,6 +276,33 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
         return;
       }
 
+      // 새로 선택한 파일이 있으면 먼저 업로드
+      let uploadedFileIds: number[] = [...existingFileIds];
+
+      if (selectedFiles.length > 0) {
+        try {
+          const formData = new FormData();
+          selectedFiles.forEach((file) => {
+            formData.append("files", file);
+          });
+
+          const uploadResponse = await uploadImagesToS3(formData);
+          if (uploadResponse.success && uploadResponse.data) {
+            const newFileIds = uploadResponse.data.map(
+              (file: any) => file.fileId
+            );
+            uploadedFileIds = [...uploadedFileIds, ...newFileIds];
+          } else {
+            throw new Error("파일 업로드에 실패했습니다.");
+          }
+        } catch (uploadError) {
+          console.error("파일 업로드 중 오류 발생:", uploadError);
+          alert("파일 업로드에 실패했습니다. 다시 시도해주세요.");
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
       const requestBody = {
         fishingTripPostId: Number(postId),
         subject: title,
@@ -283,10 +310,7 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
         recruitmentCount: memberCount,
         isShipFish: isBoatFishing,
         fishingDate: date,
-        fileIdList: [
-          ...existingFileIds,
-          ...selectedFiles.map((file) => file.fileId),
-        ],
+        fileIdList: uploadedFileIds,
         regionId: Number(selectedRegion),
         fishingPointId: Number(selectedFishingPoint),
       };
@@ -350,13 +374,15 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
           ← 목록으로 돌아가기
         </Link>
       </div>
-      <div className="bg-white rounded-lg p-8 border border-gray-70 shadow">
-        <h1 className="text-2xl font-semibold mb-2">낚시 동출 모집 글 수정</h1>
-        <p className="text-gray-500 mb-8">
+      <div className="bg-white rounded-lg p-4 md:p-8 border border-gray-70 shadow">
+        <h1 className="text-xl md:text-2xl font-semibold mb-2">
+          낚시 동출 모집 글 수정
+        </h1>
+        <p className="text-gray-500 mb-4 md:mb-8">
           함께 낚시를 즐길 동료를 모집하세요.
         </p>
 
-        <form className="space-y-6" onSubmit={handleSubmit}>
+        <form className="space-y-4 md:space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-2">
             <label htmlFor="title" className="block font-medium">
               제목
@@ -376,7 +402,7 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
             <label htmlFor="date" className="block font-medium">
               낚시 날짜/시간
             </label>
-            <div className="flex gap-4">
+            <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1">
                 <Popover>
                   <PopoverTrigger asChild>
@@ -459,7 +485,7 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
             <div className="space-y-2">
               <label className="block font-medium">지역</label>
               <div className="relative">
@@ -537,7 +563,7 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
             <div className="space-y-2">
               <label htmlFor="memberCount" className="block font-medium">
                 모집 인원
@@ -615,7 +641,7 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
 
           <div className="space-y-2">
             <p className="font-medium">이미지 첨부 (선택사항)</p>
-            <div className="border border-dashed rounded-lg p-6 text-center">
+            <div className="border border-dashed rounded-lg p-4 md:p-6 text-center">
               <div className="flex flex-col items-center justify-center">
                 <Upload className="h-10 w-10 text-gray-400 mb-2" />
                 <p className="text-gray-500 mb-2">
@@ -646,7 +672,7 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
 
             {/* 이미지 미리보기 */}
             {(existingFileUrls.length > 0 || previewUrls.length > 0) && (
-              <div className="grid grid-cols-5 gap-4 mt-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 mt-4">
                 {/* 기존 이미지 */}
                 {existingFileUrls.map((url, index) => (
                   <div
@@ -701,11 +727,11 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
             )}
           </div>
 
-          <div className="flex justify-end gap-2 pt-4">
+          <div className="flex flex-col sm:flex-row justify-end gap-2 pt-4">
             <Button
               type="button"
               variant="outline"
-              className="cursor-pointer"
+              className="cursor-pointer w-full sm:w-auto"
               onClick={() => router.push("/fishing-group")}
             >
               취소
@@ -713,7 +739,7 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="bg-primary text-white cursor-pointer"
+              className="bg-primary text-white cursor-pointer w-full sm:w-auto"
             >
               {isSubmitting ? "수정 중..." : "수정하기"}
             </Button>
