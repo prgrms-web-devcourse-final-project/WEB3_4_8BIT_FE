@@ -433,8 +433,7 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
                   </PopoverContent>
                 </Popover>
               </div>
-              <div className="flex gap-2 items-center relative">
-                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
+              <div className="flex gap-2 items-center">
                 <div className="relative w-[120px]">
                   <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
                   <select
@@ -468,19 +467,36 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
                     </svg>
                   </div>
                 </div>
-              </div>
-              <div className="relative">
-                <select
-                  value={selectedMinute}
-                  onChange={(e) => setSelectedMinute(e.target.value)}
-                  className="h-12 rounded-md border border-input bg-background px-3"
-                >
-                  {["00", "10", "20", "30", "40", "50"].map((minute) => (
-                    <option key={minute} value={minute}>
-                      {minute}분
-                    </option>
-                  ))}
-                </select>
+                <div className="relative w-[120px]">
+                  <select
+                    value={selectedMinute}
+                    onChange={(e) => setSelectedMinute(e.target.value)}
+                    className="h-12 w-full rounded-md border border-input bg-background pl-3 pr-8 cursor-pointer text-base appearance-none"
+                  >
+                    {["00", "10", "20", "30", "40", "50"].map((minute) => (
+                      <option key={minute} value={minute}>
+                        {minute}분
+                      </option>
+                    ))}
+                  </select>
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 12 12"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M2.5 4.5L6 8L9.5 4.5"
+                        stroke="#6B7280"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -645,7 +661,7 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
               <div className="flex flex-col items-center justify-center">
                 <Upload className="h-10 w-10 text-gray-400 mb-2" />
                 <p className="text-gray-500 mb-2">
-                  이미지를 드래그하여 업로드하거나 클릭하여 파일을 선택하세요
+                  이미지 파일을 선택해 업로드하세요
                 </p>
                 <p className="text-gray-500 mb-4">
                   (최대 10장까지 업로드 가능)
