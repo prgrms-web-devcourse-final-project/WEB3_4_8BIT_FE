@@ -22,6 +22,7 @@ import {
   ArrowLeft,
   Edit,
   Trash,
+  Heart,
 } from "lucide-react";
 import React from "react";
 import Link from "next/link";
@@ -37,6 +38,10 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
   const [participation, setParticipation] =
     useState<PostParticipationInfo | null>(null);
   const [isOwner, setIsOwner] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [showHearts, setShowHearts] = useState(false);
 
   // 참여 정보를 다시 불러오는 함수
   const fetchParticipationInfo = async () => {
@@ -79,6 +84,28 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
 
     fetchPostData();
   }, [postId]);
+
+  // 좋아요 토글 함수
+  const handleLikeToggle = () => {
+    setIsAnimating(true);
+    setIsLiked(!isLiked);
+    setLikeCount(isLiked ? likeCount - 1 : likeCount + 1);
+
+    // 좋아요를 누를 때만 하트 애니메이션 표시
+    if (!isLiked) {
+      setShowHearts(true);
+      setTimeout(() => {
+        setShowHearts(false);
+      }, 1000);
+    }
+
+    // 애니메이션 효과를 위한 타이머
+    setTimeout(() => {
+      setIsAnimating(false);
+    }, 500);
+
+    // 실제 API 연동은 나중에 구현
+  };
 
   if (loading) {
     return <div>게시글을 불러오는 중...</div>;
@@ -153,24 +180,46 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
                 <span>{new Date(post.createDate).toLocaleDateString()}</span>
               </div>
 
-              {isOwner && (
-                <div className="flex gap-2">
-                  <Link
-                    href={`/fishing-group/edit/${post.fishingTripPostId}`}
-                    className="text-blue-500 hover:underline inline-flex items-center"
-                  >
-                    <Edit className="w-3.5 h-3.5 mr-1" />
-                    수정
-                  </Link>
+              <div className="flex gap-2">
+                <div className="relative">
                   <button
-                    className="text-red-500 hover:underline inline-flex items-center"
-                    onClick={handleDeletePost}
+                    className={`inline-flex items-center cursor-pointer transition-all duration-300 ease-in-out ${
+                      isLiked ? "text-red-500" : "text-gray-500"
+                    } hover:text-red-600 hover:scale-110 active:scale-95`}
+                    onClick={handleLikeToggle}
                   >
-                    <Trash className="w-3.5 h-3.5 mr-1" />
-                    삭제
+                    <Heart
+                      className={`w-5 h-5 mr-1 cursor-pointer transition-all duration-300 ${
+                        isLiked ? "fill-current" : ""
+                      } ${isAnimating ? "animate-pulse" : ""}`}
+                    />
+                    <span className="text-base">{likeCount}</span>
                   </button>
+
+                  {isAnimating && (
+                    <div className="absolute inset-0 rounded-full bg-red-200 opacity-50 animate-ping"></div>
+                  )}
                 </div>
-              )}
+
+                {isOwner && (
+                  <>
+                    <Link
+                      href={`/fishing-group/edit/${post.fishingTripPostId}`}
+                      className="text-blue-500 hover:underline inline-flex items-center"
+                    >
+                      <Edit className="w-3.5 h-3.5 mr-1" />
+                      수정
+                    </Link>
+                    <button
+                      className="text-red-500 hover:underline inline-flex items-center"
+                      onClick={handleDeletePost}
+                    >
+                      <Trash className="w-3.5 h-3.5 mr-1" />
+                      삭제
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
 
             {post.fileUrlList && post.fileUrlList.length > 0 ? (
