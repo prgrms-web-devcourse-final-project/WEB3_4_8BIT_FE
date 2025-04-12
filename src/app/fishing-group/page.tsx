@@ -141,11 +141,11 @@ export default function FishingGroupPage() {
         </div>
 
         <div className="bg-white rounded-2xl p-5">
+          <TabSection onFilterChange={setActiveFilter} />
           <SearchBar
             handleSearch={handleSearch}
             onRegionChange={handleRegionChange}
           />
-          <TabSection onFilterChange={setActiveFilter} />
         </div>
 
         <div className="bg-white rounded-2xl p-6">

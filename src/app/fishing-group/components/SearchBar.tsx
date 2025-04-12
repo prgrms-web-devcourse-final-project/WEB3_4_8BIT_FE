@@ -1,6 +1,5 @@
 "use client";
 
-import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -51,12 +50,15 @@ export function SearchBar({
   };
 
   return (
-    <div className="w-full py-8 px-4">
+    <div className="w-full py-6 px-4">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row gap-4 items-center">
           <div className="w-full md:w-auto flex flex-col md:flex-row gap-4 flex-1">
             <Select value={selectedRegion} onValueChange={handleRegionChange}>
-              <SelectTrigger className="w-full md:w-[220px] h-12 bg-white border-gray-200 text-lg font-medium shadow-sm cursor-pointer">
+              <SelectTrigger
+                className="w-full md:w-[220px] bg-white border-gray-200 text-lg font-medium shadow-sm cursor-pointer"
+                style={{ height: "56px" }}
+              >
                 <SelectValue placeholder="지역을 선택하세요" />
               </SelectTrigger>
               <SelectContent
@@ -67,14 +69,14 @@ export function SearchBar({
                 sideOffset={4}
                 avoidCollisions={false}
               >
-                <SelectItem value="all" className="text-base py-3">
+                <SelectItem value="all" className="text-lg py-3">
                   전체 지역
                 </SelectItem>
                 {regions.map((region) => (
                   <SelectItem
                     key={region.regionId}
                     value={region.regionId}
-                    className="text-base py-2.5"
+                    className="text-lg py-2.5"
                   >
                     {region.regionName}
                   </SelectItem>
@@ -93,7 +95,7 @@ export function SearchBar({
                     handleSearch(searchTerm);
                   }
                 }}
-                className="w-full h-11 pl-12 pr-4 border border-gray-200 rounded-lg text-lg placeholder:text-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 shadow-sm"
+                className="w-full h-14 pl-12 pr-4 border border-gray-200 rounded-lg text-lg placeholder:text-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 shadow-sm"
               />
               <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
                 <svg
@@ -118,13 +120,13 @@ export function SearchBar({
           <div className="flex gap-3 w-full md:w-auto">
             <button
               onClick={() => handleSearch(searchTerm)}
-              className="flex-1 md:flex-none px-8 h-11 cursor-pointer bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-base font-medium transition-colors duration-200 flex items-center justify-center shadow-sm"
+              className="flex-1 md:flex-none px-8 h-14 cursor-pointer bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-base font-medium transition-colors duration-200 flex items-center justify-center shadow-sm"
             >
               검색
             </button>
             <Link
               href="/fishing-group/write"
-              className="flex-1 md:flex-none px-8 h-11 cursor-pointer bg-white text-blue-600 border-2 border-blue-500 rounded-lg hover:bg-blue-50 text-base font-medium transition-colors duration-200 flex items-center justify-center shadow-sm"
+              className="flex-1 md:flex-none px-8 h-14 cursor-pointer bg-white text-blue-600 border-2 border-blue-500 rounded-lg hover:bg-blue-50 text-base font-medium transition-colors duration-200 flex items-center justify-center shadow-sm"
             >
               + 글쓰기
             </Link>
