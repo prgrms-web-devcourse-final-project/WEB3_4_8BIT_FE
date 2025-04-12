@@ -20,6 +20,9 @@ export interface Post {
   fileUrlList: string[];
   imageUrl?: string;
   postStatus: "RECRUITING" | "COMPLETED";
+  likeCount: number;
+  isLiked: boolean;
+  isPostOwner: boolean;
 }
 
 // PostCard 컴포넌트에서 사용하는 인터페이스
