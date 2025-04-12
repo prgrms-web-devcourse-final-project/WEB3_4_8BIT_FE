@@ -41,7 +41,6 @@ export default function CommentItem({
     }
   };
 
-  // 날짜에서 시간 부분을 제거
   const formatDate = (dateString: string) => {
     return dateString.split("T")[0];
   };
@@ -85,13 +84,13 @@ export default function CommentItem({
               <div className="flex items-center space-x-2">
                 <button
                   onClick={startEditing}
-                  className="text-xs md:text-sm text-blue-500 hover:text-blue-700 cursor-pointer"
+                  className="text-sm text-blue-500 hover:text-blue-700 cursor-pointer"
                 >
                   수정
                 </button>
                 <button
                   onClick={() => onDeleteComment(comment.id)}
-                  className="text-xs md:text-sm text-red-500 hover:text-red-700 cursor-pointer"
+                  className="text-sm text-red-500 hover:text-red-700 cursor-pointer"
                 >
                   삭제
                 </button>
@@ -123,9 +122,7 @@ export default function CommentItem({
                 </div>
               </div>
             ) : (
-              <p className="text-sm md:text-base text-gray-800 break-words">
-                {comment.content}
-              </p>
+              <p className="text-gray-800 break-words">{comment.content}</p>
             )}
           </div>
           <div className="flex justify-between items-center mt-2 flex-wrap gap-2">
@@ -133,7 +130,7 @@ export default function CommentItem({
               {comment.childCount > 0 ? (
                 <button
                   onClick={() => onToggleReplies(comment.id)}
-                  className="flex items-center space-x-1 text-xs md:text-sm text-blue-500 hover:text-blue-700 cursor-pointer"
+                  className="flex items-center space-x-1 text-sm md:text-sm text-blue-500 hover:text-blue-700 cursor-pointer"
                 >
                   <span>
                     {isExpanded
@@ -175,7 +172,7 @@ export default function CommentItem({
               <ReplyForm
                 onSubmit={handleReplySubmit}
                 placeholder="답글을 입력하세요."
-                buttonText="답글 작성"
+                buttonText="등록"
               />
             </div>
           )}
@@ -187,7 +184,7 @@ export default function CommentItem({
                   <ReplyForm
                     onSubmit={handleReplySubmit}
                     placeholder="답글을 입력하세요."
-                    buttonText="답글 작성"
+                    buttonText="등록"
                   />
                 </div>
               )}
