@@ -22,24 +22,24 @@ export function TabSection({ onFilterChange }: TabSectionProps) {
     <Tabs
       value={activeTab}
       onValueChange={handleTabChange}
-      className="w-full mb-8"
+      className="w-full mb-2 mt-6"
     >
-      <TabsList className="w-full grid grid-cols-3 h-12 ">
+      <TabsList className="w-full flex h-12 border-b border-gray-200">
         <TabsTrigger
           value="all"
-          className="text-base rounded-none border-0 data-[state=active]:border-b-2 data-[state=active]:border-[#3795FF] data-[state=active]:text-[#3795FF] font-medium"
+          className="flex-1 text-lg font-medium text-gray-500 data-[state=active]:text-blue-600 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 transition-all duration-200 hover:text-blue-600"
         >
           전체
         </TabsTrigger>
         <TabsTrigger
           value="recruiting"
-          className="text-base rounded-none border-0 data-[state=active]:border-b-2 data-[state=active]:border-[#3795FF] data-[state=active]:text-[#3795FF] font-medium"
+          className="flex-1 text-lg font-medium text-gray-500 data-[state=active]:text-blue-600 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 transition-all duration-200 hover:text-blue-600"
         >
           모집중
         </TabsTrigger>
         <TabsTrigger
           value="completed"
-          className="text-base rounded-none border-0 data-[state=active]:border-b-2 data-[state=active]:border-[#3795FF] data-[state=active]:text-[#3795FF] font-medium"
+          className="flex-1 text-lg font-medium text-gray-500 data-[state=active]:text-blue-600 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 transition-all duration-200 hover:text-blue-600"
         >
           모집완료
         </TabsTrigger>

@@ -56,7 +56,7 @@ export function SearchBar({
         <div className="flex flex-col md:flex-row gap-4 items-center">
           <div className="w-full md:w-auto flex flex-col md:flex-row gap-4 flex-1">
             <Select value={selectedRegion} onValueChange={handleRegionChange}>
-              <SelectTrigger className="w-full md:w-[220px] h-12 bg-white border-gray-200 text-base font-medium shadow-sm cursor-pointer">
+              <SelectTrigger className="w-full md:w-[220px] h-12 bg-white border-gray-200 text-lg font-medium shadow-sm cursor-pointer">
                 <SelectValue placeholder="지역을 선택하세요" />
               </SelectTrigger>
               <SelectContent
@@ -93,7 +93,7 @@ export function SearchBar({
                     handleSearch(searchTerm);
                   }
                 }}
-                className="w-full h-11 pl-12 pr-4 border border-gray-200 rounded-lg text-base placeholder:text-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 shadow-sm"
+                className="w-full h-11 pl-12 pr-4 border border-gray-200 rounded-lg text-lg placeholder:text-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 shadow-sm"
               />
               <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
                 <svg
