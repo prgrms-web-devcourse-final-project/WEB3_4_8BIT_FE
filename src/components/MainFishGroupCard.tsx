@@ -7,7 +7,7 @@ import {GroupFishPost} from "@/lib/api/groupFishingAPI";
 export default function MainFishGroupCard({ height, postData } : {height: number, postData : GroupFishPost}) {
   return (
     <Link
-      href={`/fishing-group/${postData.fishingTripPostId}`}
+      href={`/fishing-group/post/${postData.fishingTripPostId}`}
       className={`relative overflow-hidden rounded-lg shadow-lg transition-transform duration-300 transform hover:scale-105`}
       style={{ height: `${height}px` }}
     >
