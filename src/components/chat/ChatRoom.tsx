@@ -8,10 +8,10 @@ import { ChatMessage } from "@/components/chat/ChatMessage";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import { ChatMessageResponse, ChatRoomData } from "@/types/Chat.types";
-import { ChatAPI } from "@/lib/api/chatAPI"; // ChatAPI에서 메시지 불러오기
+import { ChatAPI } from "@/lib/api/chatAPI";
 
 interface ChatRoomProps {
-  roomData: ChatRoomData; // roomData 안에는 roomId, targetName 등의 정보가 있어야 함
+  roomData: ChatRoomData;
   handleBackToList: () => void;
 }
 
@@ -73,8 +73,8 @@ export default function ChatRoom({ roomData, handleBackToList }: ChatRoomProps) 
       const messageRequest = {
         roomId: roomData.roomId,
         content: newMessage,
-        fileIds: previewImage ? [/* 이미지 업로드 후 해당 fileId를 여기에 넣을 수 있음 */] : [],
-        type: "TALK", // 필요에 따라 TEXT, IMAGE 등 다른 타입 지정 가능
+        fileIds: previewImage ? [/* 이미지 업로드 후 해당 fileIds*/] : [],
+        type: "TALK", // TEXT or IMAGE
       };
 
       stompClientRef.current.publish({
