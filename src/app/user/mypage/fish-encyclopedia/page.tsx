@@ -1,4 +1,4 @@
-export const dynamic = "force-dynamic";
+// export const dynamic = "force-dynamic";
 
 import { Badge } from "@/components/ui/badge";
 import { cookies } from "next/headers";

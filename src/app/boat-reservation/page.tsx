@@ -12,8 +12,14 @@ import { cookies } from "next/headers";
 async function getShipPosts(
   params?: ShipFishingPostParams
 ): Promise<ShipPostListAPIResponse> {
+  // const cookieStore = await cookies();
+  // const cookieHeader = cookieStore.toString();
+
   const cookieStore = await cookies();
-  const cookieHeader = cookieStore.toString();
+  const cookieEntries = cookieStore.getAll();
+  const cookieHeader = cookieEntries.map(cookie => `${cookie.name}=${cookie.value}`).join('; ');
+
+  console.log(cookieHeader);
 
   try {
     const token = process.env.NEXT_PUBLIC_API_TOKEN || "기본_토큰_값";
