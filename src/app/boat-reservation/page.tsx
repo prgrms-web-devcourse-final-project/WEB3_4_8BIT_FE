@@ -22,7 +22,7 @@ async function getShipPosts(
   console.log(cookieHeader);
 
   try {
-    const token = process.env.NEXT_PUBLIC_API_TOKEN || "기본_토큰_값";
+    const token = process.env.NEXT_PUBLIC_API_TOKEN || "default_token";
 
     const query = new URLSearchParams({
       order: params?.order || "desc",

@@ -23,7 +23,7 @@ async function getBoatPostDetail(
   const cookieStore = await cookies();
   const cookieHeader = cookieStore.toString();
 
-  const token = process.env.NEXT_PUBLIC_API_TOKEN || "기본_토큰_값";
+  const token = process.env.NEXT_PUBLIC_API_TOKEN || "default_token";
 
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/ship-fishing-posts/${id}`,
@@ -47,7 +47,7 @@ async function getReservationUnavailableDate(
   const cookieStore = await cookies();
   const cookieHeader = cookieStore.toString();
 
-  const token = process.env.NEXT_PUBLIC_API_TOKEN || "기본_토큰_값";
+  const token = process.env.NEXT_PUBLIC_API_TOKEN || "default_token";
   const date = dayjs().format("YYYY-MM-DD");
 
   const response = await fetch(

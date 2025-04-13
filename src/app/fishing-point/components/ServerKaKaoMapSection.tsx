@@ -6,7 +6,7 @@ import { FishingPointLocation } from "@/types/fishingPointLocationType";
 
 async function getLocation(): Promise<FishingPointLocation[]> {
   try {
-    const token = process.env.NEXT_PUBLIC_API_TOKEN || "기본_토큰_값";
+    const token = process.env.NEXT_PUBLIC_API_TOKEN || "default_token";
     // const cookieStore = await cookies();
     // const cookieHeader = cookieStore.toString();
 
