@@ -11,7 +11,7 @@ export const axiosInstance = axios.create({
 
 // 하드코딩된 토큰 (폴백용)
 const fallbackToken =
-  "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIyIiwiYXV0aCI6IlVTRVIiLCJlbWFpbCI6ImNqMjE3NEBuYXZlci5jb20iLCJpYXQiOjE3NDQzNDA4MDQsImV4cCI6MTc0NDQyNzIwNH0.3foq6L816Etco7d6RQq6s-auAUVZUJjwpSHhmKvOV2gTR56Vf6a1Ur5dAglmANqfzfPbhdfiBzNoRS6qMWXMvQ";
+  "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIyIiwiYXV0aCI6IkNBUFRBSU4iLCJlbWFpbCI6ImNqMjE3NEBuYXZlci5jb20iLCJpYXQiOjE3NDQ0NTY2OTUsImV4cCI6MTc0NDU0MzA5NX0.SA9hDHKI_GjHtetOWtcTgV3nqey9ezbYPEPwyEsqusTngLMLalGqiTW_2JPzXQzFSlm4xiEMN2L6iYtRjXbyBw";
 
 axiosInstance.interceptors.request.use(
   (config) => {
