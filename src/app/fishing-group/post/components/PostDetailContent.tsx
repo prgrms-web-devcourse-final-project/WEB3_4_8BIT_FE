@@ -101,7 +101,10 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
   // 좋아요 토글 함수 (낙관적 업데이트, 로깅 추가)
   const handleLikeToggle = async () => {
     try {
-      console.log("좋아요 토글 요청 시작:", { postId, currentIsLiked: isLiked });
+      console.log("좋아요 토글 요청 시작:", {
+        postId,
+        currentIsLiked: isLiked,
+      });
       // 현재 상태 저장 (실패 시 롤백용)
       const previousIsLiked = isLiked;
       const previousLikeCount = likeCount;
@@ -110,13 +113,17 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
       // 낙관적 업데이트: 즉시 UI 반영
       setIsAnimating(true);
       setIsLiked(newIsLiked);
-      setLikeCount(newIsLiked ? previousLikeCount + 1 : Math.max(0, previousLikeCount - 1));
-      setPost(prevPost => {
+      setLikeCount(
+        newIsLiked ? previousLikeCount + 1 : Math.max(0, previousLikeCount - 1)
+      );
+      setPost((prevPost) => {
         if (!prevPost) return prevPost;
         return {
           ...prevPost,
           isLiked: newIsLiked,
-          likeCount: newIsLiked ? previousLikeCount + 1 : Math.max(0, previousLikeCount - 1),
+          likeCount: newIsLiked
+            ? previousLikeCount + 1
+            : Math.max(0, previousLikeCount - 1),
         };
       });
 
@@ -134,7 +141,7 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
       if (!response.success) {
         setIsLiked(previousIsLiked);
         setLikeCount(previousLikeCount);
-        setPost(prevPost => {
+        setPost((prevPost) => {
           if (!prevPost) return prevPost;
           return {
             ...prevPost,
@@ -144,12 +151,11 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
         });
         toast.error(response.message || "좋아요 처리 중 오류가 발생했습니다.");
       }
-      
+
       // 애니메이션 효과 0.5초 후 해제
       setTimeout(() => {
         setIsAnimating(false);
       }, 500);
-      
     } catch (error) {
       console.error("좋아요 처리 중 오류:", error);
       toast.error("좋아요 처리 중 오류가 발생했습니다.");
