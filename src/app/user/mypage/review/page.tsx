@@ -1,23 +1,29 @@
+// export const dynamic = "force-dynamic";
+
 import type React from "react";
 import ReviewCard from "@/components/ReviewCard";
-import {cookies} from "next/headers";
-import {UserReview} from "@/types/user.interface";
+import { cookies } from "next/headers";
+import { UserReview } from "@/types/user.interface";
 
 export default async function Review() {
   const cookieStore = await cookies();
   const cookieHeader = cookieStore.toString();
 
-  const response = await fetch('https://api.mikki.kr/api/v1/members/reviews?size=999', {
-    headers: {
-      Cookie: cookieHeader,
-      // TODO 추후 쿠키로 통일해야함
-      Authorization : `${process.env.NEXT_ACCESS_TOKEN}`,
-    },
-    cache : 'no-cache',
-    next: { revalidate: 0 },
-  });
+  const response = await fetch(
+    "https://api.mikki.kr/api/v1/members/reviews?size=999",
+    {
+      headers: {
+        Cookie: cookieHeader,
+        // TODO 추후 쿠키로 통일해야함
+        Authorization: `${process.env.NEXT_ACCESS_TOKEN}`,
+        "Content-Type": "application/json; charset=utf-8",
+      },
+      cache: "no-cache",
+      next: { revalidate: 0 },
+    }
+  );
   const responseData = await response.json();
-  const reviews : UserReview[] = responseData.data.content;
+  const reviews: UserReview[] = responseData.data.content;
   console.log(reviews);
 
   return (
@@ -39,5 +45,5 @@ export default async function Review() {
         ))}
       </div>
     </div>
-  )
+  );
 }

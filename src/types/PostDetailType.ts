@@ -17,4 +17,7 @@ export interface PostData {
   latitude: number;
   fileUrlList: string[];
   postStatus: string;
+  likeCount: number;
+  isLiked: boolean;
+  isPostOwner: boolean;
 }

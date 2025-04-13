@@ -1,12 +1,12 @@
-'use client'
+"use client";
 
-import {Card, CardContent} from "@/components/ui/card";
-import { Button } from "@/components/ui/button"
-import {Star, Trash2} from "lucide-react";
-import React, {useEffect, useState} from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Star, Trash2 } from "lucide-react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import {UserAPI} from "@/lib/api/userAPI";
-import {useRouter} from "next/navigation";
+import { UserAPI } from "@/lib/api/userAPI";
+import { usePathname, useRouter } from "next/navigation";
 
 export default function ReviewCard({
   id,
@@ -15,18 +15,20 @@ export default function ReviewCard({
   content,
   images,
   rating,
-  enableDelete
+  enableDelete,
 }: {
   id: number;
-  user : string
-  date : string
-  content : string
-  images : string[]
-  rating : number
-  enableDelete? : boolean;
+  user: string;
+  date: string;
+  content: string;
+  images: string[];
+  rating: number;
+  enableDelete?: boolean;
 }) {
   const [isDeleted, setIsDeleted] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
+  const isShipReservation = pathname.includes("/boat-reservation");
 
   const handleDelete = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
@@ -41,7 +43,13 @@ export default function ReviewCard({
     } catch (error) {
       console.error(error);
     }
-  }
+  };
+
+  const handleClick = () => {
+    if (!isShipReservation) {
+      router.push(`/boat-reservation/${id}`);
+    }
+  };
 
   useEffect(() => {
     if (isDeleted) {
@@ -50,7 +58,10 @@ export default function ReviewCard({
   }, [isDeleted, router]);
 
   return (
-    <Card className="cursor-pointer" onClick={() => router.push(`/boat-reservation/${id}`)}>
+    <Card
+      className={`cursor-pointer ${isShipReservation ? "cursor-default" : ""}`}
+      onClick={handleClick}
+    >
       <CardContent className="p-6">
         <div className="flex justify-between items-start">
           <div className="flex items-center">
@@ -64,7 +75,9 @@ export default function ReviewCard({
                   <Star
                     key={i}
                     className={`h-5 w-5 ${
-                      i < rating ? "fill-amber-400 text-amber-400" : "text-gray-300"
+                      i < rating
+                        ? "fill-amber-400 text-amber-400"
+                        : "text-gray-300"
                     }`}
                   />
                 ))}
@@ -73,7 +86,11 @@ export default function ReviewCard({
             </div>
           </div>
           {enableDelete && (
-            <Button onClick={(event) => handleDelete(event)} variant="outline" className="gap-1 text-red-600 hover:text-red-700 hover:bg-red-50 cursor-pointer">
+            <Button
+              onClick={(event) => handleDelete(event)}
+              variant="outline"
+              className="gap-1 text-red-600 hover:text-red-700 hover:bg-red-50 cursor-pointer"
+            >
               <Trash2 className="h-4 w-4" /> 삭제
             </Button>
           )}
@@ -97,5 +114,5 @@ export default function ReviewCard({
         )}
       </CardContent>
     </Card>
-  )
+  );
 }

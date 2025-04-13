@@ -20,6 +20,12 @@ export interface Post {
   fileUrlList: string[];
   imageUrl?: string;
   postStatus: "RECRUITING" | "COMPLETED";
+  likeCount: number;
+  isLiked: boolean;
+  isPostOwner: boolean;
+  commentCount: number;
+  regionType: string | null;
+  regionId: number;
 }
 
 // PostCard 컴포넌트에서 사용하는 인터페이스
@@ -37,6 +43,9 @@ export interface PostCardProps {
   latitude?: number;
   longitude?: number;
   regionType?: string;
+  likeCount?: number;
+  isLiked?: boolean;
+  commentCount?: number;
 }
 
 export interface ApiResponseData {
@@ -111,58 +120,28 @@ export const createFishingPost = async (postData: CreateFishingPostParams) => {
 };
 
 // 게시글 수정 파라미터 인터페이스
-interface UpdateFishingPostParams
-  extends Omit<CreateFishingPostParams, "fishingPointId"> {
-  fishingTripPostId: number;
-  fishingPointId: number;
-  regionId: number;
+interface UpdateFishingPostParams {
+  subject: string;
+  content: string;
+  recruitmentCount: number;
+  isShipFish: boolean;
+  fishingDate: string;
   fileIdList?: number[];
 }
 
 // 게시글 수정
-export const updateFishingPost = async (postData: UpdateFishingPostParams) => {
+export const updateFishingPost = async (
+  fishingTripPostId: number,
+  postData: UpdateFishingPostParams
+) => {
   try {
-    const { fishingTripPostId, ...updateData } = postData;
-    console.log(`📝 수정 요청 URL: /fishing-trip-post/${fishingTripPostId}`);
-    console.log("📝 수정 요청 데이터:", updateData);
-
-    // 필수 필드 확인
-    const requiredFields = [
-      "subject",
-      "content",
-      "recruitmentCount",
-      "fishingDate",
-      "fishingPointId",
-      "regionId",
-    ] as const;
-    const missingFields = requiredFields.filter((field) => {
-      const value = updateData[field as keyof typeof updateData];
-      return value === undefined || value === null;
-    });
-
-    if (missingFields.length > 0) {
-      console.error("❌ 필수 필드 누락:", missingFields);
-      throw new Error(
-        `필수 필드가 누락되었습니다: ${missingFields.join(", ")}`
-      );
-    }
-
-    // fileIdList가 빈 배열이면 제거 (API에 따라 필요할 수 있음)
-    if (updateData.fileIdList && updateData.fileIdList.length === 0) {
-      console.log("⚠️ fileIdList가 비어있어 요청에서 제외합니다");
-      delete updateData.fileIdList;
-    }
-
-    // axios.patch의 URL을 직접 설정
-    const url = `/fishing-trip-post/${fishingTripPostId}`;
-    console.log("📝 최종 요청 URL:", url);
-    console.log("📝 최종 요청 데이터:", JSON.stringify(updateData));
-
-    const response = await axiosInstance.patch(url, updateData);
-    console.log("📝 게시글 수정 응답:", response.data);
+    const response = await axiosInstance.patch(
+      `/fishing-trip-post/${fishingTripPostId}`,
+      postData
+    );
     return response.data;
-  } catch (error: unknown) {
-    console.error("❌ 게시글 수정 중 오류:", error);
+  } catch (error) {
+    console.error("게시글 수정 중 오류:", error);
     throw error;
   }
 };

@@ -7,8 +7,6 @@ export default function MainFishList({
 }: {
   fishList: fishList[] | undefined;
 }) {
-  console.log(fishList);
-
   return (
     <div className="w-full p-[16px] mb-[32px]">
       <div className="mb-[28px]">

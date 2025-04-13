@@ -1,23 +1,28 @@
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import BoatCard from "@/components/BoatCard";
-import SearchBox from "@/app/boat-reservation/components/SearchBox";
+export const dynamic = "force-dynamic";
+
 import FilterBox from "@/app/boat-reservation/components/FilterBox";
 import {
   ShipFishingPostParams,
   ShipPostListAPIResponse,
 } from "@/types/boatPostType";
+import BoatList from "./components/BoatList";
+import SortBox from "./components/SortBox";
+import { cookies } from "next/headers";
 
 async function getShipPosts(
   params?: ShipFishingPostParams
 ): Promise<ShipPostListAPIResponse> {
+  // const cookieStore = await cookies();
+  // const cookieHeader = cookieStore.toString();
+
+  const cookieStore = await cookies();
+  const cookieEntries = cookieStore.getAll();
+  const cookieHeader = cookieEntries.map(cookie => `${cookie.name}=${cookie.value}`).join('; ');
+
+  console.log(cookieHeader);
+
   try {
-    const token = process.env.NEXT_PUBLIC_API_TOKEN || "기본_토큰_값";
+    const token = process.env.NEXT_PUBLIC_API_TOKEN || "default_token";
 
     const query = new URLSearchParams({
       order: params?.order || "desc",
@@ -25,7 +30,13 @@ async function getShipPosts(
       type: params?.type || "next",
       fieldValue: params?.fieldValue ?? "",
       id: params?.id?.toString() ?? "",
-      size: params?.size?.toString() || "10",
+      size: params?.size?.toString() || "4",
+      keyword: params?.keyword || "",
+      guestCount: params?.guestCount?.toString() || "",
+      minRating: params?.minRating?.toString() || "",
+      maxPrice: params?.maxPrice?.toString() || "",
+      fishId: params?.fishId?.toString() || "",
+      duration: params?.duration || "",
     });
 
     const response = await fetch(
@@ -35,21 +46,82 @@ async function getShipPosts(
       {
         cache: "no-store",
         headers: {
+          Cookie: cookieHeader,
           Authorization: token,
+          "Content-Type": "application/json; charset=utf-8",
         },
       }
     );
 
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error("선상 낚시 게시글 조회에 실패했습니다.", error);
+    console.error(error);
     throw error;
   }
 }
 
-export default async function BoatReservation() {
-  const shipPostsData = await getShipPosts();
+export default async function BoatReservation({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | string[] | undefined };
+}) {
+  const awaitedParams = await searchParams;
+
+  const params: ShipFishingPostParams = {
+    keyword:
+      typeof awaitedParams.keyword === "string" ? awaitedParams.keyword : "",
+    size: typeof awaitedParams.size === "string" ? +awaitedParams.size : 4,
+    guestCount:
+      typeof awaitedParams.guestCount === "string"
+        ? +awaitedParams.guestCount - 1
+        : undefined,
+    searchDate:
+      typeof awaitedParams.searchDate === "string"
+        ? awaitedParams.searchDate
+        : undefined,
+    minRating:
+      typeof awaitedParams.minRating === "string"
+        ? +awaitedParams.minRating
+        : undefined,
+    maxPrice:
+      typeof awaitedParams.maxPrice === "string"
+        ? +awaitedParams.maxPrice
+        : undefined,
+    fishId:
+      typeof awaitedParams.fishId === "string"
+        ? +awaitedParams.fishId
+        : undefined,
+    duration:
+      typeof awaitedParams.duration === "string"
+        ? awaitedParams.duration
+        : undefined,
+    order:
+      typeof awaitedParams.order === "string"
+        ? awaitedParams.order === "asc" || awaitedParams.order === "desc"
+          ? awaitedParams.order
+          : "desc"
+        : "desc",
+    sort:
+      typeof awaitedParams.sort === "string" ? awaitedParams.sort : "createdAt",
+    type:
+      typeof awaitedParams.type === "string"
+        ? awaitedParams.type === "next" || awaitedParams.type === "prev"
+          ? awaitedParams.type
+          : "next"
+        : "next",
+    fieldValue:
+      typeof awaitedParams.fieldValue === "string"
+        ? awaitedParams.fieldValue
+        : undefined,
+    id: typeof awaitedParams.id === "string" ? +awaitedParams.id : undefined,
+  };
+
+  const shipPostsData = await getShipPosts(params);
 
   return (
     <div className="min-h-screen">
@@ -63,32 +135,12 @@ export default async function BoatReservation() {
       </div>
 
       <div className="max-w-[1280px] mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        <SearchBox />
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           <FilterBox />
           <div className="lg:col-span-3 space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-xl font-bold">
-                검색 결과 ({shipPostsData.data.numberOfElements})
-              </h2>
-              <Select defaultValue="recommended">
-                <SelectTrigger className="w-[180px] cursor-pointer">
-                  <SelectValue placeholder="정렬 기준" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="recommended">추천순</SelectItem>
-                  <SelectItem value="price-low">가격 낮은순</SelectItem>
-                  <SelectItem value="price-high">가격 높은순</SelectItem>
-                  <SelectItem value="rating">평점 높은순</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <SortBox shipPostsData={shipPostsData} />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {shipPostsData.data.content.map((post) => (
-                <BoatCard key={post.shipFishingPostId} boatData={post} />
-              ))}
-            </div>
+            <BoatList shipPostsData={shipPostsData} />
           </div>
         </div>
       </div>

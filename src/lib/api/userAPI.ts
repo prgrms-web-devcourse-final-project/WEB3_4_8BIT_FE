@@ -86,6 +86,7 @@ export class UserAPI {
         params : {
           afterToday : afterToday,
           isConfirm : isConfirm,
+          sort: "createdAt",
           size : 10,
         }
       });
@@ -122,6 +123,7 @@ export class UserAPI {
         params : {
           status : status,
           size : 20,
+          sort: "createdAt",
         }
       });
       return response.data.data.content
@@ -147,6 +149,7 @@ export class UserAPI {
         params : {
           status : status,
           size : 20,
+          sort: "createdAt",
         }
       });
       return response.data.data.content
@@ -161,11 +164,13 @@ export class UserAPI {
     if(activityType === 'ALL') {
       params = {
         size : 20,
+        sort: "createdAt",
       }
     } else {
       params = {
         activityType : activityType,
         size : 20,
+        sort: "createdAt",
       }
     }
     try {

@@ -16,7 +16,6 @@ export default function TabFish({
 }: {
   fishNameList: PostDetailFish[];
 }) {
-  console.log(fishNameList);
   return (
     <Card>
       <CardHeader>

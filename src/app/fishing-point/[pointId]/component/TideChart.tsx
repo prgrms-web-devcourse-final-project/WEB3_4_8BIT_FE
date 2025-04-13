@@ -60,8 +60,6 @@ export default function TideChart({
           type: tide.hl_code,
         });
       });
-
-      console.log(tideChartData);
     }
 
     setChartData(tempTideData);

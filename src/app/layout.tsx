@@ -7,6 +7,8 @@ import Providers from "./providers";
 import Footer from "@/components/layout/Footer";
 import { Toaster } from "sonner";
 import { FloatingChatButton } from "@/components/chat/FloatingChatButton";
+import { cookies } from "next/headers";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -22,11 +24,15 @@ export const metadata: Metadata = {
   description: "낚시를 위한 종합 플랫폼",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("accessToken")?.value;
+  const isLoggedIn = !!token;
+
   return (
     <html lang="ko">
       <body
@@ -37,10 +43,10 @@ export default function RootLayout({
           strategy="beforeInteractive"
         />
         <Script
-          src={'//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js'}
+          src={"//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"}
           strategy="beforeInteractive"
         />
-        <Header />
+        <Header isLoggedIn={isLoggedIn} />
         <Providers>
           <main className="mt-[90px]">{children}</main>
           <FloatingChatButton />
