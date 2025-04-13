@@ -9,18 +9,10 @@ import { Button } from "@/components/ui/button";
 import { User } from "lucide-react";
 
 interface JoinInfoCardProps {
-  postId: number;
   recruitmentCount: number;
   currentCount: number;
-  fishingDate: string;
-  fishPointName: string;
-  fishPointDetailName: string;
-  postStatus: string;
-  longitude: number;
-  latitude: number;
   author: string;
   fishingTripPostId: number;
-  isOwner?: boolean;
   isApplicant?: boolean;
   participants: Array<{
     memberId: number;
@@ -31,18 +23,10 @@ interface JoinInfoCardProps {
 }
 
 export default function JoinInfoCard({
-  postId,
   recruitmentCount,
   currentCount,
-  fishingDate,
-  fishPointName,
-  fishPointDetailName,
-  postStatus,
-  longitude,
-  latitude,
   author,
   fishingTripPostId,
-  isOwner = false,
   isApplicant = false,
   participants,
   onApplicationSuccess,
@@ -59,9 +43,6 @@ export default function JoinInfoCard({
   // 모달 내부 폼 상태
   const [experience, setExperience] = useState("BEGINNER");
   const [applicationText, setApplicationText] = useState("");
-
-  // 현재 날짜 (YYYY-MM-DD)
-  const currentDate = new Date().toISOString().split("T")[0];
 
   const handleJoinSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -155,22 +136,6 @@ export default function JoinInfoCard({
           참여자 채팅방
         </button>
 
-        {/* 작성자 정보 */}
-        <div>
-          <h4 className="font-medium text-base mb-2 mt-4">작성자 정보</h4>
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200">
-              <div className="w-full h-full bg-gray-400 rounded-full" />
-            </div>
-            <div>
-              <p className="font-medium text-base text-gray-700">{author}</p>
-            </div>
-          </div>
-          <button className="w-full py-2 border border-gray-70 rounded-lg text-base hover:bg-gray-80 cursor-pointer">
-            1:1 채팅 보내기
-          </button>
-        </div>
-
         {/* 수정된 참여자 목록 */}
         <div className="mt-4">
           <h3 className="text-lg font-semibold mb-2">참여자 목록</h3>
@@ -201,6 +166,27 @@ export default function JoinInfoCard({
           ) : (
             <p className="text-gray-500">참여자가 없습니다.</p>
           )}
+
+          {/* 신청 현황 보기 버튼 추가 */}
+          <button className="w-full py-2 mt-3 border border-gray-70 rounded-lg text-base hover:bg-gray-80 cursor-pointer">
+            신청 현황 보기
+          </button>
+        </div>
+
+        {/* 작성자 정보 */}
+        <div>
+          <h4 className="font-medium text-base mb-2 mt-4">작성자 정보</h4>
+          <div className="flex items-center space-x-3 mb-4">
+            <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200">
+              <div className="w-full h-full bg-gray-400 rounded-full" />
+            </div>
+            <div>
+              <p className="font-medium text-base text-gray-700">{author}</p>
+            </div>
+          </div>
+          <button className="w-full py-2 border border-gray-70 rounded-lg text-base hover:bg-gray-80 cursor-pointer">
+            1:1 채팅 보내기
+          </button>
         </div>
       </div>
 

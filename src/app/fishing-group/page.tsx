@@ -7,7 +7,7 @@ import { TabSection } from "./components/TabSection";
 import { SearchBar } from "./components/SearchBar";
 import { PostList } from "./components/PostList";
 import { PostFilter } from "./components/TabSection";
-import Link from "next/link";
+
 
 // 테스트용 데이터
 const hotPosts = [
@@ -110,7 +110,6 @@ export default function FishingGroupPage() {
 
   return (
     <>
-      {/* Hero Section with Overlay */}
       <div className="w-full h-[500px] relative overflow-hidden">
         <Image
           src="/images/banner.jpg"
