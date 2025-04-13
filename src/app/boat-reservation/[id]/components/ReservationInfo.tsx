@@ -84,6 +84,7 @@ export default function ReservationInfo({
       toast.error("예약에 실패했습니다. 잠시 후 다시 시도해주세요.");
     }
   };
+  // @ts-ignore
   return (
     <Card className="shadow-lg">
       <CardHeader>
@@ -186,7 +187,7 @@ export default function ReservationInfo({
             <div className="space-y-2">
               <div className="flex justify-between">
                 <span>기본 요금 (1인)</span>
-                <span>₩{detailShip.price}</span>
+                <span>₩{detailShip.price.toLocaleString()}</span>
               </div>
               {selectedPeople > 1 && (
                 <div className="flex justify-between text-gray-600">
@@ -199,7 +200,7 @@ export default function ReservationInfo({
 
               <div className="flex justify-between font-bold text-lg">
                 <span>총 금액</span>
-                <span>₩{selectedPeople * detailShip.price}</span>
+                <span>₩{(selectedPeople * detailShip.price).toLocaleString()}</span>
               </div>
             </div>
           </>
