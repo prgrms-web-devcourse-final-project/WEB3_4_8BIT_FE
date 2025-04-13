@@ -42,7 +42,7 @@ async function getShipPosts(
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error("선상 낚시 게시글 조회에 실패했습니다.", error);
+    console.error(error);
     throw error;
   }
 }
