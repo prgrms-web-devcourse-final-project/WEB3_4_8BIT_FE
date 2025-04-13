@@ -1,20 +1,19 @@
 import type React from "react";
 import Link from "next/link";
-import { ChevronLeft, Star } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ChevronLeft } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PhoneInfo from "@/app/boat-reservation/[id]/components/PhoneInfo";
 import ReservationInfo from "@/app/boat-reservation/[id]/components/ReservationInfo";
 import TabDetail from "@/app/boat-reservation/[id]/components/TabDetail";
 import TabFish from "@/app/boat-reservation/[id]/components/TabFish";
 import TabWater from "@/app/boat-reservation/[id]/components/TabWater";
-import ReviewCard from "@/components/ReviewCard";
 import ImageGallery from "@/app/boat-reservation/[id]/components/ImageGallery";
 import {
   ReservationUnavailableDateAPIResponse,
   ShipFishingPostDetailAPIResponse,
 } from "@/types/boatPostType";
 import dayjs from "dayjs";
+import ReviewSection from "./components/ReviewSection";
 
 // 배 상세 정보 조회
 async function getBoatPostDetail(
@@ -65,41 +64,6 @@ export default async function BoatReservationDetail({
     params.id
   );
 
-  console.log(boatPostDetail);
-
-  // 리뷰 데이터
-  const reviews = [
-    {
-      id: "a",
-      user: "바다사랑",
-      date: "2023.10.15",
-      rating: 5,
-      content:
-        "정말 좋은 경험이었습니다. 선장님이 친절하시고 물고기도 많이 잡았어요. 특히 참돔 대물을 낚아서 기분이 좋았습니다. 다음에도 꼭 이용할 예정입니다.",
-      images: [
-        "/placeholder.svg?height=100&width=100",
-        "/placeholder.svg?height=100&width=100",
-      ],
-    },
-    {
-      id: "b",
-      user: "낚시초보",
-      date: "2023.10.08",
-      rating: 4,
-      content:
-        "처음 선상 낚시를 해봤는데 선장님이 친절하게 알려주셔서 즐겁게 낚시했습니다. 다만 배가 좀 흔들려서 멀미가 살짝 있었네요.",
-      images: [],
-    },
-    {
-      id: "c",
-      user: "물고기헌터",
-      date: "2023.09.25",
-      rating: 5,
-      content:
-        "여러 선상 낚시를 다녀봤지만 이곳이 가장 좋았습니다. 시설도 깨끗하고 물고기도 많이 잡혔어요. 특히 도시락이 맛있었습니다!",
-      images: ["/placeholder.svg?height=100&width=100"],
-    },
-  ];
   return (
     <div className="min-h-screen">
       <div className="max-w-[1280px] mx-auto py-8 px-4 sm:px-6 lg:px-8">
@@ -147,39 +111,10 @@ export default async function BoatReservationDetail({
               </TabsContent>
             </Tabs>
 
-            {/* 리뷰 */}
-            <div className="space-y-6">
-              <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold">리뷰 및 평점</h2>
-                <div className="flex items-center bg-sub-2 text-gray-30 px-3 py-1 rounded-full">
-                  <Star className="h-5 w-5 fill-amber-400 text-amber-400 mr-1" />
-                  <span className="font-semibold">
-                    {boatPostDetail.data.reviewEverRate}
-                  </span>
-                  <span className="text-sm font-medium text-gray-500 ml-1">
-                    ({reviews.length})
-                  </span>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                {reviews.map((review, index) => (
-                  <ReviewCard
-                    key={index}
-                    id={+review.id}
-                    user={review.user}
-                    date={review.date}
-                    content={review.content}
-                    images={review.images}
-                    rating={review.rating}
-                  />
-                ))}
-              </div>
-
-              <div className="text-center">
-                <Button variant="outline">모든 리뷰 보기</Button>
-              </div>
-            </div>
+            <ReviewSection
+              reviewEverRate={boatPostDetail.data.reviewEverRate}
+              shipFishingPostId={boatPostDetail.data.shipFishingPostId}
+            />
           </div>
 
           {/* 예약 관련 정보 */}

@@ -9,6 +9,7 @@ import {
 import { PostFilter } from "./TabSection";
 import { getRegions, getFishingRegion } from "@/lib/api/fishingPointAPI";
 import { FishingPointLocation } from "@/types/fishingPointLocationType";
+import { useQuery } from "@tanstack/react-query";
 
 interface PostListProps {
   filter: PostFilter;
@@ -27,50 +28,49 @@ export function PostList({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [regions, setRegions] = useState<FishingPointLocation[]>([]);
-  const [fishingPoints, setFishingPoints] = useState<{
-    [key: string]: number[];
-  }>({});
 
-  // 지역 정보 가져오기
-  useEffect(() => {
-    const fetchRegions = async () => {
+  // 지역 정보를 TanStack Query로 가져오기
+  const { data: regionsData = [] } = useQuery<FishingPointLocation[]>({
+    queryKey: ["regions"],
+    queryFn: async () => {
       try {
-        const regionsData = await getRegions();
-        setRegions(regionsData);
-
-        // 각 지역의 낚시 포인트 정보 미리 가져오기
-        const pointsMap: { [key: string]: number[] } = {};
-        for (const region of regionsData) {
-          try {
-            const points = await getFishingRegion(region.regionId);
-            pointsMap[region.regionId] = points.map(
-              (point) => point.fishPointId
-            );
-          } catch (error) {
-            console.error(
-              `지역 ${region.regionId}의 낚시 포인트를 가져오는데 실패했습니다:`,
-              error
-            );
-            pointsMap[region.regionId] = [];
-          }
-        }
-        setFishingPoints(pointsMap);
+        const regions = await getRegions();
+        return regions;
       } catch (error) {
         console.error("지역 정보를 불러오는데 실패했습니다:", error);
+        return [];
       }
-    };
+    },
+    staleTime: Infinity,
+    gcTime: 1000 * 60 * 60 * 24 * 7,
+  });
 
-    fetchRegions();
-  }, []);
+  useQuery<{ [key: string]: number[] }>({
+    queryKey: ["fishingPoints", regionsData.map((region) => region.regionId)],
+    queryFn: async () => {
+      const pointsMap: { [key: string]: number[] } = {};
+
+      for (const region of regionsData) {
+        try {
+          const points = await getFishingRegion(region.regionId);
+          pointsMap[region.regionId] = points.map((point) => point.fishPointId);
+        } catch (error) {
+          console.error(
+            `지역 ${region.regionId}의 낚시 포인트를 가져오는데 실패했습니다:`,
+            error
+          );
+          pointsMap[region.regionId] = [];
+        }
+      }
+
+      return pointsMap;
+    },
+    enabled: regionsData.length > 0,
+    staleTime: Infinity,
+    gcTime: 1000 * 60 * 60 * 24 * 7,
+  });
 
   const loadAllPosts = async () => {
-    console.log("=== loadAllPosts 함수 실행 ===");
-    console.log("API 요청 파라미터:", {
-      filter,
-      searchKeyword,
-      selectedRegion,
-    });
     try {
       setIsLoading(true);
       setLoading(true);
@@ -93,22 +93,21 @@ export function PostList({
         regionId: selectedRegion !== "all" ? selectedRegion : undefined,
       };
 
-      console.log("=== 게시물 로드 시작 ===");
-      console.log("선택된 지역 ID:", selectedRegion);
-      console.log("API 요청 파라미터:", JSON.stringify(params, null, 2));
-
       const response = await getFishingPostsByCursor(params);
-      console.log("API 응답:", JSON.stringify(response, null, 2));
 
       if (response.success) {
         const allPosts = response.data.content;
-        console.log("필터링된 게시물 수:", allPosts?.length || 0);
-        console.log("=== 게시물 로드 완료 ===");
+        console.log(
+          `게시물 ${
+            allPosts?.length || 0
+          }개를 불러왔습니다. (필터: ${filter}, 검색어: ${
+            searchKeyword || "없음"
+          }, 지역: ${selectedRegion})`
+        );
 
         if (allPosts && allPosts.length > 0) {
           setPosts(allPosts);
         } else {
-          console.log("게시물이 없습니다.");
           setPosts([]);
         }
       }
@@ -122,10 +121,6 @@ export function PostList({
   };
 
   useEffect(() => {
-    console.log("=== PostList useEffect 트리거 ===");
-    console.log("현재 필터:", filter);
-    console.log("현재 검색어:", searchKeyword);
-    console.log("현재 선택된 지역:", selectedRegion);
     setPosts([]);
     loadAllPosts();
   }, [filter, searchKeyword, selectedRegion]);

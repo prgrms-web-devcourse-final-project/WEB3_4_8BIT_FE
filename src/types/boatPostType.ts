@@ -43,6 +43,13 @@ export interface ShipFishingPostParams {
   fieldValue?: string;
   id?: number;
   size?: number;
+  keyword?: string;
+  guestCount?: number;
+  searchDate?: string;
+  minRating?: number;
+  maxPrice?: number;
+  fishId?: number;
+  duration?: string;
 }
 
 export interface PostDetailMember {

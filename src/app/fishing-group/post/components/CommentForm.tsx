@@ -18,21 +18,18 @@ export default function CommentForm({
   };
 
   return (
-    <div className="mb-6 p-4 border border-gray-200 rounded-lg shadow-sm">
-      <label className="block text-lg font-medium text-gray-800 mb-2">
-        댓글 작성
-      </label>
+    <div className="w-full mb-4 p-3 border border-gray-200 rounded-lg bg-white">
       <textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}
         placeholder={placeholder}
-        className="w-full p-2 border border-gray-300 rounded-md text-gray-800 bg-white"
+        className="w-full p-2 border border-gray-300 rounded-md text-sm md:text-base bg-white resize-none"
         rows={3}
       />
       <div className="flex justify-end mt-2">
         <button
           onClick={handleSubmit}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 cursor-pointer"
+          className="px-3 py-1.5 bg-blue-500 text-white text-sm md:text-base rounded hover:bg-blue-600 cursor-pointer transition-colors"
         >
           {buttonText}
         </button>
