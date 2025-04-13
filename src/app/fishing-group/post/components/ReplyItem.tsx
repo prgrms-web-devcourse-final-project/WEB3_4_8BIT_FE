@@ -28,7 +28,6 @@ export default function ReplyItem({
     setIsEditing(false);
   };
 
-  // 날짜에서 시간 부분을 제거
   const formatDate = (dateString: string) => {
     return dateString.split("T")[0];
   };
@@ -70,13 +69,13 @@ export default function ReplyItem({
                 <>
                   <button
                     onClick={startEditing}
-                    className="text-sm text-blue-500 hover:text-blue-700 cursor-pointer"
+                    className="text-sm md:text-xs text-blue-500 hover:text-blue-700 cursor-pointer"
                   >
                     수정
                   </button>
                   <button
                     onClick={() => onDelete(reply.id)}
-                    className="text-sm text-red-500 hover:text-red-700 cursor-pointer"
+                    className="text-sm md:text-xs text-red-500 hover:text-red-700 cursor-pointer"
                   >
                     삭제
                   </button>
