@@ -46,7 +46,6 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
     try {
       console.log("참여 정보 조회 시작: postId=", postId);
       const participationResponse = await getPostParticipation(postId);
-
       if (participationResponse.success) {
         setParticipation(participationResponse.data);
         setIsOwner(participationResponse.data.isCurrentUserOwner);
@@ -59,14 +58,30 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
     }
   };
 
+  // 서버에서 게시글 최신 데이터를 불러와 콘솔로 출력
+  const logLatestPostData = async () => {
+    try {
+      const updatedResponse = await getFishingPost(postId);
+      if (updatedResponse.success) {
+        console.log("최신 서버 게시글 데이터:", updatedResponse.data);
+      } else {
+        console.error("최신 서버 데이터 조회 실패:", updatedResponse);
+      }
+    } catch (err) {
+      console.error("최신 서버 데이터 조회 오류:", err);
+    }
+  };
+
   useEffect(() => {
     const fetchPostData = async () => {
       try {
         setLoading(true);
         const postResponse = await getFishingPost(postId);
-
         if (postResponse.success) {
           setPost(postResponse.data);
+          // 좋아요 상태 초기화
+          setIsLiked(postResponse.data.isLiked);
+          setLikeCount(postResponse.data.likeCount);
           await fetchParticipationInfo(); // 참여 정보 초기 로딩
           setError(null);
         } else {
@@ -83,56 +98,73 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
     fetchPostData();
   }, [postId]);
 
-  // 좋아요 토글 함수
+  // 좋아요 토글 함수 (낙관적 업데이트, 로깅 추가)
   const handleLikeToggle = async () => {
     try {
+      console.log("좋아요 토글 요청 시작:", { postId, currentIsLiked: isLiked });
+      // 현재 상태 저장 (실패 시 롤백용)
+      const previousIsLiked = isLiked;
+      const previousLikeCount = likeCount;
+      const newIsLiked = !previousIsLiked;
+
+      // 낙관적 업데이트: 즉시 UI 반영
+      setIsAnimating(true);
+      setIsLiked(newIsLiked);
+      setLikeCount(newIsLiked ? previousLikeCount + 1 : Math.max(0, previousLikeCount - 1));
+      setPost(prevPost => {
+        if (!prevPost) return prevPost;
+        return {
+          ...prevPost,
+          isLiked: newIsLiked,
+          likeCount: newIsLiked ? previousLikeCount + 1 : Math.max(0, previousLikeCount - 1),
+        };
+      });
+
+      // API 호출: 좋아요 토글
       const response = await toggleLike({
         targetType: "FISHING_TRIP_POST",
         targetId: postId,
       });
+      console.log("서버 응답:", response);
 
-      if (response.success) {
-        setIsAnimating(true);
-        setIsLiked(!isLiked);
-        setLikeCount(isLiked ? likeCount - 1 : likeCount + 1);
+      // 로깅: 변경 후 서버에 저장된 최신 좋아요 데이터 확인
+      await logLatestPostData();
 
-        // 애니메이션 효과를 위한 타이머
-        setTimeout(() => {
-          setIsAnimating(false);
-        }, 500);
-      } else {
+      // API 요청 실패 시, 이전 상태로 롤백
+      if (!response.success) {
+        setIsLiked(previousIsLiked);
+        setLikeCount(previousLikeCount);
+        setPost(prevPost => {
+          if (!prevPost) return prevPost;
+          return {
+            ...prevPost,
+            isLiked: previousIsLiked,
+            likeCount: previousLikeCount,
+          };
+        });
         toast.error(response.message || "좋아요 처리 중 오류가 발생했습니다.");
       }
+      
+      // 애니메이션 효과 0.5초 후 해제
+      setTimeout(() => {
+        setIsAnimating(false);
+      }, 500);
+      
     } catch (error) {
       console.error("좋아요 처리 중 오류:", error);
       toast.error("좋아요 처리 중 오류가 발생했습니다.");
+      setIsAnimating(false);
+      // 네트워크 오류 등 발생 시에도 상태 롤백 가능
     }
   };
-
-  if (loading) {
-    return <div>게시글을 불러오는 중...</div>;
-  }
-
-  if (error) {
-    return <div>{error}</div>;
-  }
-
-  if (!post) {
-    return <div>게시글을 찾을 수 없습니다.</div>;
-  }
-
-  const isRecruiting = post.postStatus === "RECRUITING";
 
   // 게시글 삭제 처리 함수
   const handleDeletePost = async () => {
     if (!confirm("정말로 이 게시글을 삭제하시겠습니까?")) {
       return;
     }
-
     try {
-      // 게시글 삭제 API 호출
       const response = await deleteFishingPost(postId);
-
       if (response.success) {
         toast.success("게시글이 삭제되었습니다.");
         router.push("/fishing-group");
@@ -144,6 +176,18 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
       toast.error("게시글 삭제 중 오류가 발생했습니다.");
     }
   };
+
+  if (loading) {
+    return <div>게시글을 불러오는 중...</div>;
+  }
+  if (error) {
+    return <div>{error}</div>;
+  }
+  if (!post) {
+    return <div>게시글을 찾을 수 없습니다.</div>;
+  }
+
+  const isRecruiting = post.postStatus === "RECRUITING";
 
   return (
     <div className="max-w-screen-xl mx-auto px-4 pt-[50px]">
@@ -226,7 +270,6 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
                     />
                     <span className="text-base">{likeCount}</span>
                   </button>
-
                   {isAnimating && (
                     <div className="absolute inset-0 rounded-full bg-red-200 opacity-50 animate-ping"></div>
                   )}
