@@ -14,11 +14,15 @@ import {
 } from "@/types/boatPostType";
 import dayjs from "dayjs";
 import ReviewSection from "./components/ReviewSection";
+import { cookies } from "next/headers";
 
 // 배 상세 정보 조회
 async function getBoatPostDetail(
   id: string
 ): Promise<ShipFishingPostDetailAPIResponse> {
+  const cookieStore = await cookies();
+  const cookieHeader = cookieStore.toString();
+
   const token = process.env.NEXT_PUBLIC_API_TOKEN || "기본_토큰_값";
 
   const response = await fetch(
@@ -26,6 +30,7 @@ async function getBoatPostDetail(
     {
       cache: "no-store",
       headers: {
+        Cookie: cookieHeader,
         Authorization: token,
       },
     }
@@ -38,6 +43,9 @@ async function getBoatPostDetail(
 async function getReservationUnavailableDate(
   id: string
 ): Promise<ReservationUnavailableDateAPIResponse> {
+  const cookieStore = await cookies();
+  const cookieHeader = cookieStore.toString();
+
   const token = process.env.NEXT_PUBLIC_API_TOKEN || "기본_토큰_값";
   const date = dayjs().format("YYYY-MM-DD");
 
@@ -46,6 +54,7 @@ async function getReservationUnavailableDate(
     {
       cache: "no-store",
       headers: {
+        Cookie: cookieHeader,
         Authorization: token,
       },
     }
