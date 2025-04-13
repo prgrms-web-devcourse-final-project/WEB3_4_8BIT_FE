@@ -14,6 +14,7 @@ export default async function FishEncyclopedia() {
         Cookie: cookieHeader,
         // TODO 추후 쿠키로 통일해야함
         Authorization: `${process.env.NEXT_ACCESS_TOKEN}`,
+        "Content-Type": "application/json; charset=utf-8",
       },
     }
   );

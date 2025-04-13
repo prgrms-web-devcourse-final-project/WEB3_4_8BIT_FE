@@ -40,9 +40,14 @@ async function getShipPosts(
         headers: {
           Cookie: cookieHeader,
           Authorization: token,
+          "Content-Type": "application/json; charset=utf-8",
         },
       }
     );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
 
     const data = await response.json();
     return data;
