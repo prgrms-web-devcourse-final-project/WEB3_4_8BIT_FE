@@ -64,8 +64,6 @@ export default async function BoatReservationDetail({
     params.id
   );
 
-  console.log(boatPostDetail);
-
   return (
     <div className="min-h-screen">
       <div className="max-w-[1280px] mx-auto py-8 px-4 sm:px-6 lg:px-8">
