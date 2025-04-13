@@ -3,22 +3,13 @@
 import { Calendar, MapPin, UserRound } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-
-interface PostCardProps {
-  fishingTripPostId: number;
-  title: string;
-  content: string;
-  date: string;
-  location: string;
-  recruitmentCount: number;
-  fishPointName: string;
-  fileUrlList?: string[];
-  imageUrl?: string;
-  postStatus: string;
-  latitude?: number;
-  longitude?: number;
-  regionType?: string;
-}
+import { getRegions, getFishingRegion } from "@/lib/api/fishingPointAPI";
+import { PostCardProps } from "@/lib/api/fishingPostAPI";
+import { convertRegionTypeToKorean } from "@/lib/utils/regionUtils";
+import {
+  FishingPoint,
+  FishingPointLocation,
+} from "@/types/fishingPointLocationType";
 
 export function PostCard({
   fishingTripPostId,
@@ -46,6 +37,40 @@ export function PostCard({
   // 지도 표시 여부 상태
   const [showMap, setShowMap] = useState(false);
   const mapRef = useRef<HTMLDivElement>(null);
+
+  // 지역 정보 상태
+  const [regionData, setRegionData] = useState<{
+    regions: FishingPointLocation[];
+    fishingRegion: FishingPoint[];
+  } | null>(null);
+
+  // 지역 정보 가져오기
+  useEffect(() => {
+    const fetchRegionData = async () => {
+      try {
+        if (latitude && longitude) {
+          const regions = await getRegions();
+          // 위도/경도로 가장 가까운 지역을 찾아서 해당 지역 ID로 낚시 포인트를 조회
+          const nearestRegion = regions.find(
+            (region) =>
+              Math.abs(region.latitude - latitude) < 0.1 &&
+              Math.abs(region.longitude - longitude) < 0.1
+          );
+
+          if (nearestRegion) {
+            const fishingRegion = await getFishingRegion(
+              nearestRegion.regionId
+            );
+            setRegionData({ regions, fishingRegion });
+          }
+        }
+      } catch (error) {
+        console.error("지역 정보를 가져오는 중 오류 발생:", error);
+      }
+    };
+
+    fetchRegionData();
+  }, [latitude, longitude]);
 
   // 지도 초기화 함수
   useEffect(() => {
@@ -135,7 +160,7 @@ export function PostCard({
           <div className="flex-1 min-w-0 flex flex-col justify-between">
             <div className="space-y-3">
               {/* 모집 상태 & 제목 */}
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
                 <span
                   className={`px-2 py-1 text-sm rounded-full ${
                     postStatus === "RECRUITING"
@@ -145,6 +170,11 @@ export function PostCard({
                 >
                   {displayStatusText}
                 </span>
+                {regionType && (
+                  <span className="text-blue-500 text-lg">
+                    [{convertRegionTypeToKorean(regionType)}]
+                  </span>
+                )}
                 <h3 className="text-lg font-medium text-gray-900">{title}</h3>
               </div>
 
@@ -171,10 +201,23 @@ export function PostCard({
                   onClick={handleLocationClick}
                 >
                   <MapPin size={16} />
+                  <span className="flex items-center gap-1">장소:</span>{" "}
                   {location}
                   {regionType && (
-                    <span className="text-gray-500 ml-1">{regionType}</span>
+                    <span className="text-gray-500 ml-0.5">
+                      {convertRegionTypeToKorean(regionType)}
+                    </span>
                   )}
+                  {regionData?.fishingRegion &&
+                    regionData.fishingRegion.length > 0 && (
+                      <span className="text-blue-500 ml-0.5">
+                        (지역:{" "}
+                        {regionType
+                          ? convertRegionTypeToKorean(regionType)
+                          : "알 수 없음"}
+                        )
+                      </span>
+                    )}
                 </span>
               </div>
             </div>

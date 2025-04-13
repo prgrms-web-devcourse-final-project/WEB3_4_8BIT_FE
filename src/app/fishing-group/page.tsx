@@ -95,10 +95,16 @@ const hotPosts = [
 export default function FishingGroupPage() {
   const [activeFilter, setActiveFilter] = useState<PostFilter>("all");
   const [searchKeyword, setSearchKeyword] = useState<string>("");
+  const [selectedRegion, setSelectedRegion] = useState<string>("all");
 
   const handleSearch = (searchTerm: string) => {
     console.log("검색어:", searchTerm);
     setSearchKeyword(searchTerm);
+  };
+
+  const handleRegionChange = (regionId: string) => {
+    console.log("선택된 지역:", regionId);
+    setSelectedRegion(regionId);
   };
 
   return (
@@ -116,9 +122,16 @@ export default function FishingGroupPage() {
 
       <div className="container mx-auto px-4 py-8">
         <HotPost />
-        <SearchBar handleSearch={handleSearch} />
+        <SearchBar
+          handleSearch={handleSearch}
+          onRegionChange={handleRegionChange}
+        />
         <TabSection onFilterChange={setActiveFilter} />
-        <PostList filter={activeFilter} searchKeyword={searchKeyword} />
+        <PostList
+          filter={activeFilter}
+          searchKeyword={searchKeyword}
+          selectedRegion={selectedRegion}
+        />
       </div>
     </>
   );

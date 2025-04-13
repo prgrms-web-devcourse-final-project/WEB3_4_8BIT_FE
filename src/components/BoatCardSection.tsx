@@ -5,10 +5,11 @@ import Link from "next/link";
 import { Anchor } from "lucide-react";
 import BoatCard from "@/components/BoatCard";
 import {useQuery} from "@tanstack/react-query";
-import {BoatFishing, getLowestPriceBoatFishing} from "@/lib/api/boatFishAPI";
+import {getLowestPriceBoatFishing} from "@/lib/api/boatFishAPI";
+import {ShipPostData} from "@/types/boatPostType";
 
 export default function BoatCardSection() {
-  const { data, isSuccess } = useQuery<BoatFishing[]>({
+  const { data, isSuccess } = useQuery<ShipPostData[]>({
     queryKey: ['lowestPriceBoatReservations'],
     queryFn: getLowestPriceBoatFishing,
     staleTime: 1000 * 60 * 5,

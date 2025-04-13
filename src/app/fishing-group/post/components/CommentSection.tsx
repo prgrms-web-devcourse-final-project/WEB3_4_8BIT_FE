@@ -1,81 +1,189 @@
 "use client";
 
-import { useState } from "react";
-import Image from "next/image";
+import { useEffect, useState } from "react";
+import { getComments } from "@/lib/api/fishingPostAPI";
+import { axiosInstance } from "@/lib/api/axiosInstance";
+import { Comment } from "@/types/comment";
+import CommentItem from "./CommentItem";
+import ReplyItem from "./ReplyItem";
+import CommentForm from "./CommentForm";
+import { useCommentMutations } from "../hooks/useCommentMutations";
 
-export interface Comment {
-  id: string;
-  author: string;
+interface ApiComment {
+  commentId: number;
+  nickname: string;
   content: string;
-  date: string;
+  createdAt: string;
   isAuthor: boolean;
-  authorImageUrl?: string; // 프로필 이미지 URL 추가
+  authorProfileImg?: string;
+  replies?: ApiComment[];
+  childCount: number;
 }
 
 interface CommentSectionProps {
-  comments: Comment[];
+  postId: string;
 }
 
-export default function CommentSection({ comments }: CommentSectionProps) {
-  const [newComment, setNewComment] = useState("");
+export default function CommentSection({ postId }: CommentSectionProps) {
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [expandedReplies, setExpandedReplies] = useState<
+    Record<string, boolean>
+  >({});
 
-  const handleCommentSubmit = () => {
-    // 실제 API 연동 시 댓글 전송 로직 추가
-    console.log("새 댓글:", newComment);
-    setNewComment("");
+  // 부모 댓글 불러오기
+  const fetchParentComments = async (): Promise<Comment[]> => {
+    try {
+      const parentComments = await getComments(Number(postId));
+      const formattedComments = parentComments.map((comment: ApiComment) => ({
+        id: comment.commentId.toString(),
+        author: comment.nickname,
+        content: comment.content,
+        date: comment.createdAt,
+        isAuthor: comment.isAuthor,
+        authorImageUrl: comment.authorProfileImg,
+        childCount: comment.childCount,
+        replies: [],
+      }));
+      return formattedComments;
+    } catch (error) {
+      console.error("부모 댓글 불러오기 실패:", error);
+      return [];
+    }
+  };
+
+  // 대댓글 불러오기
+  const fetchChildComments = async (parentId: string) => {
+    try {
+      const response = await axiosInstance.get(
+        `/fishing-trip-post/${postId}/comment`,
+        {
+          params: {
+            size: 10,
+            parentId: Number(parentId),
+            order: "asc",
+            sort: "createdAt",
+          },
+        }
+      );
+      const childComments = response.data.data.content;
+      const formattedReplies = childComments.map((reply: ApiComment) => ({
+        id: reply.commentId.toString(),
+        author: reply.nickname,
+        content: reply.content,
+        date: reply.createdAt,
+        isAuthor: reply.isAuthor,
+        authorImageUrl: reply.authorProfileImg,
+      }));
+
+      // 기존 댓글 목록을 유지하면서 특정 댓글의 답글만 업데이트
+      setComments((prevComments) =>
+        prevComments.map((comment) =>
+          comment.id === parentId
+            ? { ...comment, replies: formattedReplies }
+            : comment
+        )
+      );
+    } catch (error) {
+      console.error("대댓글 불러오기 실패:", error);
+    }
+  };
+
+  // 부모 댓글과 대댓글 모두 불러오기
+  const fetchData = async () => {
+    const parentComments = await fetchParentComments();
+
+    // 기존 댓글 목록과 새 댓글 목록을 비교하여 변경된 부분만 업데이트
+    setComments((prevComments) => {
+      // 새 댓글 목록에서 기존 댓글의 답글 정보를 유지
+      const updatedComments = parentComments.map((newComment) => {
+        const existingComment = prevComments.find(
+          (c) => c.id === newComment.id
+        );
+        return existingComment
+          ? { ...newComment, replies: existingComment.replies }
+          : newComment;
+      });
+
+      return updatedComments;
+    });
+
+    // 대댓글이 있는 댓글들의 답글을 불러옵니다
+    parentComments.forEach((comment) => {
+      if (comment.childCount > 0) {
+        fetchChildComments(comment.id);
+      }
+    });
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [postId]);
+
+  // 커스텀 훅을 사용하여 mutation 로직 분리
+  const {
+    handleCommentSubmit,
+    handleReplySubmit,
+    handleUpdateComment,
+    handleDeleteComment,
+  } = useCommentMutations({
+    postId,
+    setComments,
+    setExpandedReplies,
+    fetchData,
+  });
+
+  // 토글 버튼으로 대댓글 영역 펼치기/접기
+  const toggleReplies = (commentId: string) => {
+    setExpandedReplies((prev) => ({
+      ...prev,
+      [commentId]: !prev[commentId],
+    }));
   };
 
   return (
-    <div className="bg-white rounded-lg shadow p-4 space-y-4 border border-gray-70">
-      <h3 className="text-lg font-bold">댓글 {comments?.length || 0}개</h3>
+    <div className="w-full my-6 p-4">
+      <h3 className="text-xl font-bold mb-4 text-gray-900">
+        댓글 ({comments.length})
+      </h3>
+
+      {/* 댓글 작성 영역 */}
+      <CommentForm onSubmit={handleCommentSubmit} />
+
+      {/* 댓글 목록 */}
       <div className="space-y-4">
-        {comments?.map((comment) => (
-          <div key={comment.id} className="border-b border-gray-200 pb-2">
-            <div className="flex items-start space-x-3">
-              {/* 프로필 이미지 표시 */}
-              <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200">
-                {comment.authorImageUrl ? (
-                  <Image
-                    src={comment.authorImageUrl}
-                    alt={comment.author}
-                    className="object-cover w-full h-full"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gray-400 rounded-full" />
-                )}
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center justify-between">
-                  <span className="font-medium text-base">
-                    {comment.author}
-                  </span>
-                  <span className="text-xs text-gray-400">{comment.date}</span>
-                </div>
-                <p className="text-base text-gray-700">{comment.content}</p>
-              </div>
-            </div>
-          </div>
-        ))}
-        {(!comments || comments.length === 0) && (
-          <div className="text-gray-500 text-sm">
-            아직 작성된 댓글이 없습니다.
+        {comments.length === 0 && (
+          <div className="flex justify-center items-center py-8">
+            <p className="text-gray-700 text-center">
+              아직 작성된 댓글이 없습니다.
+            </p>
           </div>
         )}
-      </div>
-      <div className="pt-4">
-        <textarea
-          value={newComment}
-          onChange={(e) => setNewComment(e.target.value)}
-          placeholder="댓글을 작성해주세요"
-          className="w-full border border-gray-300 rounded p-2 text-base"
-          rows={3}
-        />
-        <button
-          onClick={handleCommentSubmit}
-          className="mt-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-[#2f8ae0] cursor-pointer"
-        >
-          댓글 작성
-        </button>
+        {comments.map((comment) => (
+          <CommentItem
+            key={comment.id}
+            comment={comment}
+            isAuthor={comment.isAuthor}
+            onUpdateComment={handleUpdateComment}
+            onDeleteComment={handleDeleteComment}
+            onToggleReplies={toggleReplies}
+            onAddReply={handleReplySubmit}
+            isExpanded={expandedReplies[comment.id] || false}
+          >
+            {expandedReplies[comment.id] && (
+              <div className="ml-8 mt-2">
+                {comment.replies.map((reply) => (
+                  <ReplyItem
+                    key={reply.id}
+                    reply={reply}
+                    isAuthor={reply.isAuthor}
+                    onUpdate={handleUpdateComment}
+                    onDelete={handleDeleteComment}
+                  />
+                ))}
+              </div>
+            )}
+          </CommentItem>
+        ))}
       </div>
     </div>
   );

@@ -62,7 +62,7 @@ const ActiveChatPointCard = () => {
           />
         </svg>
         <h3 className="text-base font-medium text-primary">
-          활발한 채팅 포인트
+          활발한 낚시 포인트
         </h3>
       </div>
       <div className="space-y-3">
@@ -83,13 +83,14 @@ const ActiveChatPointCard = () => {
           </div>
         ))}
       </div>
-      <Link
-        href="/chat-spot"
-        className="mt-4 text-sm text-blue-500 hover:text-blue-600 flex items-center"
-      >
-        채팅방 참여하기
-        <ChevronRight className="h-4 w-4 ml-1" />
-      </Link>
+      {/*TODO 추후 낚시 포인트 채팅 추가*/}
+      {/*<Link*/}
+      {/*  href="/chat-spot"*/}
+      {/*  className="mt-4 text-sm text-blue-500 hover:text-blue-600 flex items-center"*/}
+      {/*>*/}
+      {/*  채팅방 참여하기*/}
+      {/*  <ChevronRight className="h-4 w-4 ml-1" />*/}
+      {/*</Link>*/}
     </div>
   );
 };
