@@ -41,10 +41,8 @@ export default function SearchBox() {
     if (searchDate) {
       params.set("searchDate", searchDate);
     }
-
-    // size 파라미터가 없으면 기본값 10을 추가
     if (!params.has("size")) {
-      params.set("size", "10");
+      params.set("size", "4");
     }
 
     router.push(`/boat-reservation?${params.toString()}`);

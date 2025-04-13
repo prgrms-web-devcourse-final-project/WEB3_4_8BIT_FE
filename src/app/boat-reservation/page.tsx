@@ -5,14 +5,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import BoatCard from "@/components/BoatCard";
-import SearchBox from "@/app/boat-reservation/components/SearchBox";
 import FilterBox from "@/app/boat-reservation/components/FilterBox";
 import {
   ShipFishingPostParams,
   ShipPostListAPIResponse,
 } from "@/types/boatPostType";
-import Link from "next/link";
+import BoatList from "./components/BoatList";
 
 async function getShipPosts(
   params?: ShipFishingPostParams
@@ -26,7 +24,7 @@ async function getShipPosts(
       type: params?.type || "next",
       fieldValue: params?.fieldValue ?? "",
       id: params?.id?.toString() ?? "",
-      size: params?.size?.toString() || "10",
+      size: params?.size?.toString() || "4",
       keyword: params?.keyword || "",
       guestCount: params?.guestCount?.toString() || "",
       minRating: params?.minRating?.toString() || "",
@@ -65,7 +63,7 @@ export default async function BoatReservation({
   const params: ShipFishingPostParams = {
     keyword:
       typeof awaitedParams.keyword === "string" ? awaitedParams.keyword : "",
-    size: typeof awaitedParams.size === "string" ? +awaitedParams.size : 10,
+    size: typeof awaitedParams.size === "string" ? +awaitedParams.size : 4,
     guestCount:
       typeof awaitedParams.guestCount === "string"
         ? +awaitedParams.guestCount - 1
@@ -106,7 +104,6 @@ export default async function BoatReservation({
       </div>
 
       <div className="max-w-[1280px] mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        <SearchBox />
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           <FilterBox />
           <div className="lg:col-span-3 space-y-6">
@@ -127,45 +124,7 @@ export default async function BoatReservation({
               </Select>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {shipPostsData.data.content.length === 0 ? (
-                <div className="col-span-2 flex flex-col items-center justify-center py-16 rounded-lg border border-gray-100 shadow-sm">
-                  <div className="text-gray-400 mb-6">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="80"
-                      height="80"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <circle cx="11" cy="11" r="8" />
-                      <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                    </svg>
-                  </div>
-                  <h3 className="text-2xl font-medium text-gray-700 mb-3">
-                    검색 결과가 없습니다
-                  </h3>
-                  <p className="text-gray-500 text-center max-w-md mb-6">
-                    다른 검색 조건으로 다시 시도해보세요. 필터를 조정하거나
-                    검색어를 변경해보세요.
-                  </p>
-                  <Link
-                    href="/boat-reservation"
-                    className="px-5 py-2.5 bg-primary text-white rounded-md hover:bg-sub-1 transition-colors shadow-sm"
-                  >
-                    필터 초기화
-                  </Link>
-                </div>
-              ) : (
-                shipPostsData.data.content.map((post) => (
-                  <BoatCard key={post.shipFishingPostId} boatData={post} />
-                ))
-              )}
-            </div>
+            <BoatList shipPostsData={shipPostsData} />
           </div>
         </div>
       </div>
