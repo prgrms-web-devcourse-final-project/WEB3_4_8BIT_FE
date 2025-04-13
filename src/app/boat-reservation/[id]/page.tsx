@@ -32,6 +32,7 @@ async function getBoatPostDetail(
       headers: {
         Cookie: cookieHeader,
         Authorization: token,
+        "Content-Type": "application/json; charset=utf-8",
       },
     }
   );

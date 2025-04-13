@@ -13,8 +13,14 @@ async function getLocation(): Promise<FishingPointLocation[]> {
       headers: {
         Cookie: cookieHeader,
         Authorization: token,
+        "Content-Type": "application/json; charset=utf-8",
       },
     });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
     const responseData = await response.json();
     return responseData.data;
   } catch (error) {
