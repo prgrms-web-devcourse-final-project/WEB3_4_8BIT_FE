@@ -58,20 +58,6 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
     }
   };
 
-  // 서버에서 게시글 최신 데이터를 불러와 콘솔로 출력
-  const logLatestPostData = async () => {
-    try {
-      const updatedResponse = await getFishingPost(postId);
-      if (updatedResponse.success) {
-        console.log("최신 서버 게시글 데이터:", updatedResponse.data);
-      } else {
-        console.error("최신 서버 데이터 조회 실패:", updatedResponse);
-      }
-    } catch (err) {
-      console.error("최신 서버 데이터 조회 오류:", err);
-    }
-  };
-
   useEffect(() => {
     const fetchPostData = async () => {
       try {
@@ -81,7 +67,7 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
           setPost(postResponse.data);
           // 좋아요 상태 초기화
           setIsLiked(postResponse.data.isLiked);
-          setLikeCount(postResponse.data.likeCount);
+          setLikeCount(postResponse.data.likeCount || 0);
           await fetchParticipationInfo(); // 참여 정보 초기 로딩
           setError(null);
         } else {
@@ -104,28 +90,25 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
       console.log("좋아요 토글 요청 시작:", {
         postId,
         currentIsLiked: isLiked,
+        currentLikeCount: likeCount,
       });
-      // 현재 상태 저장 (실패 시 롤백용)
+      // 이전 상태 저장 (실패 시 롤백용)
       const previousIsLiked = isLiked;
       const previousLikeCount = likeCount;
       const newIsLiked = !previousIsLiked;
 
-      // 낙관적 업데이트: 즉시 UI 반영
+      // 낙관적 업데이트: 좋아요 상태에 따라 카운트 업데이트
+      const optimisticLikeCount = newIsLiked
+        ? previousLikeCount + 1
+        : Math.max(0, previousLikeCount - 1);
       setIsAnimating(true);
       setIsLiked(newIsLiked);
-      setLikeCount(
-        newIsLiked ? previousLikeCount + 1 : Math.max(0, previousLikeCount - 1)
+      setLikeCount(optimisticLikeCount);
+      setPost((prevPost) =>
+        prevPost
+          ? { ...prevPost, isLiked: newIsLiked, likeCount: optimisticLikeCount }
+          : prevPost
       );
-      setPost((prevPost) => {
-        if (!prevPost) return prevPost;
-        return {
-          ...prevPost,
-          isLiked: newIsLiked,
-          likeCount: newIsLiked
-            ? previousLikeCount + 1
-            : Math.max(0, previousLikeCount - 1),
-        };
-      });
 
       // API 호출: 좋아요 토글
       const response = await toggleLike({
@@ -134,22 +117,60 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
       });
       console.log("서버 응답:", response);
 
-      // 로깅: 변경 후 서버에 저장된 최신 좋아요 데이터 확인
-      await logLatestPostData();
-
-      // API 요청 실패 시, 이전 상태로 롤백
       if (!response.success) {
+        // API 요청 실패 시, 이전 상태로 롤백
         setIsLiked(previousIsLiked);
         setLikeCount(previousLikeCount);
-        setPost((prevPost) => {
-          if (!prevPost) return prevPost;
-          return {
-            ...prevPost,
-            isLiked: previousIsLiked,
-            likeCount: previousLikeCount,
-          };
-        });
+        setPost((prevPost) =>
+          prevPost
+            ? {
+                ...prevPost,
+                isLiked: previousIsLiked,
+                likeCount: previousLikeCount,
+              }
+            : prevPost
+        );
         toast.error(response.message || "좋아요 처리 중 오류가 발생했습니다.");
+      } else {
+        // 토글 성공 후 게시글 데이터를 새로 불러와서 최신 상태 반영
+        // 약간의 지연을 주어 서버에서 데이터가 갱신될 시간을 줍니다
+        setTimeout(async () => {
+          try {
+            const updatedPostResponse = await getFishingPost(postId);
+            if (updatedPostResponse.success) {
+              const updatedPost = updatedPostResponse.data;
+              console.log("최신 게시글 데이터:", updatedPost);
+
+              // 서버에서 받은 최신 데이터로 상태 업데이트
+              setIsLiked(updatedPost.isLiked);
+              setLikeCount(updatedPost.likeCount);
+              setPost((prevPost) =>
+                prevPost
+                  ? {
+                      ...prevPost,
+                      isLiked: updatedPost.isLiked,
+                      likeCount: updatedPost.likeCount,
+                    }
+                  : prevPost
+              );
+
+              // 서버 데이터와 낙관적 업데이트 값이 다른 경우 로그 출력
+              if (updatedPost.likeCount !== optimisticLikeCount) {
+                console.log("서버 데이터와 낙관적 업데이트 값이 다릅니다:", {
+                  optimistic: optimisticLikeCount,
+                  server: updatedPost.likeCount,
+                });
+              }
+            } else {
+              console.error(
+                "게시글 데이터 갱신 실패:",
+                updatedPostResponse.message
+              );
+            }
+          } catch (error) {
+            console.error("게시글 데이터 갱신 중 오류:", error);
+          }
+        }, 500); // 0.5초 지연
       }
 
       // 애니메이션 효과 0.5초 후 해제
@@ -160,7 +181,6 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
       console.error("좋아요 처리 중 오류:", error);
       toast.error("좋아요 처리 중 오류가 발생했습니다.");
       setIsAnimating(false);
-      // 네트워크 오류 등 발생 시에도 상태 롤백 가능
     }
   };
 
@@ -211,7 +231,6 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
         </div>
       </div>
 
-      {/* Banner Section */}
       <div className="w-full bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 rounded-2xl p-8 mb-8 text-white shadow-xl">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div className="space-y-2">
@@ -262,25 +281,6 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
               </div>
 
               <div className="flex gap-2">
-                <div className="relative">
-                  <button
-                    className={`inline-flex items-center cursor-pointer transition-all duration-300 ease-in-out ${
-                      isLiked ? "text-red-500" : "text-gray-500"
-                    } hover:text-red-600 hover:scale-110 active:scale-95`}
-                    onClick={handleLikeToggle}
-                  >
-                    <Heart
-                      className={`w-5 h-5 mr-1 cursor-pointer transition-all duration-300 ${
-                        isLiked ? "fill-current" : ""
-                      } ${isAnimating ? "animate-pulse" : ""}`}
-                    />
-                    <span className="text-base">{likeCount}</span>
-                  </button>
-                  {isAnimating && (
-                    <div className="absolute inset-0 rounded-full bg-red-200 opacity-50 animate-ping"></div>
-                  )}
-                </div>
-
                 {isOwner && (
                   <>
                     <Link
@@ -299,6 +299,27 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
                     </button>
                   </>
                 )}
+
+                <div className="relative">
+                  <button
+                    className={`inline-flex items-center justify-center px-3 py-1.5 rounded-md border cursor-pointer transition-all duration-300 ease-in-out ${
+                      isLiked
+                        ? "bg-red-50 border-red-200 text-red-500 hover:bg-red-100"
+                        : "bg-red-50 border-red-200 text-red-500 hover:bg-red-100"
+                    } hover:scale-105 active:scale-95`}
+                    onClick={handleLikeToggle}
+                  >
+                    <span className="text-sm mr-1">좋아요</span>
+                    <Heart
+                      className={`w-4 h-4 cursor-pointer transition-all duration-300 ${
+                        isLiked ? "fill-current" : ""
+                      } ${isAnimating ? "animate-pulse" : ""}`}
+                    />
+                  </button>
+                  {isAnimating && (
+                    <div className="absolute inset-0 rounded-md bg-red-200 opacity-50 animate-ping"></div>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -358,20 +379,12 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
         </div>
         <div className="col-span-1 md:col-span-4 mt-4 md:mt-0">
           <JoinInfoCard
-            postId={postId}
             recruitmentCount={post.recruitmentCount}
             currentCount={participation?.currentCount ?? post.currentCount}
-            postStatus={participation?.postStatus ?? post.postStatus}
-            isOwner={isOwner}
+            author={post.name}
+            fishingTripPostId={post.fishingTripPostId}
             isApplicant={participation?.isApplicant || false}
             participants={participation?.participants || []}
-            fishingTripPostId={post.fishingTripPostId}
-            fishingDate={post.fishingDate}
-            fishPointName={post.fishPointName}
-            fishPointDetailName={post.fishPointDetailName}
-            longitude={post.longitude}
-            latitude={post.latitude}
-            author={post.name}
             onApplicationSuccess={() => {
               setTimeout(fetchParticipationInfo, 300);
             }}

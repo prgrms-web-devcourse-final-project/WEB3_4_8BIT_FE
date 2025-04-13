@@ -8,6 +8,12 @@ interface ToggleLikeRequest {
   targetId: number;
 }
 
+interface UpdateLikeCountRequest {
+  targetType: LikeTargetType;
+  targetId: number;
+  increment: boolean; // true면 증가, false면 감소
+}
+
 interface LikeResponse {
   success: boolean;
   data?: {
@@ -167,6 +173,33 @@ export const getLikedShipFishingPosts = async <T>(
         message:
           error.response.data.message ||
           "좋아요한 선상 낚시 게시글 조회 중 오류가 발생했습니다.",
+      };
+    }
+    return {
+      success: false,
+      message: "네트워크 오류가 발생했습니다.",
+    };
+  }
+};
+
+/**
+ * 좋아요 카운트 갱신 API
+ * 게시글의 좋아요 카운트를 증가 또는 감소
+ * @param params - targetType: 좋아요 대상 타입, targetId: 대상 ID, increment: 증가 여부
+ */
+export const updateLikeCount = async (
+  params: UpdateLikeCountRequest
+): Promise<LikeCountResponse> => {
+  try {
+    const response = await axiosInstance.post("/likes/update-count", params);
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError && error.response) {
+      return {
+        success: false,
+        message:
+          error.response.data.message ||
+          "좋아요 카운트 갱신 중 오류가 발생했습니다.",
       };
     }
     return {

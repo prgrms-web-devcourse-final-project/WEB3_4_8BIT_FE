@@ -9,18 +9,10 @@ import { Button } from "@/components/ui/button";
 import { User } from "lucide-react";
 
 interface JoinInfoCardProps {
-  postId: number;
   recruitmentCount: number;
   currentCount: number;
-  fishingDate: string;
-  fishPointName: string;
-  fishPointDetailName: string;
-  postStatus: string;
-  longitude: number;
-  latitude: number;
   author: string;
   fishingTripPostId: number;
-  isOwner?: boolean;
   isApplicant?: boolean;
   participants: Array<{
     memberId: number;
@@ -31,18 +23,10 @@ interface JoinInfoCardProps {
 }
 
 export default function JoinInfoCard({
-  postId,
   recruitmentCount,
   currentCount,
-  fishingDate,
-  fishPointName,
-  fishPointDetailName,
-  postStatus,
-  longitude,
-  latitude,
   author,
   fishingTripPostId,
-  isOwner = false,
   isApplicant = false,
   participants,
   onApplicationSuccess,
@@ -59,9 +43,6 @@ export default function JoinInfoCard({
   // 모달 내부 폼 상태
   const [experience, setExperience] = useState("BEGINNER");
   const [applicationText, setApplicationText] = useState("");
-
-  // 현재 날짜 (YYYY-MM-DD)
-  const currentDate = new Date().toISOString().split("T")[0];
 
   const handleJoinSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
