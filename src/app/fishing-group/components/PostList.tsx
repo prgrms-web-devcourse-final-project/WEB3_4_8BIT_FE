@@ -10,12 +10,15 @@ import { PostFilter } from "./TabSection";
 import { getRegions, getFishingRegion } from "@/lib/api/fishingPointAPI";
 import { FishingPointLocation } from "@/types/fishingPointLocationType";
 import { useQuery } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
 
 interface PostListProps {
   filter: PostFilter;
   searchKeyword?: string;
   selectedRegion?: string;
 }
+
+type SortType = "createdAt" | "popularity";
 
 export function PostList({
   filter,
@@ -25,6 +28,7 @@ export function PostList({
   const [posts, setPosts] = useState<ApiPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [sortType, setSortType] = useState<SortType>("createdAt");
 
   // 지역 정보를 TanStack Query로 가져오기
   const { data: regionsData = [] } = useQuery<FishingPointLocation[]>({
@@ -67,14 +71,13 @@ export function PostList({
     gcTime: 1000 * 60 * 60 * 24 * 7,
   });
 
-  const loadAllPosts = async () => {
+  const loadPosts = async () => {
     try {
       setLoading(true);
 
-      // 모든 게시물을 가져오기 위한 파라미터 설정
       const params = {
         order: "desc",
-        sort: "createdAt",
+        sort: sortType,
         type: "all",
         fieldValue: null,
         id: null,
@@ -108,7 +111,7 @@ export function PostList({
         }
       }
     } catch (error) {
-      console.error("모든 게시물 로드 중 오류 발생:", error);
+      console.error("게시물 로드 중 오류 발생:", error);
       setError("게시물을 불러오는데 실패했습니다.");
     } finally {
       setLoading(false);
@@ -117,10 +120,14 @@ export function PostList({
 
   useEffect(() => {
     setPosts([]);
-    loadAllPosts();
-  }, [filter, searchKeyword, selectedRegion]);
+    loadPosts();
+  }, [filter, searchKeyword, selectedRegion, sortType]);
 
-  if (loading) {
+  const handleSortChange = (newSortType: SortType) => {
+    setSortType(newSortType);
+  };
+
+  if (loading && posts.length === 0) {
     return <div className="text-center py-8">게시글을 불러오는 중...</div>;
   }
 
@@ -135,31 +142,29 @@ export function PostList({
     );
   }
 
-  const filteredPosts = posts.filter((post) => {
-    // 필터 조건 확인
-    const filterMatch =
-      filter === "all" ||
-      (filter === "recruiting" && post.postStatus === "RECRUITING") ||
-      (filter === "completed" && post.postStatus === "COMPLETED");
-
-    // 검색어 조건 확인
-    const searchMatch =
-      !searchKeyword ||
-      post.subject.toLowerCase().includes(searchKeyword.toLowerCase());
-
-    return filterMatch && searchMatch;
-  });
-
-  if (filteredPosts.length === 0) {
-    return <div className="text-center py-8">게시글이 없습니다.</div>;
-  }
-
   return (
-    <div className="space-y-4">
-      <div className="w-full bg-white">
-        {filteredPosts.map((post, index) => (
+    <div className="space-y-6">
+      <div className="flex justify-end space-x-2 mb-4">
+        <Button
+          className="cursor-pointer"
+          variant={sortType === "createdAt" ? "default" : "outline"}
+          onClick={() => handleSortChange("createdAt")}
+        >
+          최신순
+        </Button>
+        <Button
+          className="cursor-pointer"
+          variant={sortType === "popularity" ? "default" : "outline"}
+          onClick={() => handleSortChange("popularity")}
+        >
+          인기순
+        </Button>
+      </div>
+
+      <div className="space-y-4">
+        {posts.map((post) => (
           <PostCard
-            key={`${post.fishingTripPostId}-${index}`}
+            key={post.fishingTripPostId}
             fishingTripPostId={post.fishingTripPostId}
             title={post.subject}
             content={post.content}
@@ -176,11 +181,7 @@ export function PostList({
             postStatus={post.postStatus}
             latitude={post.latitude}
             longitude={post.longitude}
-            regionType={
-              post.regionType && post.regionType !== "null"
-                ? post.regionType
-                : undefined
-            }
+            regionType={post.regionType || undefined}
             likeCount={post.likeCount}
             isLiked={post.isLiked}
             commentCount={post.commentCount}
