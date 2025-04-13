@@ -17,8 +17,6 @@ interface PostListProps {
   selectedRegion?: string;
 }
 
-const PAGE_SIZE = 10;
-
 export function PostList({
   filter,
   searchKeyword = "",
@@ -27,7 +25,6 @@ export function PostList({
   const [posts, setPosts] = useState<ApiPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
 
   // 지역 정보를 TanStack Query로 가져오기
   const { data: regionsData = [] } = useQuery<FishingPointLocation[]>({
@@ -72,7 +69,6 @@ export function PostList({
 
   const loadAllPosts = async () => {
     try {
-      setIsLoading(true);
       setLoading(true);
 
       // 모든 게시물을 가져오기 위한 파라미터 설정
@@ -115,7 +111,6 @@ export function PostList({
       console.error("모든 게시물 로드 중 오류 발생:", error);
       setError("게시물을 불러오는데 실패했습니다.");
     } finally {
-      setIsLoading(false);
       setLoading(false);
     }
   };
@@ -181,7 +176,14 @@ export function PostList({
             postStatus={post.postStatus}
             latitude={post.latitude}
             longitude={post.longitude}
-            regionType={post.regionType}
+            regionType={
+              post.regionType && post.regionType !== "null"
+                ? post.regionType
+                : undefined
+            }
+            likeCount={post.likeCount}
+            isLiked={post.isLiked}
+            commentCount={post.commentCount}
           />
         ))}
       </div>

@@ -23,6 +23,9 @@ export interface Post {
   likeCount: number;
   isLiked: boolean;
   isPostOwner: boolean;
+  commentCount: number;
+  regionType: string | null;
+  regionId: number;
 }
 
 // PostCard 컴포넌트에서 사용하는 인터페이스
@@ -40,6 +43,9 @@ export interface PostCardProps {
   latitude?: number;
   longitude?: number;
   regionType?: string;
+  likeCount?: number;
+  isLiked?: boolean;
+  commentCount?: number;
 }
 
 export interface ApiResponseData {
