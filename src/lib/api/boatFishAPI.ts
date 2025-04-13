@@ -2,7 +2,7 @@
 
 import {apiInstance} from "@/lib/api/apiInstance";
 import {APIResponse} from "@/lib/api/fishAPI";
-import {FishDetailInfo} from "@/types/fish.interface";
+import {ShipPostData} from "@/types/boatPostType";
 
 type Year = `${number}${number}${number}${number}`;
 type Month = "01" | "02" | "03" | "04" | "05" | "06" | "07" | "08" | "09" | "10" | "11" | "12";
@@ -14,21 +14,9 @@ type Day =
 
 export type ISODateString = `${Year}-${Month}-${Day}`;
 
-export interface BoatFishing {
-  shipFishingPostId: number;
-  subject: string;
-  location: string;
-  price: number;
-  fileUrlList: string[];
-  fishNameList: string[];
-  reviewEverRate: number;
-  reviewCount: number;
-  createdAt: string;
-}
-
-export async function getTodayBoatFishing(todayDate : ISODateString) : Promise<BoatFishing[]>{
+export async function getTodayBoatFishing(todayDate : ISODateString) : Promise<ShipPostData[]>{
   try {
-    const response = await apiInstance.get<APIResponse<{content : BoatFishing[]}>>('/ship-fishing-posts',{
+    const response = await apiInstance.get<APIResponse<{content : ShipPostData[]}>>('/ship-fishing-posts',{
       params : {
         searchDate : todayDate,
         size : 3,
@@ -41,9 +29,9 @@ export async function getTodayBoatFishing(todayDate : ISODateString) : Promise<B
   }
 }
 
-export async function getLowestPriceBoatFishing() : Promise<BoatFishing[]>{
+export async function getLowestPriceBoatFishing() : Promise<ShipPostData[]>{
   try {
-    const response = await apiInstance.get<APIResponse<{content : BoatFishing[]}>>('/ship-fishing-posts',{
+    const response = await apiInstance.get<APIResponse<{content : ShipPostData[]}>>('/ship-fishing-posts',{
       params : {
         order : "asc",
         sort : "price",
