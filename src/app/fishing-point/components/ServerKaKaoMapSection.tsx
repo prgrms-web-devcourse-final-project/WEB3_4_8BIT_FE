@@ -12,7 +12,9 @@ async function getLocation(): Promise<FishingPointLocation[]> {
 
     const cookieStore = await cookies();
     const cookieEntries = cookieStore.getAll();
-    const cookieHeader = cookieEntries.map(cookie => `${cookie.name}=${cookie.value}`).join('; ');
+    const cookieHeader = cookieEntries
+      .map((cookie) => `${cookie.name}=${cookie.value}`)
+      .join("; ");
 
     console.log(cookieHeader);
 
