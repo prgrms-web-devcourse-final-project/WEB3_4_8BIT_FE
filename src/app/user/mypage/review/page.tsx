@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import type React from "react";
 import ReviewCard from "@/components/ReviewCard";
 import { cookies } from "next/headers";

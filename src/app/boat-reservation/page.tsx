@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import FilterBox from "@/app/boat-reservation/components/FilterBox";
 import {
   ShipFishingPostParams,

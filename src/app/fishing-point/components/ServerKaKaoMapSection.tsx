@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { cookies } from "next/headers";
 import KakaoMapSection from "./KakaoMapSection";
 import { FishingPointLocation } from "@/types/fishingPointLocationType";

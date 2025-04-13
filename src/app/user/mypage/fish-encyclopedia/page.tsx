@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { Badge } from "@/components/ui/badge";
 import { cookies } from "next/headers";
 import MyPageFishCard from "@/app/user/mypage/fish-encyclopedia/components/MyPageFishCard";
