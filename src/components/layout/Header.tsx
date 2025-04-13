@@ -143,23 +143,23 @@ export default function Header() {
             <nav>
               <ul className="space-y-6">
                 <li className="text-[20px] text-white paperlogy-6semibold cursor-pointer transition-all duration-300 hover:text-primary hover:scale-105 relative group">
-                  menu1
+                  <Link href={"/boat-reservation"}>선상 낚시 예약</Link>
                   <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-primary transition-all duration-300 group-hover:w-full"></span>
                 </li>
                 <li className="text-[20px] text-white paperlogy-6semibold cursor-pointer transition-all duration-300 hover:text-primary hover:scale-105 relative group">
-                  menu2
+                  <Link href={"/fishing-group"}>낚시 동출 모집</Link>
                   <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-primary transition-all duration-300 group-hover:w-full"></span>
                 </li>
                 <li className="text-[20px] text-white paperlogy-6semibold cursor-pointer transition-all duration-300 hover:text-primary hover:scale-105 relative group">
-                  menu3
+                  <Link href={"/fishing-point"}>낚시 포인트</Link>
                   <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-primary transition-all duration-300 group-hover:w-full"></span>
                 </li>
                 <li className="text-[20px] text-white paperlogy-6semibold cursor-pointer transition-all duration-300 hover:text-primary hover:scale-105 relative group">
-                  menu4
+                  <Link href={"/user/mypage/fish-encyclopedia"}>어류 도감</Link>
                   <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-primary transition-all duration-300 group-hover:w-full"></span>
                 </li>
                 <li className="text-[20px] text-white paperlogy-6semibold cursor-pointer transition-all duration-300 hover:text-primary hover:scale-105 relative group">
-                  menu5
+                  <Link href={"/user/mypage"}>마이페이지</Link>
                   <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-primary transition-all duration-300 group-hover:w-full"></span>
                 </li>
               </ul>
