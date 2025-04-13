@@ -7,6 +7,7 @@ import {
   PostParticipationInfo,
   deleteFishingPost,
 } from "@/lib/api/fishingPostAPI";
+import { toggleLike } from "@/lib/api/likeAPI";
 import PostImages from "../components/PostImage";
 import PostContent from "../components/PostContent";
 import JoinInfoCard from "../components/JoinInfoCard";
@@ -83,12 +84,29 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
   }, [postId]);
 
   // 좋아요 토글 함수
-  const handleLikeToggle = () => {
-    setIsAnimating(true);
-    setIsLiked(!isLiked);
-    setLikeCount(isLiked ? likeCount - 1 : likeCount + 1);
+  const handleLikeToggle = async () => {
+    try {
+      const response = await toggleLike({
+        targetType: "FISHING_TRIP_POST",
+        targetId: postId,
+      });
 
-    // 실제 API 연동은 나중에 구현
+      if (response.success) {
+        setIsAnimating(true);
+        setIsLiked(!isLiked);
+        setLikeCount(isLiked ? likeCount - 1 : likeCount + 1);
+
+        // 애니메이션 효과를 위한 타이머
+        setTimeout(() => {
+          setIsAnimating(false);
+        }, 500);
+      } else {
+        toast.error(response.message || "좋아요 처리 중 오류가 발생했습니다.");
+      }
+    } catch (error) {
+      console.error("좋아요 처리 중 오류:", error);
+      toast.error("좋아요 처리 중 오류가 발생했습니다.");
+    }
   };
 
   if (loading) {
