@@ -5,10 +5,14 @@ import {
 } from "@/types/boatPostType";
 import BoatList from "./components/BoatList";
 import SortBox from "./components/SortBox";
+import { cookies } from "next/headers";
 
 async function getShipPosts(
   params?: ShipFishingPostParams
 ): Promise<ShipPostListAPIResponse> {
+  const cookieStore = await cookies();
+  const cookieHeader = cookieStore.toString();
+
   try {
     const token = process.env.NEXT_PUBLIC_API_TOKEN || "기본_토큰_값";
 
@@ -34,6 +38,7 @@ async function getShipPosts(
       {
         cache: "no-store",
         headers: {
+          Cookie: cookieHeader,
           Authorization: token,
         },
       }
@@ -42,7 +47,7 @@ async function getShipPosts(
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error("선상 낚시 게시글 조회에 실패했습니다.", error);
+    console.error(error);
     throw error;
   }
 }

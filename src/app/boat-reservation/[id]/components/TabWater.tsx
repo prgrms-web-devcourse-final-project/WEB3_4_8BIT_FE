@@ -49,8 +49,6 @@ export default function TabWater({ departurePort }: { departurePort: string }) {
     return <div>Loading...</div>;
   }
 
-  console.log(currentWeather);
-
   const tideInfo = tideChartData?.[1];
   return (
     <Card>
