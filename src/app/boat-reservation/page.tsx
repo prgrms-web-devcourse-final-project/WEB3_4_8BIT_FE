@@ -1,16 +1,10 @@
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import FilterBox from "@/app/boat-reservation/components/FilterBox";
 import {
   ShipFishingPostParams,
   ShipPostListAPIResponse,
 } from "@/types/boatPostType";
 import BoatList from "./components/BoatList";
+import SortBox from "./components/SortBox";
 
 async function getShipPosts(
   params?: ShipFishingPostParams
@@ -88,6 +82,25 @@ export default async function BoatReservation({
       typeof awaitedParams.duration === "string"
         ? awaitedParams.duration
         : undefined,
+    order:
+      typeof awaitedParams.order === "string"
+        ? awaitedParams.order === "asc" || awaitedParams.order === "desc"
+          ? awaitedParams.order
+          : "desc"
+        : "desc",
+    sort:
+      typeof awaitedParams.sort === "string" ? awaitedParams.sort : "createdAt",
+    type:
+      typeof awaitedParams.type === "string"
+        ? awaitedParams.type === "next" || awaitedParams.type === "prev"
+          ? awaitedParams.type
+          : "next"
+        : "next",
+    fieldValue:
+      typeof awaitedParams.fieldValue === "string"
+        ? awaitedParams.fieldValue
+        : undefined,
+    id: typeof awaitedParams.id === "string" ? +awaitedParams.id : undefined,
   };
 
   const shipPostsData = await getShipPosts(params);
@@ -107,22 +120,7 @@ export default async function BoatReservation({
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           <FilterBox />
           <div className="lg:col-span-3 space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-xl font-bold">
-                검색 결과 ({shipPostsData.data.numberOfElements})
-              </h2>
-              <Select defaultValue="recommended">
-                <SelectTrigger className="w-[180px] cursor-pointer">
-                  <SelectValue placeholder="정렬 기준" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="recommended">추천순</SelectItem>
-                  <SelectItem value="price-low">가격 낮은순</SelectItem>
-                  <SelectItem value="price-high">가격 높은순</SelectItem>
-                  <SelectItem value="rating">평점 높은순</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <SortBox shipPostsData={shipPostsData} />
 
             <BoatList shipPostsData={shipPostsData} />
           </div>
