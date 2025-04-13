@@ -126,7 +126,7 @@ export default async function BoatReservationDetail({
                   reservationUnavailableDate.data.unAvailableDateList
                 }
               />
-              <PhoneInfo />
+              <PhoneInfo detailMember={boatPostDetail.data.detailMember} />
             </div>
           </div>
         </div>
