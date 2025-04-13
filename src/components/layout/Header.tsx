@@ -29,6 +29,15 @@ export default function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
 
   const clearUser = useUserStore((state) => state.clearUser);
 
+  const handleLogout = () => {
+    clearUser();
+
+    document.cookie =
+      "accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+
+    router.push("/");
+  };
+
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
@@ -109,9 +118,7 @@ export default function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
                 </p>
                 <div className="inline-block">
                   <button
-                    onClick={() => {
-                      clearUser();
-                    }}
+                    onClick={handleLogout}
                     className="bg-blue-600 hover:bg-blue-700 text-white text-[16px] px-[20px] py-[6px] rounded-full shadow-md flex items-center gap-2 cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-105 paperlogy-6semibold"
                   >
                     로그아웃
@@ -156,12 +163,27 @@ export default function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
 
           <div className="p-6">
             <div className="mb-8">
-              <Link href="/auth/login" className="inline-block w-full">
-                <button className="w-full bg-blue-600 hover:bg-blue-700 text-white text-[18px] px-[20px] py-[12px] rounded-full shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-105 paperlogy-6semibold">
-                  <User className="w-[20px] h-[20px]" />
-                  로그인
-                </button>
-              </Link>
+              {isLoggedIn ? (
+                <div className="flex flex-col items-center gap-[8px]">
+                  <button
+                    onClick={handleLogout}
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white text-[18px] px-[20px] py-[12px] rounded-full shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-105 paperlogy-6semibold"
+                  >
+                    <p className="text-[16px] text-[#fff] paperlogy-6semibold">
+                      환영합니다, {user?.nickname} 님!
+                    </p>
+                    <User className="w-[20px] h-[20px]" />
+                    로그아웃
+                  </button>
+                </div>
+              ) : (
+                <Link href="/auth/login" className="inline-block w-full">
+                  <button className="w-full bg-blue-600 hover:bg-blue-700 text-white text-[18px] px-[20px] py-[12px] rounded-full shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-105 paperlogy-6semibold">
+                    <User className="w-[20px] h-[20px]" />
+                    로그인
+                  </button>
+                </Link>
+              )}
             </div>
 
             <nav>
