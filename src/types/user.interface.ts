@@ -23,13 +23,13 @@ export type User = NormalUser | CaptainUser
 
 export interface NormalUserInputData {
   nickname: string;
-  fileId? : number; // TODO 추후 fileUrl 로 수정 필요
+  fileId? : number;
   description : string;
 }
 
 export interface BoatInputData {
   nickname : string;
-  fileId? : number; // TODO 추후 fileUrl 로 수정 필요
+  fileId? : number;
   description : string;
   shipLicenseNumber : string;
   shipList : number[];
@@ -70,5 +70,50 @@ export interface UserReview {
   memberId: number;
   nickname: string;
   isAuthor: boolean;
+  createdAt: string;
+}
+
+export interface UserReservationInfo {
+  reservationId: number;
+  shipFishingPostId: number;
+  reservationNumber: string;
+  subject: string;
+  reservationDate: string;
+  startTime: string;
+  location: string;
+  guestCount: number;
+  totalPrice: number;
+  reservationStatus: 'CONFIRMED' | 'CANCELLED' ;
+  fileUrlList: string[];
+  createdAt: string;
+}
+
+export interface UserReviewInput {
+  rating : number;
+  content : string;
+  fileIdList : number[];
+  shipFishingPostId : number;
+}
+
+export interface UserWrittenGroupFishing {
+  fishingTripPostId: number;
+  subject: string;
+  fishingPointId: number;
+  fishingPointName: string;
+  fishingPointDetailName: string;
+  fishingDate: string;
+  createdAt: string;
+  currentCount: number;
+  recruitmentCount: number;
+  postStatus: 'RECRUITING' | 'COMPLETED' ;
+  commentCount: number;
+  likeCount: number;
+}
+
+export interface UserActivityHistory {
+  activityHistoryId: number;
+  activityType: 'FISHING_TRIP_POST' | 'RESERVATION' | 'FISH_ENCYCLOPEDIA';
+  activityTypeKr: string;
+  description: string;
   createdAt: string;
 }

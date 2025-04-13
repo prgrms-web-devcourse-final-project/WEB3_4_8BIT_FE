@@ -18,7 +18,7 @@ import {APIResponse} from "@/lib/api/fishAPI";
 
 export async function getNearFishingPoints() : Promise<GroupFishPost[]> {
   try {
-    const response = await apiInstance.get<APIResponse<{content : GroupFishPost[]}>>('/fishing-trip-post/scroll?size=3&status=RECRUITING')
+    const response = await apiInstance.get<APIResponse<{content : GroupFishPost[]}>>('/fishing-trip-post/scroll?sort=createdAt&size=10&status=RECRUITING')
     return response.data.data.content
   } catch (error) {
     console.error(error);

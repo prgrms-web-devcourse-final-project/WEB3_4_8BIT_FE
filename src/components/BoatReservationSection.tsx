@@ -13,12 +13,13 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {useQuery} from "@tanstack/react-query";
-import {BoatFishing, getTodayBoatFishing, ISODateString} from "@/lib/api/boatFishAPI";
+import {getTodayBoatFishing, ISODateString} from "@/lib/api/boatFishAPI";
+import {ShipPostData} from "@/types/boatPostType";
 
 const today: ISODateString = new Date().toISOString().split('T')[0] as ISODateString;
 
 export default function BoatReservation() {
-  const { data, isSuccess } = useQuery<BoatFishing[]>({
+  const { data, isSuccess } = useQuery<ShipPostData[]>({
     queryKey: ['upcomingBoatFishing'],
     queryFn: () => getTodayBoatFishing(today),
     staleTime: 1000 * 60 * 5,

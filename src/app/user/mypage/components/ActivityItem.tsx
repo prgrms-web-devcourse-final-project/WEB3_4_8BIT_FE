@@ -13,14 +13,12 @@ export default function ActivityItem({
   title: string
   description: string
   time: string
-  type: 'reservation' | 'fish' | 'fishinggroup' | 'review' | 'wishlist'
+  type: 'FISHING_TRIP_POST' | 'RESERVATION' | 'FISH_ENCYCLOPEDIA'
 }) {
   const linkType = {
-    reservation : '/user/mypage/reservation',
-    fish : '/user/mypage/fish-encyclopedia',
-    fishinggroup : '/user/mypage/fishing-group',
-    review : '/user/mypage/review',
-    wishlist : '/user/mypage/wishlist',
+    FISHING_TRIP_POST : '/user/mypage/fishing-group',
+    RESERVATION : '/user/mypage/reservation',
+    FISH_ENCYCLOPEDIA : '/user/mypage/fish-encyclopedia',
   }
 
   return (
