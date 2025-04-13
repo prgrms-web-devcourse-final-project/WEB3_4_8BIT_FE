@@ -51,7 +51,7 @@ export const getWeeklyTideData = async (
     Array.from({ length: 8 }, async (_, i) => {
       const forecastDate = dayjs().add(i, "day").format("YYYYMMDD");
       const response = await fetch(
-        `http://www.khoa.go.kr/api/oceangrid/tideObsPreTab/search.do?ServiceKey=${process.env.NEXT_PUBLIC_BADANORI_API_KEY}&ObsCode=${stationId}&Date=${forecastDate}&ResultType=json`
+        `https://www.khoa.go.kr/api/oceangrid/tideObsPreTab/search.do?ServiceKey=${process.env.NEXT_PUBLIC_BADANORI_API_KEY}&ObsCode=${stationId}&Date=${forecastDate}&ResultType=json`
       );
       return response.json();
     })
@@ -79,7 +79,7 @@ export const getTideChartData = async (
         .add(i - 1, "day")
         .format("YYYYMMDD");
       const response = await fetch(
-        `http://www.khoa.go.kr/api/oceangrid/tideObsPreTab/search.do?ServiceKey=${process.env.NEXT_PUBLIC_BADANORI_API_KEY}&ObsCode=${stationId}&Date=${forecastDate}&ResultType=json`
+        `https://www.khoa.go.kr/api/oceangrid/tideObsPreTab/search.do?ServiceKey=${process.env.NEXT_PUBLIC_BADANORI_API_KEY}&ObsCode=${stationId}&Date=${forecastDate}&ResultType=json`
       );
       return response.json();
     })
