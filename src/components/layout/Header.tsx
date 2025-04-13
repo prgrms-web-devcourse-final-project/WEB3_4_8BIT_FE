@@ -30,7 +30,7 @@ export default function Header() {
               alt="logo"
               width={130}
               height={30}
-              className="w-[145px] h-[40px] cursor-pointer"
+              className="w-[200px] h-[full] cursor-pointer"
               onClick={goToHome}
             />
           </div>
