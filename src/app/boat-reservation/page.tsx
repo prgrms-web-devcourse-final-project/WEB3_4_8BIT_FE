@@ -1,5 +1,5 @@
 export const dynamic = "force-dynamic";
-
+import { toggleLike } from "@/lib/api/likeAPI";
 import FilterBox from "@/app/boat-reservation/components/FilterBox";
 import {
   ShipFishingPostParams,

@@ -150,7 +150,7 @@ export function PostCard({
 
   return (
     <Link href={`/fishing-group/post/${fishingTripPostId}`} className="block">
-      <div className="w-full mb-4 border border-gray-300 rounded-lg hover:bg-gray-80 px-4 md:px-6 py-4 cursor-pointer transition-all duration-200">
+      <div className="w-full mb-4 border border-gray-300 rounded-lg hover:bg-gray-50 px-4 md:px-6 py-4 cursor-pointer transition-all duration-300 hover:shadow-lg hover:border-blue-200">
         <div className="flex flex-col md:flex-row items-start gap-4 md:gap-5">
           {/* 썸네일 이미지 */}
           <div className="w-full md:w-[180px] h-[120px] rounded-md overflow-hidden flex-shrink-0">
@@ -169,22 +169,26 @@ export function PostCard({
           <div className="flex-1 min-w-0">
             <div className="space-y-3">
               {/* 모집 상태 & 제목 */}
-              <div className="flex items-center gap-2">
-                <span
-                  className={`px-2 py-1 text-sm rounded-full ${
-                    postStatus === "RECRUITING"
-                      ? "bg-[#2CD5D7] text-white"
-                      : "bg-gray-500 text-white"
-                  }`}
-                >
-                  {displayStatusText}
-                </span>
-                {regionType && regionType !== "null" && (
-                  <span className="text-blue-500 text-lg">
-                    [{convertRegionTypeToKorean(regionType)}]
+              <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`px-2 py-1 text-sm rounded-full ${
+                      postStatus === "RECRUITING"
+                        ? "bg-[#2CD5D7] text-white"
+                        : "bg-gray-500 text-white"
+                    }`}
+                  >
+                    {displayStatusText}
                   </span>
-                )}
-                <h3 className="text-lg font-medium text-gray-900">{title}</h3>
+                  {regionType && regionType !== "null" && (
+                    <span className="text-blue-500 text-lg">
+                      [{convertRegionTypeToKorean(regionType)}]
+                    </span>
+                  )}
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 md:ml-2">
+                  {title}
+                </h3>
               </div>
 
               <p className="text-base text-gray-600 line-clamp-2">{content}</p>
@@ -192,25 +196,23 @@ export function PostCard({
 
             {/* 하단 정보 영역 */}
             <div className="mt-4">
-              <div className="flex items-center justify-between text-sm text-gray-500">
-                <div className="flex items-center gap-x-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-sm text-gray-500 gap-2 sm:gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-x-4">
                   <span className="flex items-center gap-1">
-                    <Calendar size={16} />
+                    <Calendar size={16} className="text-blue-500" />
                     동출날짜: {date}
                   </span>
                   <span className="flex items-center gap-1">
-                    <UserRound size={16} />
+                    <UserRound size={16} className="text-green-500" />
                     모집인원: {recruitmentCount}명
                   </span>
                   <span
                     className={`flex items-center gap-1 ${
-                      latitude && longitude
-                        ? "cursor-pointer hover:text-blue-500"
-                        : ""
+                      latitude && longitude ? "cursor-pointer" : ""
                     }`}
                     onClick={handleLocationClick}
                   >
-                    <MapPin size={16} />
+                    <MapPin size={16} className="text-purple-500" />
                     <span className="flex items-center gap-1">장소:</span>{" "}
                     {location}
                     {regionType && regionType !== "null" && (
@@ -232,17 +234,19 @@ export function PostCard({
                 </div>
 
                 {/* 좋아요 및 댓글 카운트 */}
-                <div className="flex items-center gap-x-4">
-                  <span className="flex items-center gap-1">
+                <div className="flex items-center gap-x-4 mt-2 sm:mt-0">
+                  <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-red-50">
                     <Heart
                       size={16}
-                      className={isLiked ? "fill-current text-red-500" : ""}
+                      className={
+                        isLiked ? "fill-current text-red-500" : "text-red-500"
+                      }
                     />
-                    <span>{likeCount}</span>
+                    <span className="font-medium">{likeCount}</span>
                   </span>
-                  <span className="flex items-center gap-1">
-                    <MessageSquare size={16} />
-                    <span>{commentCount}</span>
+                  <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-blue-50">
+                    <MessageSquare size={16} className="text-blue-500" />
+                    <span className="font-medium">{commentCount}</span>
                   </span>
                 </div>
               </div>

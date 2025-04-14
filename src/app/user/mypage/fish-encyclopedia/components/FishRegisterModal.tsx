@@ -129,8 +129,8 @@ export default function FishRegisterModal({
 
     const response = await FishAPI.postFishEncyclopedias(fishUploadState);
     if (response.success) {
-      alert("등록 완료"); // TODO: 수정 필요
       setIsRegisterModalOpen(false);
+      alert('등록 완료'); // TODO: 수정 필요
     }
     router.refresh();
   }, 500);

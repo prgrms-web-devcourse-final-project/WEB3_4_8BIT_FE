@@ -1,8 +1,9 @@
 "use client";
 
-import { MapPin, Heart, MessageSquare, Calendar } from "lucide-react";
+import { Heart, MessageSquare, Calendar, MapPin } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { convertRegionTypeToKorean } from "@/lib/utils/regionUtils";
 
 interface HotPostCardProps {
   post: {
@@ -22,6 +23,7 @@ interface HotPostCardProps {
     postStatus: string;
     likeCount: number;
     commentCount: number;
+    regionType?: string;
   };
 }
 
@@ -58,10 +60,12 @@ export function HotPostCard({ post }: HotPostCardProps) {
           <h3 className="text-lg font-semibold text-gray-800 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors duration-200">
             {post.subject}
           </h3>
-          <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
-            <MapPin className="h-4 w-4 text-blue-500" />
-            <span className="truncate">{post.fishPointName}</span>
-          </div>
+          {post.regionType && (
+            <div className="flex items-center gap-1 text-sm text-gray-500 mb-2">
+              <MapPin className="h-4 w-4 text-blue-500" />
+              <span>{convertRegionTypeToKorean(post.regionType)}</span>
+            </div>
+          )}
           <div className="flex items-center gap-1 text-sm text-gray-500 mb-4">
             <Calendar className="h-4 w-4 text-blue-500" />
             <span>{new Date(post.fishingDate).toLocaleDateString()}</span>
