@@ -19,7 +19,7 @@ export class ChatAPI {
     }
   }
 
-  public static async getRoomMessages(roomId : number, messageId? : number) : Promise<GetMessageResponse> {
+  public static async getRoomMessages(roomId : number, messageId? : string) : Promise<GetMessageResponse> {
     try {
       const response = await apiInstance.get<APIResponse<{ content : ChatMessageResponse[], nextCursorId : null | string}>>(`/chats/${roomId}/messages`,{
         params : {
