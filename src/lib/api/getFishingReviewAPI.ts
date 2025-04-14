@@ -37,6 +37,7 @@ export interface FishingReview {
   profileImg: string;
   isAuthor: boolean;
   createdAt: string;
+  nickname: string;
 }
 
 export interface FishingReviewAPIResponse {

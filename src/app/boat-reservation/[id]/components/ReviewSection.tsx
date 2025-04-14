@@ -113,8 +113,9 @@ export default function ReviewSection({
             <ReviewCard
               key={review.reviewId}
               id={review.reviewId}
-              user={"" + review.memberId}
+              nickname={review.nickname}
               date={review.createdAt}
+              profileImg={review.profileImg}
               content={review.content}
               images={review.fileUrlList}
               rating={review.rating}
