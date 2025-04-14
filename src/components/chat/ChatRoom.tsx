@@ -43,10 +43,19 @@ export default function ChatRoom({ roomData, handleBackToList }: ChatRoomProps) 
 
 
   useEffect(() => {
-    socketRef.current = new SockJS("https://api.mikki.kr/ws/chat");
+    // SockJS 옵션에 쿠키를 포함하도록 설정
+    const sockJsOptions = {
+      transports: ['websocket', 'xhr-streaming', 'xhr-polling'],
+      withCredentials: true  // 이 부분이 중요: 쿠키를 포함시킴
+    };
+
+    socketRef.current = new SockJS("https://api.mikki.kr/ws/chat", null, sockJsOptions);
 
     stompClientRef.current = new Client({
       webSocketFactory: () => socketRef.current,
+      connectHeaders: {
+        // 필요한 경우 여기에 추가 헤더를 포함할 수 있음
+      },
       onConnect: (frame) => {
         console.log("STOMP 연결 성공:", frame);
         stompClientRef.current?.subscribe(`/topic/chat/${roomData.roomId}`, (message) => {
@@ -57,6 +66,13 @@ export default function ChatRoom({ roomData, handleBackToList }: ChatRoomProps) 
       onDisconnect: () => {
         console.log("STOMP 연결 종료");
       },
+      // STOMP 연결에 대한 추가 옵션
+      beforeConnect: () => {
+        console.log("STOMP 연결 시도 중...");
+      },
+      onStompError: (frame) => {
+        console.error("STOMP 오류:", frame);
+      }
     });
 
     stompClientRef.current.activate();
@@ -69,7 +85,7 @@ export default function ChatRoom({ roomData, handleBackToList }: ChatRoomProps) 
 
   const handleSendMessage = () => {
     if (stompClientRef.current && stompClientRef.current.connected) {
-      console.log('하하하')
+      console.log('메시지 전송 시도');
       const messageRequest = {
         roomId: roomData.roomId,
         content: newMessage,
@@ -85,8 +101,9 @@ export default function ChatRoom({ roomData, handleBackToList }: ChatRoomProps) 
       // 메시지 전송 후 입력값 초기화
       setNewMessage("");
       setPreviewImage(null);
+    } else {
+      console.log('연결 안됨... 메시지 전송 실패');
     }
-    console.log('연결 안됨...')
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -150,7 +167,7 @@ export default function ChatRoom({ roomData, handleBackToList }: ChatRoomProps) 
       {previewImage && (
         <div className="p-2 border-t">
           <div className="relative inline-block">
-            <Image src={previewImage || "/placeholder.svg"} alt="Preview" className="h-20 rounded-md object-cover" />
+            <Image src={previewImage || "/placeholder.svg"} alt="Preview" width={80} height={80} className="h-20 rounded-md object-cover" />
             <Button variant="destructive" size="icon" className="absolute -top-2 -right-2 h-6 w-6 rounded-full" onClick={cancelImageUpload}>
               <X className="h-3 w-3" />
             </Button>
