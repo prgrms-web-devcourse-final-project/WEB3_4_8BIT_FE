@@ -33,10 +33,6 @@ export default function BoatCard({ boatData }: { boatData: ShipPostData }) {
     setIsLiked(boatData.isLiked);
   }, [boatData]);
 
-  console.log(boatData);
-  console.log(boatData.isLiked);
-  console.log(isLiked);
-
   // 좋아요 토글 함수 (낙관적 업데이트)
   const handleLikeToggle = async (e: React.MouseEvent) => {
     e.preventDefault(); // 링크 이벤트 전파 방지
