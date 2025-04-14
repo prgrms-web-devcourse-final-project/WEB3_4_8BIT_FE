@@ -52,19 +52,12 @@ export function SearchBar({
   };
 
   // 글쓰기 버튼 클릭 핸들러
-  const handleWriteClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-
-    // 로그인 상태 확인
+  const handleWriteClick = () => {
     const token = localStorage.getItem("accessToken");
-
     if (!token) {
-      // 로그인하지 않은 경우 로그인 페이지로 리다이렉트
-      router.push("/login");
+      router.push("/auth/login");
       return;
     }
-
-    // 로그인한 경우 글쓰기 페이지로 이동
     router.push("/fishing-group/write");
   };
 
