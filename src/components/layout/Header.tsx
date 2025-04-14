@@ -49,6 +49,7 @@ export default function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
     if (response) {
       clearUser();
       router.push("/");
+      window.location.reload();
     }
   });
 
