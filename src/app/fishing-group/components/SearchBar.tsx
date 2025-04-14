@@ -11,6 +11,7 @@ import Link from "next/link";
 import React, { useState, useEffect } from "react";
 import { getRegions } from "@/lib/api/fishingPointAPI";
 import { FishingPointLocation } from "@/types/fishingPointLocationType";
+import { useRouter } from "next/navigation";
 
 export function SearchBar({
   handleSearch,
@@ -22,6 +23,7 @@ export function SearchBar({
   const [searchTerm, setSearchTerm] = useState("");
   const [regions, setRegions] = useState<FishingPointLocation[]>([]);
   const [selectedRegion, setSelectedRegion] = useState("all");
+  const router = useRouter();
 
   useEffect(() => {
     const fetchRegions = async () => {
@@ -47,6 +49,16 @@ export function SearchBar({
     setSelectedRegion(value);
     // 지역 선택 시 부모 컴포넌트에 알림
     onRegionChange(value);
+  };
+
+  // 글쓰기 버튼 클릭 핸들러
+  const handleWriteClick = () => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      router.push("/auth/login");
+      return;
+    }
+    router.push("/fishing-group/write");
   };
 
   return (
@@ -124,12 +136,12 @@ export function SearchBar({
             >
               검색
             </button>
-            <Link
-              href="/fishing-group/write"
+            <button
+              onClick={handleWriteClick}
               className="flex-1 md:flex-none px-8 h-14 cursor-pointer bg-white text-blue-600 border-2 border-blue-500 rounded-lg hover:bg-blue-50 text-base font-medium transition-colors duration-200 flex items-center justify-center shadow-sm"
             >
               + 글쓰기
-            </Link>
+            </button>
           </div>
         </div>
       </div>

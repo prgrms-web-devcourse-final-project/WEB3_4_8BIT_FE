@@ -30,3 +30,24 @@ export interface ChatMessageItem {
   isOwn : boolean;
   image? : string;
 }
+
+export interface ChatRoomData {
+  roomId : number;
+  targetId : number;
+  targetName : string;
+  targetType : string;
+  participantCount : number;
+  lastMessage : null | string;
+}
+
+export interface ChatMessageResponse {
+  messageId: string;
+  roomId: number;
+  senderId: number;
+  senderNickname: string;
+  senderProfileImageUrl: string;
+  content: string;
+  fileUrls: string[];
+  type: "TALK" | "IMAGE";
+  createdAt: string;
+}

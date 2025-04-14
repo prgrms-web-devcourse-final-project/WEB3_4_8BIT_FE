@@ -6,6 +6,7 @@ import Script from "next/script";
 import Providers from "./providers";
 import Footer from "@/components/layout/Footer";
 import { Toaster } from "sonner";
+import { FloatingChatButton } from "@/components/chat/FloatingChatButton";
 import { cookies } from "next/headers";
 
 const geistSans = Geist({
@@ -48,6 +49,7 @@ export default async function RootLayout({
         <Header isLoggedIn={isLoggedIn} />
         <Providers>
           <main className="mt-[90px]">{children}</main>
+          <FloatingChatButton />
         </Providers>
         <Footer />
         <Toaster position="top-right" />

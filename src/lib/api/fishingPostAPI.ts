@@ -1,7 +1,4 @@
-import { axiosInstance } from "@/lib/api/axiosInstance";
-import { MOCK_HOT_POSTS } from "../mocks/fishingPostMock";
-
-const API_BASE_URL = "https://api.mikki.kr/api/v1";
+import { axiosInstance, publicAxiosInstance } from "./axiosInstance";
 
 // API 응답 데이터 구조 정의
 export interface Post {
@@ -63,12 +60,9 @@ export const getFishingPosts = async (params: {
   size: number;
 }) => {
   try {
-    const response = await axiosInstance.get(
-      `${API_BASE_URL}/fishing-trip-post/scroll`,
-      {
-        params,
-      }
-    );
+    const response = await axiosInstance.get(`/fishing-trip-post/scroll`, {
+      params,
+    });
     return response.data;
   } catch (error) {
     console.error("Failed to fetch fishing posts.", error);
@@ -76,20 +70,31 @@ export const getFishingPosts = async (params: {
   }
 };
 
-// 핫포스트 목록 조회 (목업 데이터 사용)
+// 핫포스트 목록 조회
 export const getHotFishingPosts = async () => {
-  return MOCK_HOT_POSTS;
+  try {
+    // 최근 5일 내 작성된 동출 모집글 중 댓글 + 좋아요 수를 기준으로 인기글 상위 5개 조회
+    const response = await publicAxiosInstance.get(
+      `/fishing-trip-post/hot-post`
+    );
+
+    // API 응답 구조에 맞게 데이터 반환
+    if (response.data && response.data.data) {
+      return response.data.data;
+    }
+    return [];
+  } catch (error) {
+    console.error("Failed to fetch hot posts.", error);
+    throw error;
+  }
 };
 
 // 게시글 상세 조회
 export const getFishingPost = async (postId: number) => {
   try {
-    const response = await axiosInstance.get(
-      `${API_BASE_URL}/fishing-trip-post`,
-      {
-        params: { id: postId },
-      }
-    );
+    const response = await axiosInstance.get(`/fishing-trip-post`, {
+      params: { id: postId },
+    });
     return response.data;
   } catch (error) {
     console.error("Failed to fetch post details.", error);
@@ -199,12 +204,9 @@ export const getFishingPostsByCursor = async (
       Object.entries(cursorRequest).filter(([, v]) => v != null)
     ); // _ 대신 빈 배열 요소 사용
 
-    const response = await axiosInstance.get(
-      `${API_BASE_URL}/fishing-trip-post/scroll`,
-      {
-        params: filteredParams,
-      }
-    );
+    const response = await axiosInstance.get(`/fishing-trip-post/scroll`, {
+      params: filteredParams,
+    });
     // 응답 타입 명시 (예시, 실제 API 응답 구조에 맞게 조정 필요)
     return response.data as { success: boolean; data: ApiResponseData };
   } catch (error) {

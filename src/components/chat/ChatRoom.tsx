@@ -1,48 +1,127 @@
-import {Button} from "@/components/ui/button";
-import {ChevronLeft, Flag, MoreVertical, Send, Smile, Users, X, ImagePlus } from "lucide-react";
-import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/components/ui/dropdown-menu";
-import {ScrollArea} from "@/components/ui/scroll-area";
-import {ChatMessage} from "@/components/chat/ChatMessage";
-import {Input} from "@/components/ui/input";
+import React, { useEffect, useRef, useState } from "react";
+import SockJS from "sockjs-client";
+import { Client } from "@stomp/stompjs";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft, Send, Users, X, ImagePlus } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { ChatMessage } from "@/components/chat/ChatMessage";
+import { Input } from "@/components/ui/input";
 import Image from "next/image";
-import type React from "react";
-import {ChatMessageItem, ChatRoomFishingGroup, ChatRoomFishingSpot} from "@/types/Chat.types";
+import { ChatMessageResponse, ChatRoomData } from "@/types/Chat.types";
+import { ChatAPI } from "@/lib/api/chatAPI";
 
 interface ChatRoomProps {
-  handleBackToList : () => void;
-  currentRoom : ChatRoomFishingGroup | ChatRoomFishingSpot;
-  messages : ChatMessageItem[];
-  messagesEndRef : React.RefObject<HTMLDivElement> | null;
-  previewImage : string | null;
-  cancelImageUpload : () => void;
-  fileInputRef : React.RefObject<HTMLInputElement>;
-  handleFileChange : (event: React.ChangeEvent<HTMLInputElement>) => void;
-  newMessage : string;
-  setNewMessage : React.Dispatch<React.SetStateAction<string>>;
-  isUploading : boolean;
-  handleKeyDown : (event: React.KeyboardEvent<HTMLInputElement>) => void;
-  handleSendMessage : () => void;
+  roomData: ChatRoomData;
+  handleBackToList: () => void;
 }
 
-export default function ChatRoom({
-  handleBackToList,
-  currentRoom,
-  messages,
-  messagesEndRef,
-  previewImage,
-  cancelImageUpload,
-  fileInputRef,
-  handleFileChange,
-  newMessage,
-  setNewMessage,
-  isUploading,
-  handleKeyDown,
-  handleSendMessage,
-  } : ChatRoomProps) {
+export default function ChatRoom({ roomData, handleBackToList }: ChatRoomProps) {
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [messages, setMessages] = useState<ChatMessageResponse[]>([]);
+  const [newMessage, setNewMessage] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const socketRef = useRef<any>(null);
+  const stompClientRef = useRef<Client | null>(null);
 
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  useEffect(() => {
+    async function fetchInitialMessages() {
+      try {
+        const res = await ChatAPI.getRoomMessages(roomData.roomId);
+        setMessages(res.content);
+      } catch (err) {
+        console.error("기존 메시지 불러오기 실패", err);
+      }
+    }
+    fetchInitialMessages();
+  }, [roomData.roomId]);
+
+
+  useEffect(() => {
+    socketRef.current = new SockJS("https://api.mikki.kr/ws/chat");
+
+    stompClientRef.current = new Client({
+      webSocketFactory: () => socketRef.current,
+      onConnect: (frame) => {
+        console.log("STOMP 연결 성공:", frame);
+        stompClientRef.current?.subscribe(`/topic/chat/${roomData.roomId}`, (message) => {
+          const messageData = JSON.parse(message.body);
+          setMessages((prev) => [...prev, messageData.content]);
+        });
+      },
+      onDisconnect: () => {
+        console.log("STOMP 연결 종료");
+      },
+    });
+
+    stompClientRef.current.activate();
+
+    return () => {
+      stompClientRef.current?.deactivate();
+      socketRef.current?.close();
+    };
+  }, [roomData.roomId]);
+
+  const handleSendMessage = () => {
+    if (stompClientRef.current && stompClientRef.current.connected) {
+      console.log('하하하')
+      const messageRequest = {
+        roomId: roomData.roomId,
+        content: newMessage,
+        fileIds: previewImage ? [/* 이미지 업로드 후 해당 fileIds*/] : [],
+        type: "TALK", // TEXT or IMAGE
+      };
+
+      stompClientRef.current.publish({
+        destination: "/pub/chat/send",
+        body: JSON.stringify(messageRequest),
+      });
+
+      // 메시지 전송 후 입력값 초기화
+      setNewMessage("");
+      setPreviewImage(null);
+    }
+    console.log('연결 안됨...')
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
+
+  // 파일 업로드 핸들러 (예시: 미리보기 기능 포함)
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploading(true);
+
+    setTimeout(() => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setPreviewImage(event.target?.result as string);
+        setIsUploading(false);
+      };
+      reader.readAsDataURL(file);
+    }, 1000);
+  };
+
+  const cancelImageUpload = () => {
+    setPreviewImage(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
 
   return (
     <div className="flex flex-col h-full">
+      {/* 상단 헤더: 방 나가기, 방 정보 */}
       <div className="p-4 border-b flex justify-between items-center">
         <div className="flex items-center">
           <Button variant="ghost" size="icon" onClick={handleBackToList} className="mr-2 cursor-pointer">
@@ -52,59 +131,39 @@ export default function ChatRoom({
             <Users className="h-5 w-5" />
           </div>
           <div>
-            <h3 className="font-medium">{currentRoom?.name}</h3>
-            <p className="text-sm text-gray-500">온라인 {currentRoom?.onlineCount}명</p>
+            <h3 className="font-medium">{roomData.targetName}</h3>
           </div>
         </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="cursor-pointer">
-              <MoreVertical className="h-5 w-5" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem>
-              <Flag className="h-4 w-4 mr-2" /> 신고하기
-            </DropdownMenuItem>
-            <DropdownMenuItem>채팅 알림 끄기</DropdownMenuItem>
-            <DropdownMenuItem>채팅방 나가기</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
       </div>
 
+      {/* 채팅 메시지 스크롤 */}
       <ScrollArea className="flex-1 p-4 overflow-scroll">
         <div className="space-y-4">
           {messages.map((message) => (
-            <ChatMessage key={message.id} message={message} />
+            <ChatMessage key={message.messageId} message={message} />
           ))}
           <div ref={messagesEndRef} />
         </div>
       </ScrollArea>
 
+      {/* 이미지 미리보기 */}
       {previewImage && (
         <div className="p-2 border-t">
           <div className="relative inline-block">
             <Image src={previewImage || "/placeholder.svg"} alt="Preview" className="h-20 rounded-md object-cover" />
-            <Button
-              variant="destructive"
-              size="icon"
-              className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
-              onClick={cancelImageUpload}
-            >
+            <Button variant="destructive" size="icon" className="absolute -top-2 -right-2 h-6 w-6 rounded-full" onClick={cancelImageUpload}>
               <X className="h-3 w-3" />
             </Button>
           </div>
         </div>
       )}
 
+      {/* 메시지 입력 및 전송 */}
       <div className="p-4 border-t">
         <div className="flex items-center space-x-2">
           <Button variant="ghost" size="icon" className="text-gray-500 cursor-pointer" onClick={() => fileInputRef.current?.click()}>
             <ImagePlus className="h-5 w-5" />
             <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange} />
-          </Button>
-          <Button variant="ghost" size="icon" className="text-gray-500 cursor-pointer">
-            <Smile className="h-5 w-5" />
           </Button>
           <div className="flex-1 relative">
             <Input
@@ -120,15 +179,11 @@ export default function ChatRoom({
               </div>
             )}
           </div>
-          <Button
-            onClick={handleSendMessage}
-            disabled={isUploading || (newMessage.trim() === "" && !previewImage)}
-            className="bg-primary cursor-pointer"
-          >
+          <Button onClick={handleSendMessage} disabled={isUploading || (newMessage.trim() === "" && !previewImage)} className="bg-primary cursor-pointer">
             <Send className="h-4 w-4" />
           </Button>
         </div>
       </div>
     </div>
-  )
+  );
 }
