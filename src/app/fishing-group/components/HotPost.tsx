@@ -137,13 +137,13 @@ export function HotPost() {
   return (
     <div className="mb-12 relative">
       {/* 섹션 헤더 */}
-      <div className="relative py-8 mb-8">
-        {/* 배경 그라데이션 효과 - 제목 섹션에만 적용 */}
+      <div className="relative py-12 mb-8">
+        {/* 배경 그라데이션 효과 */}
         <div className="absolute inset-0 bg-gradient-to-r from-blue-50 via-white to-blue-50 opacity-50" />
         <div className="absolute inset-0 bg-[url('/images/pattern.png')] opacity-3" />
 
         <div className="flex flex-col items-center justify-center relative z-10">
-          <div className="space-y-1 text-center">
+          <div className="space-y-2 text-center">
             <h2 className="text-3xl font-bold text-gray-800 flex items-center justify-center gap-3">
               <div className="relative">
                 <svg
@@ -172,8 +172,8 @@ export function HotPost() {
         </div>
       </div>
 
-      {/* 카드 그리드 - HotPostCard 컴포넌트 사용 */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+      {/* 카드 그리드 */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
         {hotPosts.map((post) => (
           <HotPostCard key={post.fishingTripPostId} post={post} />
         ))}

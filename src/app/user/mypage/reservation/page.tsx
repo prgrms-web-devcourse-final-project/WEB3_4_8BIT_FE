@@ -1,32 +1,40 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import type React from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ReservationCard from "@/app/user/mypage/reservation/components/ReservationCard";
-import {useQueryClient, useMutation, useQuery} from "@tanstack/react-query";
+import { useQueryClient, useMutation, useQuery } from "@tanstack/react-query";
 import { UserAPI } from "@/lib/api/userAPI";
-import {UserReservationInfo} from "@/types/user.interface";
+import { UserReservationInfo } from "@/types/user.interface";
 
 export default function Reservations() {
-  const { data: upcomingConfirmed = [], isSuccess: isUpcomingConfirmedSuccess } = useQuery<UserReservationInfo[]>({
-    queryKey: ['userMyPageReservations', 'upcoming', 'confirmed'],
+  const {
+    data: upcomingConfirmed = [],
+    isSuccess: isUpcomingConfirmedSuccess,
+  } = useQuery<UserReservationInfo[]>({
+    queryKey: ["userMyPageReservations", "upcoming", "confirmed"],
     queryFn: () => UserAPI.getUserBoatReservation(true, true),
   });
 
-  const { data: pastConfirmed = [], isSuccess: isPastConfirmedSuccess } = useQuery<UserReservationInfo[]>({
-    queryKey: ['userMyPageReservations', 'past', 'confirmed'],
-    queryFn: () => UserAPI.getUserBoatReservation(false, true),
-  });
+  const { data: pastConfirmed = [], isSuccess: isPastConfirmedSuccess } =
+    useQuery<UserReservationInfo[]>({
+      queryKey: ["userMyPageReservations", "past", "confirmed"],
+      queryFn: () => UserAPI.getUserBoatReservation(false, true),
+    });
 
-  const { data: upcomingCancelled = [], isSuccess: isUpcomingCancelledSuccess } = useQuery<UserReservationInfo[]>({
-    queryKey: ['userMyPageReservations', 'upcoming', 'cancelled'],
+  const {
+    data: upcomingCancelled = [],
+    isSuccess: isUpcomingCancelledSuccess,
+  } = useQuery<UserReservationInfo[]>({
+    queryKey: ["userMyPageReservations", "upcoming", "cancelled"],
     queryFn: () => UserAPI.getUserBoatReservation(true, false),
   });
 
-  const { data: pastCancelled = [], isSuccess: isPastCancelledSuccess } = useQuery<UserReservationInfo[]>({
-    queryKey: ['userMyPageReservations', 'past', 'cancelled'],
-    queryFn: () => UserAPI.getUserBoatReservation(false, false),
-  });
+  const { data: pastCancelled = [], isSuccess: isPastCancelledSuccess } =
+    useQuery<UserReservationInfo[]>({
+      queryKey: ["userMyPageReservations", "past", "cancelled"],
+      queryFn: () => UserAPI.getUserBoatReservation(false, false),
+    });
 
   const formatDate = (date: string) => {
     const d = new Date(date);
@@ -34,10 +42,12 @@ export default function Reservations() {
   };
 
   const formatTime = (time: string) => {
-    const [hour, minute] = time.split(':').map(Number);
+    const [hour, minute] = time.split(":").map(Number);
     const isMorning = hour < 12;
     const displayHour = hour % 12 === 0 ? 12 : hour % 12;
-    return `오${isMorning ? '전' : '후'} ${displayHour}:${minute.toString().padStart(2, '0')}`;
+    return `오${isMorning ? "전" : "후"} ${displayHour}:${minute
+      .toString()
+      .padStart(2, "0")}`;
   };
 
   const getImage = (info: UserReservationInfo) => {
@@ -47,13 +57,13 @@ export default function Reservations() {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn : (reservationId : number) => {
+    mutationFn: (reservationId: number) => {
       return UserAPI.deleteUserBoatReservation(reservationId);
     },
-    onSuccess : () => {
-      queryClient.invalidateQueries({ queryKey: ['userMyPageReservations'] })
-    }
-  })
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["userMyPageReservations"] });
+    },
+  });
 
   const handleCancel = (reservationId: number) => {
     mutation.mutate(reservationId);
@@ -62,7 +72,9 @@ export default function Reservations() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">예약 내역</h1>
-      <div className="text-gray-30">나의 선상 낚시 예약 내역을 확인해보세요.</div>
+      <div className="text-gray-30">
+        나의 선상 낚시 예약 내역을 확인해보세요.
+      </div>
 
       <Tabs defaultValue="upcoming">
         <TabsList className="grid w-full grid-cols-3">
@@ -152,5 +164,5 @@ export default function Reservations() {
         </TabsContent>
       </Tabs>
     </div>
-  )
+  );
 }

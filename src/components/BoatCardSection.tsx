@@ -4,13 +4,13 @@ import React from "react";
 import Link from "next/link";
 import { Anchor } from "lucide-react";
 import BoatCard from "@/components/BoatCard";
-import {useQuery} from "@tanstack/react-query";
-import {getLowestPriceBoatFishing} from "@/lib/api/boatFishAPI";
-import {ShipPostData} from "@/types/boatPostType";
+import { useQuery } from "@tanstack/react-query";
+import { getLowestPriceBoatFishing } from "@/lib/api/boatFishAPI";
+import { ShipPostData } from "@/types/boatPostType";
 
 export default function BoatCardSection() {
   const { data, isSuccess } = useQuery<ShipPostData[]>({
-    queryKey: ['lowestPriceBoatReservations'],
+    queryKey: ["lowestPriceBoatReservations"],
     queryFn: getLowestPriceBoatFishing,
     staleTime: 1000 * 60 * 5,
   });
@@ -33,21 +33,16 @@ export default function BoatCardSection() {
           </Link>
         </div>
 
-        <h2 className="text-gray-20 mb-3">
-          예약할 수 있는 가장 저렴한 선상 낚시 입니다
+        <h2 className="text-gray-30 mb-6">
+          합리적인 가격으로 즐기는 특별한 선상 낚시 경험을 만나보세요
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {isSuccess && data?.length > 0 && (
-            data.map(item => {
-              return (
-                <BoatCard
-                  boatData={item}
-                  key={item.shipFishingPostId}
-                />
-              )
-            })
-          )}
+          {isSuccess &&
+            data?.length > 0 &&
+            data.map((item) => {
+              return <BoatCard boatData={item} key={item.shipFishingPostId} />;
+            })}
         </div>
       </div>
     </section>

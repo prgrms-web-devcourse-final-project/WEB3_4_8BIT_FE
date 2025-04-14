@@ -17,7 +17,9 @@ async function getShipPosts(
 
   const cookieStore = await cookies();
   const cookieEntries = cookieStore.getAll();
-  const cookieHeader = cookieEntries.map(cookie => `${cookie.name}=${cookie.value}`).join('; ');
+  const cookieHeader = cookieEntries
+    .map((cookie) => `${cookie.name}=${cookie.value}`)
+    .join("; ");
 
   console.log(cookieHeader);
 
@@ -44,7 +46,7 @@ async function getShipPosts(
         process.env.NEXT_PUBLIC_API_URL
       }/ship-fishing-posts?${query.toString()}`,
       {
-        cache: "no-store",
+        cache: "force-cache",
         headers: {
           Cookie: cookieHeader,
           Authorization: token,

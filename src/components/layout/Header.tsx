@@ -1,11 +1,25 @@
 "use client";
 
+import { UserAPI } from "@/lib/api/userAPI";
 import { useUserStore } from "@/stores/userStore";
 import { Menu, User, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
+
+interface MenuItem {
+  name: string;
+  path: string;
+}
+
+const menuItems: MenuItem[] = [
+  { name: "선상 낚시 예약", path: "/boat-reservation" },
+  { name: "낚시 동출 모집", path: "/fishing-group" },
+  { name: "낚시 포인트", path: "/fishing-point" },
+  { name: "어류 도감", path: "/user/mypage/fish-encyclopedia" },
+  { name: "마이페이지", path: "/user/mypage" },
+];
 
 export default function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -29,15 +43,11 @@ export default function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
 
   const clearUser = useUserStore((state) => state.clearUser);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     clearUser();
-
-    document.cookie =
-      "accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-
+    await UserAPI.postLogout();
     router.push("/");
   };
-
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
@@ -46,6 +56,14 @@ export default function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
 
   const goToHome = () => {
     router.push("/");
+    closeMenu();
+  };
+  const closeMenu = () => {
+    setIsMenuOpen(false);
+  };
+
+  const handleLinkClick = () => {
+    closeMenu();
   };
 
   return (
@@ -63,53 +81,29 @@ export default function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
               alt="logo"
               width={130}
               height={30}
-              className="w-[200px] h-[full] cursor-pointer transition-transform duration-300 group-hover:scale-105"
+              className="w-[180px] h-[full] lg:w-[200px] cursor-pointer transition-transform duration-300 group-hover:scale-105"
               onClick={goToHome}
             />
           </div>
-          <nav className="hidden md:block">
-            <ul className="flex lg:gap-[51px] gap-[30px]">
-              <Link
-                href={"/boat-reservation"}
-                className="text-[18px] text-[#fff] paperlogy-6semibold cursor-pointer transition-all duration-300 hover:text-primary hover:scale-105 relative group"
-              >
-                선상 낚시 예약
-                <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-primary transition-all duration-300 group-hover:w-full"></span>
-              </Link>
-              <Link
-                href={"/fishing-group"}
-                className="text-[18px] text-[#fff] paperlogy-6semibold cursor-pointer transition-all duration-300 hover:text-primary hover:scale-105 relative group"
-              >
-                낚시 동출 모집
-                <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-primary transition-all duration-300 group-hover:w-full"></span>
-              </Link>
-              <Link
-                href={"/fishing-point"}
-                className="text-[18px] text-[#fff] paperlogy-6semibold cursor-pointer transition-all duration-300 hover:text-primary hover:scale-105 relative group"
-              >
-                낚시 포인트
-                <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-primary transition-all duration-300 group-hover:w-full"></span>
-              </Link>
-              <Link
-                href={"/user/mypage/fish-encyclopedia"}
-                className="text-[18px] text-[#fff] paperlogy-6semibold cursor-pointer transition-all duration-300 hover:text-primary hover:scale-105 relative group"
-              >
-                어류 도감
-                <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-primary transition-all duration-300 group-hover:w-full"></span>
-              </Link>
-              <Link
-                href={"/user/mypage"}
-                className="text-[18px] text-[#fff] paperlogy-6semibold cursor-pointer transition-all duration-300 hover:text-primary hover:scale-105 relative group"
-              >
-                마이페이지
-                <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-primary transition-all duration-300 group-hover:w-full"></span>
-              </Link>
+          <nav className="hidden lg:block">
+            <ul className="flex md:gap-[30px] xl:gap-[51px] gap-[20px]">
+              {menuItems.map((item) => (
+                <li key={item.path}>
+                  <Link
+                    href={item.path}
+                    className="text-[16px] lg:text-[18px] text-[#fff] paperlogy-6semibold cursor-pointer transition-all duration-300 hover:text-primary hover:scale-105 relative group"
+                  >
+                    {item.name}
+                    <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-primary transition-all duration-300 group-hover:w-full"></span>
+                  </Link>
+                </li>
+              ))}
             </ul>
           </nav>
         </div>
 
         {/* 헤더 오른쪽 - 로그인 버튼 */}
-        <div className="hidden md:block">
+        <div className="hidden lg:block">
           {isLoggedIn ? (
             <>
               <div className="flex items-center gap-[8px]">
@@ -137,7 +131,7 @@ export default function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
         </div>
 
         {/* 모바일 메뉴 버튼 */}
-        <div className="block md:hidden">
+        <div className="block lg:hidden">
           <button
             onClick={toggleMenu}
             className="cursor-pointer transition-transform duration-300 hover:scale-110"
@@ -165,13 +159,13 @@ export default function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
             <div className="mb-8">
               {isLoggedIn ? (
                 <div className="flex flex-col items-center gap-[8px]">
+                  <p className="text-[16px] text-[#fff] paperlogy-6semibold">
+                    환영합니다, {user?.nickname} 님!
+                  </p>
                   <button
                     onClick={handleLogout}
                     className="w-full bg-blue-600 hover:bg-blue-700 text-white text-[18px] px-[20px] py-[12px] rounded-full shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-105 paperlogy-6semibold"
                   >
-                    <p className="text-[16px] text-[#fff] paperlogy-6semibold">
-                      환영합니다, {user?.nickname} 님!
-                    </p>
                     <User className="w-[20px] h-[20px]" />
                     로그아웃
                   </button>
@@ -188,26 +182,17 @@ export default function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
 
             <nav>
               <ul className="space-y-6">
-                <li className="text-[20px] text-white paperlogy-6semibold cursor-pointer transition-all duration-300 hover:text-primary hover:scale-105 relative group">
-                  <Link href={"/boat-reservation"}>선상 낚시 예약</Link>
-                  <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-primary transition-all duration-300 group-hover:w-full"></span>
-                </li>
-                <li className="text-[20px] text-white paperlogy-6semibold cursor-pointer transition-all duration-300 hover:text-primary hover:scale-105 relative group">
-                  <Link href={"/fishing-group"}>낚시 동출 모집</Link>
-                  <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-primary transition-all duration-300 group-hover:w-full"></span>
-                </li>
-                <li className="text-[20px] text-white paperlogy-6semibold cursor-pointer transition-all duration-300 hover:text-primary hover:scale-105 relative group">
-                  <Link href={"/fishing-point"}>낚시 포인트</Link>
-                  <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-primary transition-all duration-300 group-hover:w-full"></span>
-                </li>
-                <li className="text-[20px] text-white paperlogy-6semibold cursor-pointer transition-all duration-300 hover:text-primary hover:scale-105 relative group">
-                  <Link href={"/user/mypage/fish-encyclopedia"}>어류 도감</Link>
-                  <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-primary transition-all duration-300 group-hover:w-full"></span>
-                </li>
-                <li className="text-[20px] text-white paperlogy-6semibold cursor-pointer transition-all duration-300 hover:text-primary hover:scale-105 relative group">
-                  <Link href={"/user/mypage"}>마이페이지</Link>
-                  <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-primary transition-all duration-300 group-hover:w-full"></span>
-                </li>
+                {menuItems.map((item) => (
+                  <li
+                    key={item.path}
+                    className="text-[20px] text-white paperlogy-6semibold cursor-pointer transition-all duration-300 hover:text-primary hover:scale-105 relative group"
+                  >
+                    <Link href={item.path} onClick={handleLinkClick}>
+                      {item.name}
+                    </Link>
+                    <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-primary transition-all duration-300 group-hover:w-full"></span>
+                  </li>
+                ))}
               </ul>
             </nav>
           </div>
@@ -216,8 +201,8 @@ export default function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
         {/* 메뉴가 열렸을 때 배경 오버레이 */}
         {isMenuOpen && (
           <div
-            className="fixed left-0 right-0 bottom-0 bg-black bg-opacity-50 z-[9999]"
-            onClick={toggleMenu}
+            className="fixed w-[100vw] h-[100vh] top-0 left-0  bg-[rgba(0,0,0,0.5)] z-[9999]"
+            onClick={closeMenu}
           ></div>
         )}
       </div>
