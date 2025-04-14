@@ -85,8 +85,9 @@ export default function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
               alt="logo"
               width={130}
               height={30}
-              className="w-[180px] h-[full] lg:w-[200px] cursor-pointer transition-transform duration-300 group-hover:scale-105"
+              className="w-auto h-auto max-w-[180px] lg:max-w-[200px] cursor-pointer transition-transform duration-300 group-hover:scale-105"
               onClick={goToHome}
+              priority
             />
           </div>
           <nav className="hidden lg:block">
