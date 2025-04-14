@@ -33,7 +33,14 @@ export default function ChatRoom({ roomData, handleBackToList }: ChatRoomProps) 
     async function fetchInitialMessages() {
       try {
         const res = await ChatAPI.getRoomMessages(roomData.roomId);
-        setMessages(res.content);
+        // 유효한 메시지 객체만 필터링합니다
+        if (Array.isArray(res.content)) {
+          console.log("받은 메시지 데이터:", res.content);
+          setMessages(res.content);
+        } else {
+          console.error("메시지 데이터가 배열이 아닙니다:", res.content);
+          setMessages([]);
+        }
       } catch (err) {
         console.error("기존 메시지 불러오기 실패", err);
       }
@@ -49,7 +56,7 @@ export default function ChatRoom({ roomData, handleBackToList }: ChatRoomProps) 
       withCredentials: true  // 이 부분이 중요: 쿠키를 포함시킴
     };
 
-    socketRef.current = new SockJS("https://api.mikki.kr/ws/chat", null, sockJsOptions);
+    socketRef.current = new SockJS("http://localhost:8080/ws/chat", null, sockJsOptions);
 
     stompClientRef.current = new Client({
       webSocketFactory: () => socketRef.current,
@@ -59,8 +66,22 @@ export default function ChatRoom({ roomData, handleBackToList }: ChatRoomProps) 
       onConnect: (frame) => {
         console.log("STOMP 연결 성공:", frame);
         stompClientRef.current?.subscribe(`/topic/chat/${roomData.roomId}`, (message) => {
-          const messageData = JSON.parse(message.body);
-          setMessages((prev) => [...prev, messageData.content]);
+          try {
+            const messageData = JSON.parse(message.body);
+            console.log("수신된 메시지 데이터:", messageData);
+
+            // 메시지 데이터 구조 확인 (messageData 또는 messageData.content)
+            const messageContent = messageData.content || messageData;
+
+            if (messageContent) {
+              console.log("처리할 메시지 내용:", messageContent);
+              setMessages((prev) => [...prev, messageContent]);
+            } else {
+              console.error("처리할 메시지 내용이 없습니다:", messageData);
+            }
+          } catch (error) {
+            console.error("메시지 처리 중 오류 발생:", error, message.body);
+          }
         });
       },
       onDisconnect: () => {
@@ -136,6 +157,10 @@ export default function ChatRoom({ roomData, handleBackToList }: ChatRoomProps) 
     }
   };
 
+  // 메시지 배열 유효성 검사 (디버깅용 로그 포함)
+  console.log("현재 메시지 목록:", messages);
+  const validMessages = Array.isArray(messages) ? messages : [];
+
   return (
     <div className="flex flex-col h-full">
       {/* 상단 헤더: 방 나가기, 방 정보 */}
@@ -156,9 +181,16 @@ export default function ChatRoom({ roomData, handleBackToList }: ChatRoomProps) 
       {/* 채팅 메시지 스크롤 */}
       <ScrollArea className="flex-1 p-4 overflow-scroll">
         <div className="space-y-4">
-          {messages.map((message) => (
-            <ChatMessage key={message.messageId} message={message} />
-          ))}
+          {validMessages.map((message, index) => {
+            // 각 메시지에 messageId가 없는 경우 인덱스를 사용
+            const key = message.messageId ? `message-${message.messageId}` : `message-index-${index}`;
+            return (
+              <ChatMessage
+                key={key}
+                message={message}
+              />
+            );
+          })}
           <div ref={messagesEndRef} />
         </div>
       </ScrollArea>
