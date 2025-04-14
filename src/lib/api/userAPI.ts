@@ -9,6 +9,7 @@
 } from "@/types/user.interface";
 import {apiInstance} from "@/lib/api/apiInstance";
 import {APIResponse, PostAPIResponse} from "@/lib/api/fishAPI";
+ import {ShipPostData} from "@/types/boatPostType";
 
 // 사용자 관련 API 클래스
 export class UserAPI {
@@ -198,6 +199,38 @@ export class UserAPI {
     try {
       const response = await apiInstance.get<APIResponse<number>>('/reservations/count');
       return response.data.data;
+    } catch (error) {
+      console.error('getMyReservationCount error:', error)
+      throw error;
+    }
+  }
+
+  public static async getUserLikesBoatFish() : Promise<ShipPostData[]> {
+    try {
+      const response = await apiInstance.get<APIResponse<{content : ShipPostData[]}>>('/reservations/count',{
+        params : {
+          order : 'desc',
+          size : 20,
+          sort: "createdAt",
+        }
+      });
+      return response.data.data.content;
+    } catch (error) {
+      console.error('getMyReservationCount error:', error)
+      throw error;
+    }
+  }
+
+  public static async getUserLikesGroupFish() : Promise<UserWrittenGroupFishing[]> {
+    try {
+      const response = await apiInstance.get<APIResponse<{content : UserWrittenGroupFishing[]}>>('/reservations/count',{
+        params : {
+          order : 'desc',
+          size : 20,
+          sort: "createdAt",
+        }
+      });
+      return response.data.data.content;
     } catch (error) {
       console.error('getMyReservationCount error:', error)
       throw error;
