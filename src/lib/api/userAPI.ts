@@ -15,7 +15,7 @@ import { APIResponse, PostAPIResponse } from "@/lib/api/fishAPI";
 export class UserAPI {
   public static async getMemberInfo(): Promise<User> {
     try {
-      const response = await apiInstance.post<APIResponse<User>>("/members");
+      const response = await apiInstance.get<APIResponse<User>>("/members");
       return response.data.data;
     } catch (error) {
       console.error("getMemberInfo error:", error);
@@ -25,7 +25,7 @@ export class UserAPI {
 
   public static async postLogout(): Promise<boolean> {
     try {
-      await apiInstance.get("/auth/logout");
+      await apiInstance.post("/auth/logout");
       return true;
     } catch (error) {
       console.error("postLogout error:", error);
