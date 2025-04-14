@@ -3,6 +3,9 @@
 import { useState, useEffect } from "react";
 import { getHotFishingPosts } from "@/lib/api/fishingPostAPI";
 import { HotPostCard } from "./HotPostCard";
+import { convertRegionTypeToKorean } from "@/lib/utils/regionUtils";
+import { getRegions } from "@/lib/api/fishingPointAPI";
+import { FishingPointLocation } from "@/types/fishingPointLocationType";
 
 interface HotPost {
   fishingTripPostId: number;
@@ -19,36 +22,39 @@ interface HotPost {
   latitude: number;
   fileUrlList: string[];
   postStatus: string;
-  views: number;
-  likes: number;
-  comments: number;
+  likeCount: number;
+  commentCount: number;
 }
 
-interface MockResponse {
-  timestamp: string;
-  data: {
-    fishingTripPostId: number;
-    name: string;
-    subject: string;
-    content: string;
-    currentCount: number;
-    recruitmentCount: number;
-    createDate: string;
-    fishingDate: string;
-    fishPointDetailName: string;
-    fishPointName: string;
-    longitude: number;
-    latitude: number;
-    fileUrlList: string[];
-    postStatus: string;
-  };
-  success: boolean;
+// API 응답 인터페이스
+interface HotPostResponse {
+  fishingTripPostId: number;
+  subject: string;
+  regionId: number;
+  regionType: string;
+  imageUrl: string | null;
+  hotScore: number;
 }
 
 export function HotPost() {
   const [hotPosts, setHotPosts] = useState<HotPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [regions, setRegions] = useState<FishingPointLocation[]>([]);
+
+  // 지역 정보 가져오기
+  useEffect(() => {
+    const fetchRegions = async () => {
+      try {
+        const regionsData = await getRegions();
+        setRegions(regionsData);
+      } catch (error) {
+        console.error("지역 정보를 가져오는 중 오류 발생:", error);
+      }
+    };
+
+    fetchRegions();
+  }, []);
 
   useEffect(() => {
     const fetchHotPosts = async () => {
@@ -59,15 +65,40 @@ export function HotPost() {
         const response = await getHotFishingPosts();
 
         // API 응답 처리
-        if (response && Array.isArray(response)) {
-          // 응답이 배열인 경우 (목업 데이터 구조)
-          const posts = response.map((item: MockResponse) => ({
-            ...item.data,
-            views: 0,
-            likes: 0,
-            comments: 0,
-          }));
-          setHotPosts(posts);
+        if (Array.isArray(response)) {
+          // API 응답을 HotPost 형식으로 변환
+          const transformedPosts: HotPost[] = response.map(
+            (post: HotPostResponse) => {
+              // 지역 정보 찾기
+              const region = regions.find(
+                (r) => String(r.regionId) === String(post.regionId)
+              );
+              const regionName = region
+                ? region.regionName
+                : convertRegionTypeToKorean(post.regionType);
+
+              return {
+                fishingTripPostId: post.fishingTripPostId,
+                name: "", // 기본값 설정
+                subject: post.subject,
+                content: "", // 기본값 설정
+                currentCount: 0, // 기본값 설정
+                recruitmentCount: 0, // 기본값 설정
+                createDate: new Date().toISOString(), // 기본값 설정
+                fishingDate: new Date().toISOString(), // 기본값 설정
+                fishPointDetailName: "", // 기본값 설정
+                fishPointName: regionName, // 지역 이름 사용
+                longitude: region ? region.longitude : 0, // 지역 정보에서 가져오기
+                latitude: region ? region.latitude : 0, // 지역 정보에서 가져오기
+                fileUrlList: post.imageUrl ? [post.imageUrl] : [], // 이미지 URL을 fileUrlList로 변환
+                postStatus: "RECRUITING", // 기본값 설정
+                likeCount: post.hotScore, // hotScore를 likeCount로 사용
+                commentCount: 0, // 기본값 설정
+              };
+            }
+          );
+
+          setHotPosts(transformedPosts);
         } else {
           setError("핫포스트를 불러오는데 실패했습니다.");
         }
@@ -79,8 +110,10 @@ export function HotPost() {
       }
     };
 
-    fetchHotPosts();
-  }, []);
+    if (regions.length > 0) {
+      fetchHotPosts();
+    }
+  }, [regions]);
 
   if (loading) {
     return <div className="text-center py-8">핫포스트를 불러오는 중...</div>;

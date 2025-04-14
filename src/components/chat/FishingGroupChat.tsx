@@ -2,133 +2,36 @@
 
 import type React from "react"
 
-import { useState, useRef, useEffect } from "react"
+import { useState } from "react"
 import { Search } from "lucide-react"
 import { Input } from "@/components/ui/input"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { mockCommunityMessages } from "@/components/chat/mock-chat-data"
-import {ChatMessageItem, ChatRoomFishingGroup} from "@/types/Chat.types";
+import { ChatRoomData } from "@/types/Chat.types";
 import ChatRoom from "@/components/chat/ChatRoom";
-
-const communityRooms : ChatRoomFishingGroup[] = [
-  {
-    id: "room-1",
-    name: "일반 낚시 토론방",
-    description: "낚시에 관한 모든 주제를 다루는 채팅방입니다.",
-    image: "/placeholder.svg?height=40&width=40",
-    onlineCount: 3,
-    lastMessage: "오늘 기장 앞바다 조황 어떤가요?",
-    unreadCount: 3,
-  },
-  {
-    id: "room-2",
-    name: "초보 낚시꾼 모임",
-    description: "낚시를 처음 시작하는 분들을 위한 채팅방입니다.",
-    image: "/placeholder.svg?height=40&width=40",
-    onlineCount: 4,
-    lastMessage: "낚싯대 추천 부탁드립니다!",
-    unreadCount: 0,
-  },
-  {
-    id: "room-3",
-    name: "바다 낚시 동호회",
-    description: "바다 낚시를 좋아하는 분들의 채팅방입니다.",
-    image: "/placeholder.svg?height=40&width=40",
-    onlineCount: 5,
-    lastMessage: "이번 주말 동해안 출조 계획 있으신 분?",
-    unreadCount: 5,
-  },
-  {
-    id: "room-4",
-    name: "민물 낚시 동호회",
-    description: "민물 낚시를 좋아하는 분들의 채팅방입니다.",
-    image: "/placeholder.svg?height=40&width=40",
-    onlineCount: 8,
-    lastMessage: "붕어 낚시 포인트 공유합니다.",
-    unreadCount: 0,
-  },
-  {
-    id: "room-5",
-    name: "루어 낚시 채팅방",
-    description: "루어 낚시에 관한 정보를 공유하는 채팅방입니다.",
-    image: "/placeholder.svg?height=40&width=40",
-    onlineCount: 3,
-    lastMessage: "새로운 루어 구매했어요!",
-    unreadCount: 1,
-  },
-]
+import {useQuery} from "@tanstack/react-query";
+import {ChatAPI} from "@/lib/api/chatAPI";
 
 export function FishingGroupChat() {
-  const [messages, setMessages] = useState<ChatMessageItem[]>(mockCommunityMessages)
-  const [newMessage, setNewMessage] = useState("")
-  const [isUploading, setIsUploading] = useState(false)
-  const [previewImage, setPreviewImage] = useState<string | null>(null)
-  const [selectedRoom, setSelectedRoom] = useState<string | null>(null)
+  const [selectedRoom, setSelectedRoom] = useState<number | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const { data, isLoading, isError, error } = useQuery<ChatRoomData[]>({
+    queryKey: ['chat-rooms'],
+    queryFn: ChatAPI.getChatRooms,
+    staleTime: 0,
+  })
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [messages])
-
-  const handleSendMessage = () => {
-    if (newMessage.trim() === "" && !previewImage) return
-
-    const newMsg : ChatMessageItem = {
-      id: `msg-${Date.now()}`,
-      sender: {
-        id: "current-user",
-        name: "나",
-        avatar: "/placeholder.svg?height=40&width=40",
-        isOnline: true,
-      },
-      content: newMessage,
-      timestamp: new Date().toISOString(),
-      isOwn: true,
-    }
-
-    if (previewImage) {
-      newMsg.image = previewImage
-    }
-
-    setMessages([...messages, newMsg])
-    setNewMessage("")
-    setPreviewImage(null)
+  if (isLoading) {
+    return <span>Loading...</span>
   }
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault()
-      handleSendMessage()
-    }
+  if (isError) {
+    return <span>Error : {error.message}</span>
   }
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+  const chatRooms : ChatRoomData[] = data || [];
+  const selectedChatRoom = chatRooms.filter(item => item.roomId === selectedRoom)[0];
 
-    setIsUploading(true)
-
-    setTimeout(() => {
-      const reader = new FileReader()
-      reader.onload = (event) => {
-        setPreviewImage(event.target?.result as string)
-        setIsUploading(false)
-      }
-      reader.readAsDataURL(file)
-    }, 1000)
-  }
-
-  const cancelImageUpload = () => {
-    setPreviewImage(null)
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ""
-    }
-  }
-
-  const handleSelectRoom = (roomId: string) => {
+  const handleSelectRoom = (roomId: number) => {
     setSelectedRoom(roomId)
   }
 
@@ -136,13 +39,10 @@ export function FishingGroupChat() {
     setSelectedRoom(null)
   }
 
-  const filteredRooms = communityRooms.filter(
+  const filteredRooms = chatRooms.filter(
     (room) =>
-      room.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      room.description.toLowerCase().includes(searchQuery.toLowerCase()),
+      room.targetName.toLowerCase().includes(searchQuery.toLowerCase())
   )
-
-  const currentRoom = selectedRoom ? communityRooms.find((room) => room.id === selectedRoom) : null
 
   if (!selectedRoom) {
     return (
@@ -165,28 +65,18 @@ export function FishingGroupChat() {
             {filteredRooms.length > 0 ? (
               filteredRooms.map((room) => (
                 <button
-                  key={room.id}
+                  key={room.roomId}
                   className="w-full p-3 flex items-center gap-3 hover:bg-gray-80 rounded-lg text-left cursor-pointer"
-                  onClick={() => handleSelectRoom(room.id)}
+                  onClick={() => handleSelectRoom(room.roomId)}
                 >
-                  <div className="relative">
-                    <Avatar className="h-12 w-12 border">
-                      <AvatarImage src={room.image} alt={room.name} />
-                      <AvatarFallback>{room.name[0]}</AvatarFallback>
-                    </Avatar>
-                    {room.unreadCount > 0 && (
-                      <span className="absolute -top-1 -right-1 font-semibold bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
-                        {room.unreadCount}
-                      </span>
-                    )}
-                  </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-center">
-                      <p className="font-medium">{room.name}</p>
-                      <span className="text-xs text-gray-500">{room.onlineCount}명</span>
+                      <p className="font-medium">{room.targetName}</p>
+                      <span className="text-xs text-gray-500">총 {room.participantCount}명</span>
                     </div>
-                    <p className="text-sm text-gray-500 truncate">{room.description}</p>
-                    <p className="text-sm truncate">{room.lastMessage}</p>
+                    <p className="text-sm truncate text-gray-30">
+                      {room.lastMessage ? room.lastMessage : "메세지가 없습니다. 채팅을 시작해보세요!"}
+                    </p>
                   </div>
                 </button>
               ))
@@ -205,17 +95,7 @@ export function FishingGroupChat() {
   return (
     <ChatRoom
       handleBackToList={handleBackToList}
-      currentRoom={currentRoom}
-      messages={messages}
-      messagesEndRef={messagesEndRef}
-      previewImage={previewImage}
-      cancelImageUpload={cancelImageUpload}
-      fileInputRef={fileInputRef}
-      handleFileChange={handleFileChange}
-      newMessage={newMessage}
-      setNewMessage={setNewMessage}
-      isUploading={isUploading}
-      handleKeyDown={handleKeyDown}
-      handleSendMessage={handleSendMessage} />
+      roomData={selectedChatRoom}
+    />
   )
 }
