@@ -5,11 +5,13 @@ export interface ShipPostData {
   location: string;
   price: number;
   fileUrlList: string[];
+  fileUrl?: string; // API 응답에서 오는 단일 이미지 URL
   fishNameList: string[];
   reviewEverRate: number;
   isLiked: boolean;
   reviewCount: number;
   createdAt: Date;
+  likeCount: number;
 }
 
 // 선상 낚시 포스트 목록 조회 API 응답 타입

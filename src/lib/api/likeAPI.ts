@@ -109,23 +109,14 @@ export const getLikeCount = async (
 /**
  * 좋아요한 동출 모집 게시글 목록 조회 API
  * 로그인한 사용자가 좋아요한 동출 모집 게시글을 최신순으로 조회
- * @param params - 페이지네이션 파라미터 (정렬 순서, 페이지 크기 등)
+ * @param size - 한 페이지당 조회할 게시글 수
  */
 export const getLikedFishingTripPosts = async <T>(
-  params: CursorRequestDto
+  size: number = 10
 ): Promise<BasePaginatedApiResponse<T>> => {
   try {
-    const queryParams = new URLSearchParams({
-      order: params.order,
-      sort: params.sort,
-      type: params.type,
-      fieldValue: params.fieldValue,
-      id: params.id.toString(),
-      size: params.size.toString(),
-    });
-
     const response = await axiosInstance.get(
-      `/likes/fishing-trip-post?${queryParams}`
+      `/likes/fishing-trip-post?size=${size}`
     );
     return response.data;
   } catch (error) {
@@ -147,23 +138,14 @@ export const getLikedFishingTripPosts = async <T>(
 /**
  * 좋아요한 선상 낚시 게시글 목록 조회 API
  * 로그인한 사용자가 좋아요한 선상 낚시 게시글을 최신순으로 조회
- * @param params - 페이지네이션 파라미터 (정렬 순서, 페이지 크기 등)
+ * @param size - 한 페이지당 조회할 게시글 수
  */
 export const getLikedShipFishingPosts = async <T>(
-  params: CursorRequestDto
+  size: number = 10
 ): Promise<BasePaginatedApiResponse<T>> => {
   try {
-    const queryParams = new URLSearchParams({
-      order: params.order,
-      sort: params.sort,
-      type: params.type,
-      fieldValue: params.fieldValue,
-      id: params.id.toString(),
-      size: params.size.toString(),
-    });
-
     const response = await axiosInstance.get(
-      `/likes/ship-fishing-post?${queryParams}`
+      `/likes/ship-fishing-post?size=${size}`
     );
     return response.data;
   } catch (error) {

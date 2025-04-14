@@ -150,7 +150,7 @@ export function PostCard({
 
   return (
     <Link href={`/fishing-group/post/${fishingTripPostId}`} className="block">
-      <div className="w-full mb-4 border border-gray-300 rounded-lg hover:bg-gray-50 px-4 md:px-6 py-4 cursor-pointer transition-all duration-300 hover:shadow-lg hover:border-blue-200">
+      <div className="w-full mb-4 border border-gray-300 rounded-lg hover:bg-gray-80 px-4 md:px-6 py-4 cursor-pointer transition-all duration-300 hover:shadow-lg hover:border-blue-200">
         <div className="flex flex-col md:flex-row items-start gap-4 md:gap-5">
           {/* 썸네일 이미지 */}
           <div className="w-full md:w-[180px] h-[120px] rounded-md overflow-hidden flex-shrink-0">
@@ -169,8 +169,8 @@ export function PostCard({
           <div className="flex-1 min-w-0">
             <div className="space-y-3">
               {/* 모집 상태 & 제목 */}
-              <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
-                <div className="flex items-center gap-2">
+              <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-2">
+                <div className="flex items-center gap-1">
                   <span
                     className={`px-2 py-1 text-sm rounded-full ${
                       postStatus === "RECRUITING"
@@ -186,7 +186,7 @@ export function PostCard({
                     </span>
                   )}
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 md:ml-2">
+                <h3 className="text-lg font-medium text-gray-900 md:ml-1">
                   {title}
                 </h3>
               </div>

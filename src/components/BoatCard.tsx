@@ -15,12 +15,14 @@ import Link from "next/link";
 import Image from "next/image";
 import { ShipPostData } from "@/types/boatPostType";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function BoatCard({ boatData }: { boatData: ShipPostData }) {
   const [shipPost, setShipPost] = useState<ShipPostData | null>(null);
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
+  const queryClient = useQueryClient();
 
   // 메인페이지에서 오류 발생
   if (!boatData) {
@@ -31,6 +33,7 @@ export default function BoatCard({ boatData }: { boatData: ShipPostData }) {
     // 초기 데이터 설정
     setShipPost(boatData);
     setIsLiked(boatData.isLiked);
+    setLikeCount(boatData.likeCount || 0);
   }, [boatData]);
 
   // 좋아요 토글 함수 (낙관적 업데이트)
@@ -86,6 +89,13 @@ export default function BoatCard({ boatData }: { boatData: ShipPostData }) {
             : prevPost
         );
         toast.error(response.message || "좋아요 처리 중 오류가 발생했습니다.");
+      } else {
+        // 좋아요 토글 성공 시 관련된 모든 쿼리 캐시 무효화
+        await queryClient.invalidateQueries({ queryKey: ["likedShipPosts"] });
+        await queryClient.invalidateQueries({ queryKey: ["shipPosts"] });
+        await queryClient.invalidateQueries({
+          queryKey: ["shipPost", boatData.shipFishingPostId],
+        });
       }
 
       // 애니메이션 효과 0.5초 후 해제
@@ -99,15 +109,18 @@ export default function BoatCard({ boatData }: { boatData: ShipPostData }) {
     }
   };
 
+  // 이미지 URL 결정
+  const imageUrl =
+    boatData.fileUrl ||
+    (boatData.fileUrlList && boatData.fileUrlList.length > 0
+      ? boatData.fileUrlList[0]
+      : "/images/fishing-point-dummy.png");
+
   return (
     <Card className="overflow-hidden shadow-lg hover:shadow-xl transition-shadow pt-0">
       <div className="h-48 overflow-hidden">
         <Image
-          src={
-            boatData.fileUrlList && boatData.fileUrlList.length > 0
-              ? boatData.fileUrlList[0]
-              : "/images/fishing-point-dummy.png"
-          }
+          src={imageUrl}
           alt={boatData.subject}
           className="w-full h-full object-cover"
           height={195}
@@ -129,11 +142,11 @@ export default function BoatCard({ boatData }: { boatData: ShipPostData }) {
               </div>
             </CardTitle>
             <CardDescription className="flex items-center mt-1">
-              <MapPin className="h-4 w-4 mr-1"/> {boatData.location}
+              <MapPin className="h-4 w-4 mr-1" /> {boatData.location}
             </CardDescription>
           </div>
           <div className="flex items-center bg-cyan-50 text-gray-20 px-2 py-1 rounded">
-            <Star className="h-4 w-4 fill-amber-400 text-amber-400 mr-1"/>
+            <Star className="h-4 w-4 fill-amber-400 text-amber-400 mr-1" />
             <span className="font-medium">
               {boatData.reviewEverRate.toFixed(1)}
             </span>
