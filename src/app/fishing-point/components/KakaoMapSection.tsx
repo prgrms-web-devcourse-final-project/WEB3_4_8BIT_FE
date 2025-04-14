@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -64,9 +63,6 @@ export default function KakaoMapSection({
               ))}
             </SelectContent>
           </Select>
-          <Button className="text-body-3 text-white">
-            낚시 포인트 제보하기
-          </Button>
         </div>
         <KaKaoMap
           fishingPoints={fishingPoints || []}

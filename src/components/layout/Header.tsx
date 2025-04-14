@@ -8,6 +8,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 
 interface MenuItem {
   name: string;
@@ -26,6 +27,7 @@ export default function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const user = useUserStore((state) => state.user);
+  const setUser = useUserStore((state) => state.setUser);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -41,6 +43,22 @@ export default function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
       window.removeEventListener("scroll", handleScroll);
     };
   }, []);
+
+  useEffect(() => {
+    const loadUserData = async () => {
+      if (isLoggedIn && !user) {
+        try {
+          const userData = await UserAPI.getMemberInfo();
+          setUser(userData);
+        } catch (error) {
+          console.error("유저 정보 불러오기에 실패했습니다.", error);
+          toast.error("유저 정보 불러오기에 실패했습니다.");
+        }
+      }
+    };
+
+    loadUserData();
+  }, [isLoggedIn, user, setUser]);
 
   const clearUser = useUserStore((state) => state.clearUser);
 
