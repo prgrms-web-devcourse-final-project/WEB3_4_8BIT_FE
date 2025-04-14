@@ -92,8 +92,7 @@ export function Sidebar() {
           </Avatar>
           <h2 className="text-xl font-bold">{user?.nickname || "사용자"}</h2>
           <p className="text-sm text-gray-500 mt-1">
-            {/*{user?.role === "USER" ? "일반 회원" : "선장 회원"}*/}
-            "일반 회원"
+            {user?.role === "USER" ? "일반 회원" : "선장 회원"}
           </p>
           {user?.description && (
             <p className="text-sm text-gray-600 mt-2">{user.description}</p>
