@@ -12,7 +12,7 @@ export default function Footer() {
                 alt="미끼미끼 로고"
                 width={220}
                 height={30}
-                className="mb-1"
+                className="mb-1 w-auto h-auto"
               />
               <div className="space-y-3">
                 <p className="text-lg font-medium text-white">

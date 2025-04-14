@@ -6,7 +6,6 @@ import { ShipPostListAPIResponse } from "@/types/boatPostType";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
-// import { useState } from "react";
 
 export default function BoatList({
   shipPostsData,
@@ -31,9 +30,6 @@ export default function BoatList({
       window.scrollTo(0, currentScroll);
     });
   };
-
-  // const [postData, setPostData] =
-  //   useState<ShipPostListAPIResponse>(shipPostsData);
 
   return (
     <div className="space-y-6">

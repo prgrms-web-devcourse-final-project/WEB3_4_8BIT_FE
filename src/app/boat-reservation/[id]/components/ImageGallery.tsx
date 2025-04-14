@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import React, { useState } from "react";
 
-export default function ImageGallery() {
+export default function ImageGallery({ imageList }: { imageList: string[] }) {
   // 이미지 갤러리 네비게이션
   const nextImage = () => {
     setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
@@ -19,18 +19,13 @@ export default function ImageGallery() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   // 이미지 갤러리 데이터
-  const images = [
-    "/placeholder.svg?height=500&width=800",
-    "/placeholder.svg?height=500&width=800",
-    "/placeholder.svg?height=500&width=800",
-    "/placeholder.svg?height=500&width=800",
-  ];
+  const images = imageList.length > 0 ? imageList : ["/default.png"];
   return (
     <>
       {/* 이미지 갤러리 */}
       <div className="relative rounded-xl overflow-hidden bg-gray-100 h-[400px]">
         <Image
-          src={images[currentImageIndex] || "/placeholder.svg"}
+          src={images[currentImageIndex]}
           alt="선상 낚시 이미지"
           className="w-full h-full object-cover"
           height={400}
@@ -78,7 +73,7 @@ export default function ImageGallery() {
             onClick={() => setCurrentImageIndex(index)}
           >
             <Image
-              src={image || "/placeholder.svg"}
+              src={image}
               alt={`썸네일 ${index + 1}`}
               className="w-full h-full object-cover"
               height={80}

@@ -69,9 +69,10 @@ export default async function BoatReservationDetail({
 }: {
   params: { id: string };
 }) {
-  const boatPostDetail = await getBoatPostDetail(params.id);
+  const params_id = await params;
+  const boatPostDetail = await getBoatPostDetail(params_id.id);
   const reservationUnavailableDate = await getReservationUnavailableDate(
-    params.id
+    params_id.id
   );
 
   return (
@@ -93,7 +94,7 @@ export default async function BoatReservationDetail({
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-8">
             {/* 이미지 갤러리 */}
-            <ImageGallery />
+            <ImageGallery imageList={boatPostDetail.data.fileUrlList} />
 
             {/* 상세 정보 탭 */}
             <Tabs defaultValue="info" className="w-full">
@@ -133,7 +134,7 @@ export default async function BoatReservationDetail({
               <ReservationInfo
                 detailShip={boatPostDetail.data}
                 reservationUnavailableDate={
-                  reservationUnavailableDate.data.unAvailableDateList
+                  reservationUnavailableDate?.data?.unAvailableDateList || []
                 }
               />
               <PhoneInfo detailMember={boatPostDetail.data.detailMember} />

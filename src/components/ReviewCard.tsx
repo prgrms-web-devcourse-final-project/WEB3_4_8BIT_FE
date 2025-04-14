@@ -7,21 +7,24 @@ import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { UserAPI } from "@/lib/api/userAPI";
 import { usePathname, useRouter } from "next/navigation";
+import dayjs from "dayjs";
 
 export default function ReviewCard({
   id,
-  user,
+  nickname,
   date,
   content,
   images,
+  profileImg,
   rating,
   enableDelete,
 }: {
   id: number;
-  user: string;
+  nickname: string;
   date: string;
   content: string;
   images: string[];
+  profileImg: string;
   rating: number;
   enableDelete?: boolean;
 }) {
@@ -66,11 +69,17 @@ export default function ReviewCard({
         <div className="flex justify-between items-start">
           <div className="flex items-center">
             <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-700 font-medium">
-              {user.charAt(0)}
+              <Image
+                src={profileImg || "/images/default.png"}
+                alt="프로필 이미지"
+                width={40}
+                height={40}
+                className="rounded-full"
+              />
             </div>
             <div className="ml-3">
               <div className="flex">
-                <p className="font-medium mr-3">{user}</p>
+                <p className="font-medium mr-3">{nickname}</p>
                 {Array.from({ length: 5 }).map((_, i) => (
                   <Star
                     key={i}
@@ -82,7 +91,9 @@ export default function ReviewCard({
                   />
                 ))}
               </div>
-              <p className="text-sm text-gray-500">{date}</p>
+              <p className="text-sm text-gray-500">
+                {dayjs(date).format("YYYY-MM-DD")}
+              </p>
             </div>
           </div>
           {enableDelete && (
@@ -105,9 +116,9 @@ export default function ReviewCard({
                 key={i}
                 src={image || "/placeholder.svg"}
                 alt={`리뷰 이미지 ${i + 1}`}
-                height={80}
                 width={80}
-                className="rounded-md object-cover"
+                height={80}
+                className="rounded-md object-cover w-auto"
               />
             ))}
           </div>

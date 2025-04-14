@@ -49,7 +49,6 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
       if (participationResponse.success) {
         setParticipation(participationResponse.data);
         setIsOwner(participationResponse.data.isCurrentUserOwner);
-        console.log("📌 참여 정보 업데이트됨:", participationResponse.data);
       } else {
         console.error("참여 정보 조회 실패:", participationResponse);
       }
@@ -87,11 +86,6 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
   // 좋아요 토글 함수 (낙관적 업데이트, 로깅 추가)
   const handleLikeToggle = async () => {
     try {
-      console.log("좋아요 토글 요청 시작:", {
-        postId,
-        currentIsLiked: isLiked,
-        currentLikeCount: likeCount,
-      });
       // 이전 상태 저장 (실패 시 롤백용)
       const previousIsLiked = isLiked;
       const previousLikeCount = likeCount;
@@ -115,7 +109,6 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
         targetType: "FISHING_TRIP_POST",
         targetId: postId,
       });
-      console.log("서버 응답:", response);
 
       if (!response.success) {
         // API 요청 실패 시, 이전 상태로 롤백
@@ -139,7 +132,6 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
             const updatedPostResponse = await getFishingPost(postId);
             if (updatedPostResponse.success) {
               const updatedPost = updatedPostResponse.data;
-              console.log("최신 게시글 데이터:", updatedPost);
 
               // 서버에서 받은 최신 데이터로 상태 업데이트
               setIsLiked(updatedPost.isLiked);

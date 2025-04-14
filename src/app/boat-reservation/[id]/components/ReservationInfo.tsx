@@ -28,6 +28,7 @@ import {
 } from "@/lib/api/reservationAPI";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import useDebouncedRequest from "@/hooks/useDebouncedReques";
 
 export default function ReservationInfo({
   detailShip,
@@ -66,7 +67,7 @@ export default function ReservationInfo({
     }
   }, [date, detailShip.shipFishingPostId]);
 
-  const handleReservation = async () => {
+  const { trigger: handleReservation } = useDebouncedRequest(async () => {
     const response = await postReservation(
       detailShip.shipFishingPostId,
       selectedPeople,
@@ -83,8 +84,8 @@ export default function ReservationInfo({
     } else {
       toast.error("예약에 실패했습니다. 잠시 후 다시 시도해주세요.");
     }
-  };
-  // @ts-ignore
+  });
+
   return (
     <Card className="shadow-lg">
       <CardHeader>
@@ -200,7 +201,9 @@ export default function ReservationInfo({
 
               <div className="flex justify-between font-bold text-lg">
                 <span>총 금액</span>
-                <span>₩{(selectedPeople * detailShip.price).toLocaleString()}</span>
+                <span>
+                  ₩{(selectedPeople * detailShip.price).toLocaleString()}
+                </span>
               </div>
             </div>
           </>
