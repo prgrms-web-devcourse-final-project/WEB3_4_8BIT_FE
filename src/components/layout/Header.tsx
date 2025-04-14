@@ -29,12 +29,9 @@ export default function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
 
   const clearUser = useUserStore((state) => state.clearUser);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     clearUser();
-
-    document.cookie =
-      "accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-
+    await fetch("/api/logout");
     router.push("/");
   };
 
@@ -46,6 +43,14 @@ export default function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
 
   const goToHome = () => {
     router.push("/");
+    closeMenu();
+  };
+  const closeMenu = () => {
+    setIsMenuOpen(false);
+  };
+
+  const handleLinkClick = () => {
+    closeMenu();
   };
 
   return (
@@ -165,13 +170,13 @@ export default function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
             <div className="mb-8">
               {isLoggedIn ? (
                 <div className="flex flex-col items-center gap-[8px]">
+                  <p className="text-[16px] text-[#fff] paperlogy-6semibold">
+                    환영합니다, {user?.nickname} 님!
+                  </p>
                   <button
                     onClick={handleLogout}
                     className="w-full bg-blue-600 hover:bg-blue-700 text-white text-[18px] px-[20px] py-[12px] rounded-full shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-105 paperlogy-6semibold"
                   >
-                    <p className="text-[16px] text-[#fff] paperlogy-6semibold">
-                      환영합니다, {user?.nickname} 님!
-                    </p>
                     <User className="w-[20px] h-[20px]" />
                     로그아웃
                   </button>
@@ -189,23 +194,36 @@ export default function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
             <nav>
               <ul className="space-y-6">
                 <li className="text-[20px] text-white paperlogy-6semibold cursor-pointer transition-all duration-300 hover:text-primary hover:scale-105 relative group">
-                  <Link href={"/boat-reservation"}>선상 낚시 예약</Link>
+                  <Link href={"/boat-reservation"} onClick={handleLinkClick}>
+                    선상 낚시 예약
+                  </Link>
                   <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-primary transition-all duration-300 group-hover:w-full"></span>
                 </li>
                 <li className="text-[20px] text-white paperlogy-6semibold cursor-pointer transition-all duration-300 hover:text-primary hover:scale-105 relative group">
-                  <Link href={"/fishing-group"}>낚시 동출 모집</Link>
+                  <Link href={"/fishing-group"} onClick={handleLinkClick}>
+                    낚시 동출 모집
+                  </Link>
                   <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-primary transition-all duration-300 group-hover:w-full"></span>
                 </li>
                 <li className="text-[20px] text-white paperlogy-6semibold cursor-pointer transition-all duration-300 hover:text-primary hover:scale-105 relative group">
-                  <Link href={"/fishing-point"}>낚시 포인트</Link>
+                  <Link href={"/fishing-point"} onClick={handleLinkClick}>
+                    낚시 포인트
+                  </Link>
                   <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-primary transition-all duration-300 group-hover:w-full"></span>
                 </li>
                 <li className="text-[20px] text-white paperlogy-6semibold cursor-pointer transition-all duration-300 hover:text-primary hover:scale-105 relative group">
-                  <Link href={"/user/mypage/fish-encyclopedia"}>어류 도감</Link>
+                  <Link
+                    href={"/user/mypage/fish-encyclopedia"}
+                    onClick={handleLinkClick}
+                  >
+                    어류 도감
+                  </Link>
                   <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-primary transition-all duration-300 group-hover:w-full"></span>
                 </li>
                 <li className="text-[20px] text-white paperlogy-6semibold cursor-pointer transition-all duration-300 hover:text-primary hover:scale-105 relative group">
-                  <Link href={"/user/mypage"}>마이페이지</Link>
+                  <Link href={"/user/mypage"} onClick={handleLinkClick}>
+                    마이페이지
+                  </Link>
                   <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-primary transition-all duration-300 group-hover:w-full"></span>
                 </li>
               </ul>
