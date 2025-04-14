@@ -1,6 +1,7 @@
 import { revalidateTag } from "next/cache";
+import { NextResponse } from "next/server";
 
 export async function POST() {
   revalidateTag("reviews");
-  return Response.json({ revalidated: true });
+  return NextResponse.json({ revalidated: true });
 }
