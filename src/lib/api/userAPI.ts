@@ -25,7 +25,7 @@ export class UserAPI {
 
   public static async postLogout(): Promise<boolean> {
     try {
-      await apiInstance.get("/api/auth/logout");
+      await apiInstance.get("/auth/logout");
       return true;
     } catch (error) {
       console.error("postLogout error:", error);
