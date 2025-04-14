@@ -1,5 +1,6 @@
 "use client";
 
+import useDebouncedRequest from "@/hooks/useDebouncedReques";
 import { UserAPI } from "@/lib/api/userAPI";
 import { useUserStore } from "@/stores/userStore";
 import { Menu, User, X } from "lucide-react";
@@ -43,11 +44,14 @@ export default function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
 
   const clearUser = useUserStore((state) => state.clearUser);
 
-  const handleLogout = async () => {
-    clearUser();
-    await UserAPI.postLogout();
-    router.push("/");
-  };
+  const { trigger: handleLogout } = useDebouncedRequest(async () => {
+    const response = await UserAPI.postLogout();
+    if (response) {
+      clearUser();
+      router.push("/");
+    }
+  });
+
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };

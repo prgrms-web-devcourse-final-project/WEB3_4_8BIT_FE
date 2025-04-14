@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { applyFishingTripRecruitment } from "@/lib/api/fishingTripRecruitmentAPI";
 import { Button } from "@/components/ui/button";
 import { User } from "lucide-react";
+import useDebouncedRequest from "@/hooks/useDebouncedReques";
 
 interface JoinInfoCardProps {
   recruitmentCount: number;
@@ -44,31 +45,18 @@ export default function JoinInfoCard({
   const [experience, setExperience] = useState("BEGINNER");
   const [applicationText, setApplicationText] = useState("");
 
-  const handleJoinSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    console.log("참여 신청 제출 시작");
-
+  const { trigger: handleJoinSubmit } = useDebouncedRequest(async () => {
     if (!applicationText.trim()) {
-      console.log("신청 내용 없음");
       toast.error("신청 내용을 입력해주세요.");
       return;
     }
-    console.log("신청 내용 유효함");
 
     try {
-      console.log("API 요청 시도:", {
-        fishingTripPostId,
-        introduction: applicationText.trim(),
-        fishingLevel: experience,
-      });
-
       const response = await applyFishingTripRecruitment({
         fishingTripPostId,
         introduction: applicationText.trim(),
         fishingLevel: experience,
       });
-
-      console.log("API 응답 받음:", response);
 
       if (response.success) {
         toast.success(response.message || "참여 신청이 완료되었습니다.");
@@ -82,6 +70,12 @@ export default function JoinInfoCard({
       console.error("참여 신청 중 오류 발생:", error);
       toast.error("참여 신청 중 오류가 발생했습니다.");
     }
+  }, 500);
+
+  // 폼 제출 핸들러 추가
+  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    handleJoinSubmit();
   };
 
   return (
@@ -205,7 +199,7 @@ export default function JoinInfoCard({
               ×
             </button>
             <h3 className="text-xl font-bold mb-4">참여 신청하기</h3>
-            <form onSubmit={handleJoinSubmit} className="space-y-4">
+            <form onSubmit={handleFormSubmit} className="space-y-4">
               {/* 자기소개 입력 */}
               <div>
                 <label

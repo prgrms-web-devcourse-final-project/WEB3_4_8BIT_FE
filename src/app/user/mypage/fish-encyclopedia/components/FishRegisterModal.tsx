@@ -1,8 +1,8 @@
-import React, {useReducer, useState} from "react";
+import React, { useReducer, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {Button} from "@/components/ui/button";
-import {X} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { X } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -11,12 +11,13 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import {useQuery} from "@tanstack/react-query";
-import {getFishingRegion, getRegions} from "@/lib/api/fishingPointAPI";
-import {FishUpload} from "@/types/fish.interface";
-import {FishAPI} from "@/lib/api/fishAPI";
-import {useRouter} from "next/navigation";
+} from "@/components/ui/select";
+import { useQuery } from "@tanstack/react-query";
+import { getFishingRegion, getRegions } from "@/lib/api/fishingPointAPI";
+import { FishUpload } from "@/types/fish.interface";
+import { FishAPI } from "@/lib/api/fishAPI";
+import { useRouter } from "next/navigation";
+import useDebouncedRequest from "@/hooks/useDebouncedReques";
 
 interface ModalProps {
   fishName: string;
@@ -24,55 +25,59 @@ interface ModalProps {
   setIsRegisterModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-type Action  =
-  | {type : 'changed_fish_point_id', nextFishPointId : number}
-  | {type : 'changed_length', nextLength : number}
-  | {type : 'changed_count', nextCount : number}
+type Action =
+  | { type: "changed_fish_point_id"; nextFishPointId: number }
+  | { type: "changed_length"; nextLength: number }
+  | { type: "changed_count"; nextCount: number };
 
-function reducer(state : FishUpload, action : Action) : FishUpload {
+function reducer(state: FishUpload, action: Action): FishUpload {
   switch (action.type) {
-    case 'changed_fish_point_id': {
+    case "changed_fish_point_id": {
       return {
         ...state,
-        fishPointId : action.nextFishPointId,
+        fishPointId: action.nextFishPointId,
       };
     }
-    case 'changed_length': {
+    case "changed_length": {
       return {
         ...state,
-        length : action.nextLength,
+        length: action.nextLength,
       };
     }
-    case 'changed_count': {
+    case "changed_count": {
       return {
         ...state,
-        count : action.nextCount,
-      }
+        count: action.nextCount,
+      };
     }
-    default :
-      throw new Error('Unknown action type');
+    default:
+      throw new Error("Unknown action type");
   }
 }
 
-export default function FishRegisterModal({ fishName, fishEncyclopediaId, setIsRegisterModalOpen }: ModalProps) {
-  const initialState : FishUpload = {
-    fishId : fishEncyclopediaId,
-    fishPointId : null,
-    length : null,
-    count : null,
+export default function FishRegisterModal({
+  fishName,
+  fishEncyclopediaId,
+  setIsRegisterModalOpen,
+}: ModalProps) {
+  const initialState: FishUpload = {
+    fishId: fishEncyclopediaId,
+    fishPointId: null,
+    length: null,
+    count: null,
   };
   const [fishUploadState, dispatch] = useReducer(reducer, initialState);
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
   const router = useRouter();
 
   const { data: regionData, isSuccess: isRegionSuccess } = useQuery({
-    queryKey: ['regions'],
+    queryKey: ["regions"],
     queryFn: getRegions,
     staleTime: 1000 * 60 * 5,
   });
 
   const { data: pointData, isSuccess: isPointSuccess } = useQuery({
-    queryKey: ['point', selectedRegion],
+    queryKey: ["point", selectedRegion],
     queryFn: () => getFishingRegion(selectedRegion as string),
     staleTime: 1000 * 60 * 5,
     enabled: !!selectedRegion,
@@ -84,35 +89,39 @@ export default function FishRegisterModal({ fishName, fishEncyclopediaId, setIsR
   };
 
   const handlePointChange = (pointId: string) => {
-    dispatch({ type: "changed_fish_point_id", nextFishPointId: Number(pointId) });
+    dispatch({
+      type: "changed_fish_point_id",
+      nextFishPointId: Number(pointId),
+    });
   };
 
   const handleLengthChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!Number(e.target.value)) {
-      e.target.value = '';
+      e.target.value = "";
     }
     dispatch({ type: "changed_length", nextLength: Number(e.target.value) });
   };
 
   const handleCountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!Number(e.target.value)) {
-      e.target.value = '';
+      e.target.value = "";
     }
     dispatch({ type: "changed_count", nextCount: Number(e.target.value) });
   };
 
   const validateData = (uploadFishData: FishUpload): boolean => {
-    if (uploadFishData.fishId === null || uploadFishData.fishId < 0) return false;
-    if (uploadFishData.fishPointId === null || uploadFishData.fishPointId < 0) return false;
-    if (uploadFishData.length === null || uploadFishData.length < 0) return false;
+    if (uploadFishData.fishId === null || uploadFishData.fishId < 0)
+      return false;
+    if (uploadFishData.fishPointId === null || uploadFishData.fishPointId < 0)
+      return false;
+    if (uploadFishData.length === null || uploadFishData.length < 0)
+      return false;
     if (uploadFishData.count === null || uploadFishData.count < 0) return false;
 
     return true;
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
+  const { trigger: handleSubmit } = useDebouncedRequest(async () => {
     if (!validateData(fishUploadState)) {
       alert("모든 필드가 채워져야 하며, 값은 음수가 될 수 없습니다."); // TODO 수정 필요
       return;
@@ -120,19 +129,29 @@ export default function FishRegisterModal({ fishName, fishEncyclopediaId, setIsR
 
     const response = await FishAPI.postFishEncyclopedias(fishUploadState);
     if (response.success) {
-      alert('등록 완료'); // TODO: 수정 필요
+      alert("등록 완료"); // TODO: 수정 필요
       setIsRegisterModalOpen(false);
     }
     router.refresh();
+  }, 500);
+
+  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    handleSubmit();
   };
 
   return (
-    <form onSubmit={handleSubmit} className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    <form
+      onSubmit={handleFormSubmit}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+    >
       <div className="grid align-right bg-white rounded-lg shadow-lg p-6 w-full max-w-lg">
         <div className="flex justify-between">
           <div className="grid gap-1">
             <div className="font-bold text-xl">{fishName} 등록하기</div>
-            <div className="text-gray-30">새로운 어종을 도감에 등록해보세요.</div>
+            <div className="text-gray-30">
+              새로운 어종을 도감에 등록해보세요.
+            </div>
           </div>
           <X
             className="cursor-pointer text-gray-30"
@@ -177,7 +196,10 @@ export default function FishRegisterModal({ fishName, fishEncyclopediaId, setIsR
                       <SelectValue placeholder="낚시 포인트 선택하기" />
                     </SelectTrigger>
                   ) : (
-                    <SelectTrigger className="w-[180px] cursor-pointer" disabled>
+                    <SelectTrigger
+                      className="w-[180px] cursor-pointer"
+                      disabled
+                    >
                       <SelectValue placeholder="포인트가 없습니다." />
                     </SelectTrigger>
                   )}
