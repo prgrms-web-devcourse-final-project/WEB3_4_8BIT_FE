@@ -18,7 +18,7 @@ export default function SortBox({
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [sortValue, setSortValue] = useState("recommended");
+  const [sortValue, setSortValue] = useState("createdAt");
 
   // URL 파라미터에서 초기 정렬 값 설정
   useEffect(() => {
@@ -83,11 +83,15 @@ export default function SortBox({
       <h2 className="text-xl font-bold">
         검색 결과 ({shipPostsData.data.numberOfElements})
       </h2>
-      <Select value={sortValue} onValueChange={handleSortChange}>
+      <Select
+        value={sortValue}
+        onValueChange={handleSortChange}
+        defaultValue="createdAt"
+      >
         <SelectTrigger className="w-[180px] cursor-pointer">
           <SelectValue placeholder="정렬 기준" />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent className="cursor-pointer">
           <SelectItem value="createdAt">최신순</SelectItem>
           <SelectItem value="price-high">가격 낮은순</SelectItem>
           <SelectItem value="price-low">가격 높은순</SelectItem>
