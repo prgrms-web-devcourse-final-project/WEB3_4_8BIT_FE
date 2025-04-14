@@ -5,6 +5,7 @@ export interface BaseUser {
   nickname: string;
   phone : string;
   fileUrl : string | null;
+  fileId: number;
   description: string | null;
   isAddInfo : boolean;
 }
