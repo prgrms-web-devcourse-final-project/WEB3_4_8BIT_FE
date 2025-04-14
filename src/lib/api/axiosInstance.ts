@@ -9,6 +9,16 @@ export const axiosInstance = axios.create({
   withCredentials: true,
 });
 
+// 인증이 필요없는 public API 호출을 위한 인스턴스
+export const publicAxiosInstance = axios.create({
+  baseURL: "https://api.mikki.kr/api/v1",
+  timeout: 5000,
+  headers: {
+    "Content-Type": "application/json",
+  },
+  withCredentials: true,
+});
+
 axiosInstance.interceptors.request.use(
   (config) => {
     // 로컬 스토리지에서 토큰 가져오기
