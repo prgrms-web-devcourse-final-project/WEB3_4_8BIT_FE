@@ -81,7 +81,7 @@ export function PostList({
         type: "all",
         fieldValue: null,
         id: null,
-        size: 100,
+        size: 10,
         status:
           filter === "recruiting"
             ? "RECRUITING"
