@@ -33,10 +33,9 @@ export default function ChatRoom({ roomData, handleBackToList }: ChatRoomProps) 
     async function fetchInitialMessages() {
       try {
         const res = await ChatAPI.getRoomMessages(roomData.roomId);
-        // 유효한 메시지 객체만 필터링합니다
         if (Array.isArray(res.content)) {
           console.log("받은 메시지 데이터:", res.content);
-          setMessages(res.content);
+          setMessages(res.content.reverse()); 
         } else {
           console.error("메시지 데이터가 배열이 아닙니다:", res.content);
           setMessages([]);
@@ -49,19 +48,16 @@ export default function ChatRoom({ roomData, handleBackToList }: ChatRoomProps) 
   }, [roomData.roomId]);
 
   useEffect(() => {
-    // SockJS 옵션에 쿠키를 포함하도록 설정
     const sockJsOptions = {
       transports: ['websocket', 'xhr-streaming', 'xhr-polling'],
-      withCredentials: true  // 이 부분이 중요: 쿠키를 포함시킴
+      withCredentials: true
     };
 
     socketRef.current = new SockJS("https://api.mikki.kr/ws/chat", null, sockJsOptions);
 
     stompClientRef.current = new Client({
       webSocketFactory: () => socketRef.current,
-      connectHeaders: {
-        // 필요한 경우 여기에 추가 헤더를 포함할 수 있음
-      },
+      connectHeaders: {},
       onConnect: (frame) => {
         console.log("STOMP 연결 성공:", frame);
         stompClientRef.current?.subscribe(`/topic/chat/${roomData.roomId}`, (message) => {
@@ -69,8 +65,8 @@ export default function ChatRoom({ roomData, handleBackToList }: ChatRoomProps) 
             const messageData = JSON.parse(message.body);
             console.log("수신된 메시지 데이터:", messageData); // 메시지 데이터 확인
 
-            // 메시지 추가
-            setMessages((prev) => [...prev, messageData]);
+            // 수신한 메시지를 상태에 추가 (가장 하단에 추가)
+            setMessages((prev) => [ ...prev, messageData]);
           } catch (error) {
             console.error("메시지 처리 중 오류 발생:", error, message.body);
           }
@@ -79,7 +75,6 @@ export default function ChatRoom({ roomData, handleBackToList }: ChatRoomProps) 
       onDisconnect: () => {
         console.log("STOMP 연결 종료");
       },
-      // STOMP 연결에 대한 추가 옵션
       beforeConnect: () => {
         console.log("STOMP 연결 시도 중...");
       },
@@ -102,7 +97,7 @@ export default function ChatRoom({ roomData, handleBackToList }: ChatRoomProps) 
       const messageRequest = {
         roomId: roomData.roomId,
         content: newMessage,
-        fileIds: previewImage ? [/* 이미지 업로드 후 해당 fileIds*/] : [],
+        fileIds: previewImage ? [] : [],
         type: "TALK", // TEXT or IMAGE
       };
 
@@ -111,7 +106,7 @@ export default function ChatRoom({ roomData, handleBackToList }: ChatRoomProps) 
         body: JSON.stringify(messageRequest),
       });
 
-      // 메시지 전송 후 입력값 초기화
+      // 전송 후 입력값 초기화
       setNewMessage("");
       setPreviewImage(null);
     } else {
@@ -150,8 +145,7 @@ export default function ChatRoom({ roomData, handleBackToList }: ChatRoomProps) 
   };
 
   // 메시지 배열 유효성 검사 (디버깅용 로그 포함)
-  console.log("현재 메시지 목록:", messages);
-  const validMessages = Array.isArray(messages) ? messages : [];
+  // console.log("현재 메시지 목록:", messages);
 
   return (
     <div className="flex flex-col h-full">
@@ -173,7 +167,7 @@ export default function ChatRoom({ roomData, handleBackToList }: ChatRoomProps) 
       {/* 채팅 메시지 스크롤 */}
       <ScrollArea className="flex-1 p-4 overflow-scroll">
         <div className="space-y-4">
-          {validMessages.map((message, index) => {
+          {messages.map((message, index) => {
             // 각 메시지에 messageId가 없는 경우 인덱스를 사용
             const key = message.messageId ? `message-${message.messageId}` : `message-index-${index}`;
             return (
