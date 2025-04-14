@@ -44,10 +44,9 @@ export default function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
 
   const handleLogout = async () => {
     clearUser();
-    await fetch("/api/logout");
+    await fetch("/api/logout", { credentials: "include" });
     router.push("/");
   };
-
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
