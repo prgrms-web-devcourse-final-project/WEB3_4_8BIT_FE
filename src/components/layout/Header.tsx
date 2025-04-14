@@ -1,14 +1,16 @@
 "use client";
 
+import { useUserStore } from "@/stores/userStore";
 import { Menu, User, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 
-export default function Header() {
+export default function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const user = useUserStore((state) => state.user);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -24,6 +26,17 @@ export default function Header() {
       window.removeEventListener("scroll", handleScroll);
     };
   }, []);
+
+  const clearUser = useUserStore((state) => state.clearUser);
+
+  const handleLogout = () => {
+    clearUser();
+
+    document.cookie =
+      "accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+
+    router.push("/");
+  };
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -58,35 +71,35 @@ export default function Header() {
             <ul className="flex lg:gap-[51px] gap-[30px]">
               <Link
                 href={"/boat-reservation"}
-                className="text-[20px] text-[#fff] paperlogy-6semibold cursor-pointer transition-all duration-300 hover:text-primary hover:scale-105 relative group"
+                className="text-[18px] text-[#fff] paperlogy-6semibold cursor-pointer transition-all duration-300 hover:text-primary hover:scale-105 relative group"
               >
                 선상 낚시 예약
                 <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-primary transition-all duration-300 group-hover:w-full"></span>
               </Link>
               <Link
                 href={"/fishing-group"}
-                className="text-[20px] text-[#fff] paperlogy-6semibold cursor-pointer transition-all duration-300 hover:text-primary hover:scale-105 relative group"
+                className="text-[18px] text-[#fff] paperlogy-6semibold cursor-pointer transition-all duration-300 hover:text-primary hover:scale-105 relative group"
               >
                 낚시 동출 모집
                 <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-primary transition-all duration-300 group-hover:w-full"></span>
               </Link>
               <Link
                 href={"/fishing-point"}
-                className="text-[20px] text-[#fff] paperlogy-6semibold cursor-pointer transition-all duration-300 hover:text-primary hover:scale-105 relative group"
+                className="text-[18px] text-[#fff] paperlogy-6semibold cursor-pointer transition-all duration-300 hover:text-primary hover:scale-105 relative group"
               >
                 낚시 포인트
                 <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-primary transition-all duration-300 group-hover:w-full"></span>
               </Link>
               <Link
                 href={"/user/mypage/fish-encyclopedia"}
-                className="text-[20px] text-[#fff] paperlogy-6semibold cursor-pointer transition-all duration-300 hover:text-primary hover:scale-105 relative group"
+                className="text-[18px] text-[#fff] paperlogy-6semibold cursor-pointer transition-all duration-300 hover:text-primary hover:scale-105 relative group"
               >
                 어류 도감
                 <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-primary transition-all duration-300 group-hover:w-full"></span>
               </Link>
               <Link
                 href={"/user/mypage"}
-                className="text-[20px] text-[#fff] paperlogy-6semibold cursor-pointer transition-all duration-300 hover:text-primary hover:scale-105 relative group"
+                className="text-[18px] text-[#fff] paperlogy-6semibold cursor-pointer transition-all duration-300 hover:text-primary hover:scale-105 relative group"
               >
                 마이페이지
                 <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-primary transition-all duration-300 group-hover:w-full"></span>
@@ -97,12 +110,30 @@ export default function Header() {
 
         {/* 헤더 오른쪽 - 로그인 버튼 */}
         <div className="hidden md:block">
-          <Link href="/auth/login" className="inline-block">
-            <button className="bg-blue-600 hover:bg-blue-700 text-white text-[18px] px-[24px] py-[8px] rounded-full shadow-md flex items-center gap-2 cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-105 paperlogy-6semibold">
-              <User className="w-[20px] h-[20px]" />
-              로그인
-            </button>
-          </Link>
+          {isLoggedIn ? (
+            <>
+              <div className="flex items-center gap-[8px]">
+                <p className="text-[16px] text-[#fff] paperlogy-6semibold">
+                  환영합니다, {user?.nickname}님!
+                </p>
+                <div className="inline-block">
+                  <button
+                    onClick={handleLogout}
+                    className="bg-blue-600 hover:bg-blue-700 text-white text-[16px] px-[20px] py-[6px] rounded-full shadow-md flex items-center gap-2 cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-105 paperlogy-6semibold"
+                  >
+                    로그아웃
+                  </button>
+                </div>
+              </div>
+            </>
+          ) : (
+            <Link href="/auth/login" className="inline-block">
+              <button className="bg-blue-600 hover:bg-blue-700 text-white text-[16px] px-[20px] py-[6px] rounded-full shadow-md flex items-center gap-2 cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-105 paperlogy-6semibold">
+                <User className="w-[20px] h-[20px]" />
+                로그인
+              </button>
+            </Link>
+          )}
         </div>
 
         {/* 모바일 메뉴 버튼 */}
@@ -132,34 +163,49 @@ export default function Header() {
 
           <div className="p-6">
             <div className="mb-8">
-              <Link href="/auth/login" className="inline-block w-full">
-                <button className="w-full bg-blue-600 hover:bg-blue-700 text-white text-[18px] px-[20px] py-[12px] rounded-full shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-105 paperlogy-6semibold">
-                  <User className="w-[20px] h-[20px]" />
-                  로그인
-                </button>
-              </Link>
+              {isLoggedIn ? (
+                <div className="flex flex-col items-center gap-[8px]">
+                  <button
+                    onClick={handleLogout}
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white text-[18px] px-[20px] py-[12px] rounded-full shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-105 paperlogy-6semibold"
+                  >
+                    <p className="text-[16px] text-[#fff] paperlogy-6semibold">
+                      환영합니다, {user?.nickname} 님!
+                    </p>
+                    <User className="w-[20px] h-[20px]" />
+                    로그아웃
+                  </button>
+                </div>
+              ) : (
+                <Link href="/auth/login" className="inline-block w-full">
+                  <button className="w-full bg-blue-600 hover:bg-blue-700 text-white text-[18px] px-[20px] py-[12px] rounded-full shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-105 paperlogy-6semibold">
+                    <User className="w-[20px] h-[20px]" />
+                    로그인
+                  </button>
+                </Link>
+              )}
             </div>
 
             <nav>
               <ul className="space-y-6">
                 <li className="text-[20px] text-white paperlogy-6semibold cursor-pointer transition-all duration-300 hover:text-primary hover:scale-105 relative group">
-                  menu1
+                  <Link href={"/boat-reservation"}>선상 낚시 예약</Link>
                   <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-primary transition-all duration-300 group-hover:w-full"></span>
                 </li>
                 <li className="text-[20px] text-white paperlogy-6semibold cursor-pointer transition-all duration-300 hover:text-primary hover:scale-105 relative group">
-                  menu2
+                  <Link href={"/fishing-group"}>낚시 동출 모집</Link>
                   <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-primary transition-all duration-300 group-hover:w-full"></span>
                 </li>
                 <li className="text-[20px] text-white paperlogy-6semibold cursor-pointer transition-all duration-300 hover:text-primary hover:scale-105 relative group">
-                  menu3
+                  <Link href={"/fishing-point"}>낚시 포인트</Link>
                   <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-primary transition-all duration-300 group-hover:w-full"></span>
                 </li>
                 <li className="text-[20px] text-white paperlogy-6semibold cursor-pointer transition-all duration-300 hover:text-primary hover:scale-105 relative group">
-                  menu4
+                  <Link href={"/user/mypage/fish-encyclopedia"}>어류 도감</Link>
                   <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-primary transition-all duration-300 group-hover:w-full"></span>
                 </li>
                 <li className="text-[20px] text-white paperlogy-6semibold cursor-pointer transition-all duration-300 hover:text-primary hover:scale-105 relative group">
-                  menu5
+                  <Link href={"/user/mypage"}>마이페이지</Link>
                   <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-primary transition-all duration-300 group-hover:w-full"></span>
                 </li>
               </ul>

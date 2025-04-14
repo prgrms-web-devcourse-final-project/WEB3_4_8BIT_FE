@@ -314,8 +314,6 @@ function TideInfo({
   tideChartData: DailyTideData[] | undefined;
   nextTideData: TideData | undefined;
 }) {
-  console.log(nextTideData);
-
   const getTideStatus = (tideData: { hl_code: string; tph_time: string }) => {
     if (!tideData) return "알 수 없음";
 

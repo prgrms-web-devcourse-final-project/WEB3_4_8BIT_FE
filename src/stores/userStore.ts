@@ -1,10 +1,11 @@
-import { create } from 'zustand'
-import {User} from "@/types/user.interface";
-import {persist} from "zustand/middleware";
+import { create } from "zustand";
+import { User } from "@/types/user.interface";
+import { persist } from "zustand/middleware";
 
 interface UserStore {
-  user: User | null
-  setUser: (user: User | null) => void
+  user: User | null;
+  setUser: (user: User | null) => void;
+  clearUser: () => void;
 }
 
 export const useUserStore = create<UserStore>()(
@@ -15,8 +16,8 @@ export const useUserStore = create<UserStore>()(
       clearUser: () => set({ user: null }),
     }),
     {
-      name: 'user-storage',
+      name: "user-storage",
       partialize: (state) => ({ user: state.user }),
     }
   )
-)
+);

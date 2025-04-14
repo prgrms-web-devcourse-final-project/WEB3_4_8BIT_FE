@@ -1,16 +1,36 @@
+export const dynamic = "force-dynamic";
+
+import { cookies } from "next/headers";
 import KakaoMapSection from "./KakaoMapSection";
 import { FishingPointLocation } from "@/types/fishingPointLocationType";
 
 async function getLocation(): Promise<FishingPointLocation[]> {
   try {
-    const token = process.env.NEXT_PUBLIC_API_TOKEN || "기본_토큰_값";
+    const token = process.env.NEXT_PUBLIC_API_TOKEN || "default_token";
+    // const cookieStore = await cookies();
+    // const cookieHeader = cookieStore.toString();
+
+    const cookieStore = await cookies();
+    const cookieEntries = cookieStore.getAll();
+    const cookieHeader = cookieEntries
+      .map((cookie) => `${cookie.name}=${cookie.value}`)
+      .join("; ");
+
+    console.log(cookieHeader);
 
     const response = await fetch("https://api.mikki.kr/api/v1/regions", {
       cache: "no-store",
       headers: {
+        Cookie: cookieHeader,
         Authorization: token,
+        "Content-Type": "application/json; charset=utf-8",
       },
     });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
     const responseData = await response.json();
     return responseData.data;
   } catch (error) {

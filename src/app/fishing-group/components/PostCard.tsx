@@ -1,6 +1,12 @@
 "use client";
 
-import { Calendar, MapPin, UserRound } from "lucide-react";
+import {
+  Calendar,
+  MapPin,
+  UserRound,
+  Heart,
+  MessageSquare,
+} from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { getRegions, getFishingRegion } from "@/lib/api/fishingPointAPI";
@@ -25,6 +31,9 @@ export function PostCard({
   latitude,
   longitude,
   regionType,
+  likeCount = 0,
+  isLiked = false,
+  commentCount = 0,
 }: PostCardProps) {
   // 썸네일 이미지 URL 결정
   const thumbnailUrl =
@@ -157,7 +166,7 @@ export function PostCard({
           </div>
 
           {/* 게시글 정보 */}
-          <div className="flex-1 min-w-0 flex flex-col justify-between">
+          <div className="flex-1 min-w-0">
             <div className="space-y-3">
               {/* 모집 상태 & 제목 */}
               <div className="flex items-center gap-2">
@@ -170,7 +179,7 @@ export function PostCard({
                 >
                   {displayStatusText}
                 </span>
-                {regionType && (
+                {regionType && regionType !== "null" && (
                   <span className="text-blue-500 text-lg">
                     [{convertRegionTypeToKorean(regionType)}]
                   </span>
@@ -182,90 +191,104 @@ export function PostCard({
             </div>
 
             {/* 하단 정보 영역 */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mt-4 pt-3">
-              <div className="flex items-center gap-x-4 text-sm text-gray-500">
-                <span className="flex items-center gap-1">
-                  <Calendar size={16} />
-                  동출날짜: {date}
-                </span>
-                <span className="flex items-center gap-1">
-                  <UserRound size={16} />
-                  모집인원: {recruitmentCount}명
-                </span>
-                <span
-                  className={`flex items-center gap-1 ${
-                    latitude && longitude
-                      ? "cursor-pointer hover:text-blue-500"
-                      : ""
-                  }`}
-                  onClick={handleLocationClick}
-                >
-                  <MapPin size={16} />
-                  <span className="flex items-center gap-1">장소:</span>{" "}
-                  {location}
-                  {regionType && (
-                    <span className="text-gray-500 ml-0.5">
-                      {convertRegionTypeToKorean(regionType)}
-                    </span>
-                  )}
-                  {regionData?.fishingRegion &&
-                    regionData.fishingRegion.length > 0 && (
-                      <span className="text-blue-500 ml-0.5">
-                        (지역:{" "}
-                        {regionType
-                          ? convertRegionTypeToKorean(regionType)
-                          : "알 수 없음"}
-                        )
+            <div className="mt-4">
+              <div className="flex items-center justify-between text-sm text-gray-500">
+                <div className="flex items-center gap-x-4">
+                  <span className="flex items-center gap-1">
+                    <Calendar size={16} />
+                    동출날짜: {date}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <UserRound size={16} />
+                    모집인원: {recruitmentCount}명
+                  </span>
+                  <span
+                    className={`flex items-center gap-1 ${
+                      latitude && longitude
+                        ? "cursor-pointer hover:text-blue-500"
+                        : ""
+                    }`}
+                    onClick={handleLocationClick}
+                  >
+                    <MapPin size={16} />
+                    <span className="flex items-center gap-1">장소:</span>{" "}
+                    {location}
+                    {regionType && regionType !== "null" && (
+                      <span className="text-gray-500 ml-0.5">
+                        {convertRegionTypeToKorean(regionType)}
                       </span>
                     )}
-                </span>
+                    {regionData?.fishingRegion &&
+                      regionData.fishingRegion.length > 0 && (
+                        <span className="text-blue-500 ml-0.5">
+                          (지역:{" "}
+                          {regionType && regionType !== "null"
+                            ? convertRegionTypeToKorean(regionType)
+                            : "알 수 없음"}
+                          )
+                        </span>
+                      )}
+                  </span>
+                </div>
+
+                {/* 좋아요 및 댓글 카운트 */}
+                <div className="flex items-center gap-x-4">
+                  <span className="flex items-center gap-1">
+                    <Heart
+                      size={16}
+                      className={isLiked ? "fill-current text-red-500" : ""}
+                    />
+                    <span>{likeCount}</span>
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <MessageSquare size={16} />
+                    <span>{commentCount}</span>
+                  </span>
+                </div>
               </div>
             </div>
-
-            {/* 지도 영역 */}
-            {showMap && latitude && longitude && (
-              <div className="mt-4 border border-gray-200 rounded-md overflow-hidden">
-                <div className="p-2 bg-gray-50 flex justify-between items-center">
-                  <span className="text-sm font-medium">위치 지도</span>
-                  <button
-                    className="text-xs text-blue-500 hover:underline"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setShowMap(false);
-                    }}
-                  >
-                    닫기
-                  </button>
-                </div>
-                <div
-                  style={{
-                    position: "relative",
-                    width: "100%",
-                    height: "150px",
-                  }}
-                >
-                  <div
-                    ref={mapRef}
-                    style={{ width: "100%", height: "100%" }}
-                  ></div>
-                  <div
-                    onClick={handleMapClick}
-                    style={{
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      width: "100%",
-                      height: "100%",
-                      zIndex: 10,
-                      cursor: "pointer",
-                      backgroundColor: "transparent",
-                    }}
-                  />
-                </div>
-              </div>
-            )}
           </div>
         </div>
+
+        {/* 지도 영역 */}
+        {showMap && (
+          <div className="mt-4 border border-gray-200 rounded-md overflow-hidden">
+            <div className="p-2 bg-gray-50 flex justify-between items-center">
+              <span className="text-sm font-medium">위치 지도</span>
+              <button
+                className="text-xs text-blue-500 hover:underline"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setShowMap(false);
+                }}
+              >
+                닫기
+              </button>
+            </div>
+            <div
+              style={{
+                position: "relative",
+                width: "100%",
+                height: "150px",
+              }}
+            >
+              <div ref={mapRef} style={{ width: "100%", height: "100%" }}></div>
+              <div
+                onClick={handleMapClick}
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: "100%",
+                  height: "100%",
+                  zIndex: 10,
+                  cursor: "pointer",
+                  backgroundColor: "transparent",
+                }}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </Link>
   );

@@ -49,6 +49,7 @@ jobs:
             NEXT_PUBLIC_BADANORI_API_KEY=${{ secrets.NEXT_PUBLIC_BADANORI_API_KEY }}
             NEXT_PUBLIC_KAKAO_MAP_API_KEY=${{ secrets.NEXT_PUBLIC_KAKAO_MAP_API_KEY }}
             NEXT_PUBLIC_OPENWEATHER_API_KEY=${{ secrets.NEXT_PUBLIC_OPENWEATHER_API_KEY }}
+            NEXT_PUBLIC_API_URL=${{secrets.NEXT_PUBLIC_API_URL}}
 
       # 7. Jenkins 배포
       - name: Jenkins deploy

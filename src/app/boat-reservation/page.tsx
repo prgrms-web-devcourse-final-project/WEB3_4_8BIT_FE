@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import FilterBox from "@/app/boat-reservation/components/FilterBox";
 import {
   ShipFishingPostParams,
@@ -5,12 +7,22 @@ import {
 } from "@/types/boatPostType";
 import BoatList from "./components/BoatList";
 import SortBox from "./components/SortBox";
+import { cookies } from "next/headers";
 
 async function getShipPosts(
   params?: ShipFishingPostParams
 ): Promise<ShipPostListAPIResponse> {
+  // const cookieStore = await cookies();
+  // const cookieHeader = cookieStore.toString();
+
+  const cookieStore = await cookies();
+  const cookieEntries = cookieStore.getAll();
+  const cookieHeader = cookieEntries.map(cookie => `${cookie.name}=${cookie.value}`).join('; ');
+
+  console.log(cookieHeader);
+
   try {
-    const token = process.env.NEXT_PUBLIC_API_TOKEN || "기본_토큰_값";
+    const token = process.env.NEXT_PUBLIC_API_TOKEN || "default_token";
 
     const query = new URLSearchParams({
       order: params?.order || "desc",
@@ -34,15 +46,21 @@ async function getShipPosts(
       {
         cache: "no-store",
         headers: {
+          Cookie: cookieHeader,
           Authorization: token,
+          "Content-Type": "application/json; charset=utf-8",
         },
       }
     );
 
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error("선상 낚시 게시글 조회에 실패했습니다.", error);
+    console.error(error);
     throw error;
   }
 }

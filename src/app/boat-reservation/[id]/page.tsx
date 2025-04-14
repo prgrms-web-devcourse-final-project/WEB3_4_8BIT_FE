@@ -14,19 +14,25 @@ import {
 } from "@/types/boatPostType";
 import dayjs from "dayjs";
 import ReviewSection from "./components/ReviewSection";
+import { cookies } from "next/headers";
 
 // 배 상세 정보 조회
 async function getBoatPostDetail(
   id: string
 ): Promise<ShipFishingPostDetailAPIResponse> {
-  const token = process.env.NEXT_PUBLIC_API_TOKEN || "기본_토큰_값";
+  const cookieStore = await cookies();
+  const cookieHeader = cookieStore.toString();
+
+  const token = process.env.NEXT_PUBLIC_API_TOKEN || "default_token";
 
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/ship-fishing-posts/${id}`,
     {
       cache: "no-store",
       headers: {
+        Cookie: cookieHeader,
         Authorization: token,
+        "Content-Type": "application/json; charset=utf-8",
       },
     }
   );
@@ -38,7 +44,10 @@ async function getBoatPostDetail(
 async function getReservationUnavailableDate(
   id: string
 ): Promise<ReservationUnavailableDateAPIResponse> {
-  const token = process.env.NEXT_PUBLIC_API_TOKEN || "기본_토큰_값";
+  const cookieStore = await cookies();
+  const cookieHeader = cookieStore.toString();
+
+  const token = process.env.NEXT_PUBLIC_API_TOKEN || "default_token";
   const date = dayjs().format("YYYY-MM-DD");
 
   const response = await fetch(
@@ -46,6 +55,7 @@ async function getReservationUnavailableDate(
     {
       cache: "no-store",
       headers: {
+        Cookie: cookieHeader,
         Authorization: token,
       },
     }
@@ -126,7 +136,7 @@ export default async function BoatReservationDetail({
                   reservationUnavailableDate.data.unAvailableDateList
                 }
               />
-              <PhoneInfo />
+              <PhoneInfo detailMember={boatPostDetail.data.detailMember} />
             </div>
           </div>
         </div>

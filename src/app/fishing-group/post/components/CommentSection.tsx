@@ -29,6 +29,7 @@ export default function CommentSection({ postId }: CommentSectionProps) {
   const [expandedReplies, setExpandedReplies] = useState<
     Record<string, boolean>
   >({});
+  const [totalCommentCount, setTotalCommentCount] = useState(0);
 
   // 부모 댓글 불러오기
   const fetchParentComments = async (): Promise<Comment[]> => {
@@ -83,6 +84,15 @@ export default function CommentSection({ postId }: CommentSectionProps) {
             : comment
         )
       );
+
+      // 총 댓글 수 업데이트
+      setTotalCommentCount((prev) => {
+        const parentComment = comments.find((c: Comment) => c.id === parentId);
+        if (parentComment) {
+          return prev - parentComment.replies.length + formattedReplies.length;
+        }
+        return prev;
+      });
     } catch (error) {
       console.error("대댓글 불러오기 실패:", error);
     }
@@ -91,6 +101,7 @@ export default function CommentSection({ postId }: CommentSectionProps) {
   // 부모 댓글과 대댓글 모두 불러오기
   const fetchData = async () => {
     const parentComments = await fetchParentComments();
+    let totalCount = parentComments.length;
 
     // 기존 댓글 목록과 새 댓글 목록을 비교하여 변경된 부분만 업데이트
     setComments((prevComments) => {
@@ -108,11 +119,14 @@ export default function CommentSection({ postId }: CommentSectionProps) {
     });
 
     // 대댓글이 있는 댓글들의 답글을 불러옵니다
-    parentComments.forEach((comment) => {
+    for (const comment of parentComments) {
       if (comment.childCount > 0) {
-        fetchChildComments(comment.id);
+        await fetchChildComments(comment.id);
+        totalCount += comment.childCount;
       }
-    });
+    }
+
+    setTotalCommentCount(totalCount);
   };
 
   useEffect(() => {
@@ -143,7 +157,7 @@ export default function CommentSection({ postId }: CommentSectionProps) {
   return (
     <div className="w-full my-6 p-4">
       <h3 className="text-xl font-bold mb-4 text-gray-900">
-        댓글 ({comments.length})
+        댓글 ({totalCommentCount})
       </h3>
 
       {/* 댓글 작성 영역 */}

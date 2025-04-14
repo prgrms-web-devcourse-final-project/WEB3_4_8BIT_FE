@@ -14,7 +14,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type React from "react";
-import { useState } from "react";;
+import { useState } from "react";
 import {UserWrittenGroupFishing} from "@/types/user.interface";
 import Link from "next/link";
 import FishingGroupModal from "./FishingGroupModal";
@@ -144,7 +144,14 @@ export default function FishingGroupCard({
           </div>
         </CardContent>
       </Card>
-      {isOpen && <FishingGroupModal isOpen={isOpen} setIsOpen={setIsOpen} />}
+      {isOpen &&
+        <FishingGroupModal
+          data={data}
+          isAuthor={isAuthor}
+          isOpen={isOpen}
+          setIsOpen={setIsOpen}
+        />
+      }
     </>
   );
 }
