@@ -184,9 +184,6 @@ export default function JoinInfoCard({
               <p className="font-medium text-base text-gray-700">{author}</p>
             </div>
           </div>
-          <button className="w-full py-2 border border-gray-70 rounded-lg text-base hover:bg-gray-80 cursor-pointer">
-            1:1 채팅 보내기
-          </button>
         </div>
       </div>
 
