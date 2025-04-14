@@ -13,7 +13,6 @@ import { getRegions } from "@/lib/api/fishingPointAPI";
 import { FishingPointLocation } from "@/types/fishingPointLocationType";
 import { useRouter } from "next/navigation";
 
-
 export function SearchBar({
   handleSearch,
   onRegionChange,
@@ -54,29 +53,8 @@ export function SearchBar({
 
   // 글쓰기 버튼 클릭 핸들러
   const handleWriteClick = () => {
-    // 로컬 스토리지에서 사용자 정보 확인
-    const userStorage = localStorage.getItem("user-storage");
-    if (!userStorage) {
-      alert("로그인이 필요한 서비스입니다.");
-      router.push("/auth/login");
-      return;
-    }
-
-    try {
-      const userData = JSON.parse(userStorage);
-      if (!userData.state.user) {
-        alert("로그인이 필요한 서비스입니다.");
-        router.push("/auth/login");
-        return;
-      }
-
-      // 로그인된 상태이므로 글쓰기 페이지로 이동
-      router.push("/fishing-group/write");
-    } catch (error) {
-      console.error("사용자 정보 파싱 오류:", error);
-      alert("로그인이 필요한 서비스입니다.");
-      router.push("/auth/login");
-    }
+    // 글쓰기 페이지로 바로 이동
+    router.push("/fishing-group/write");
   };
 
   return (
