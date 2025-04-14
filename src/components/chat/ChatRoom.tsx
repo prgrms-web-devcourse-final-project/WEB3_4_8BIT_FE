@@ -55,7 +55,7 @@ export default function ChatRoom({ roomData, handleBackToList }: ChatRoomProps) 
       withCredentials: true  // 이 부분이 중요: 쿠키를 포함시킴
     };
 
-    socketRef.current = new SockJS("http://localhost:8080/ws/chat", null, sockJsOptions);
+    socketRef.current = new SockJS("https://api.mikki.kr/ws/chat", null, sockJsOptions);
 
     stompClientRef.current = new Client({
       webSocketFactory: () => socketRef.current,
