@@ -4,8 +4,6 @@ import { useState, useEffect } from "react";
 import { getHotFishingPosts } from "@/lib/api/fishingPostAPI";
 import { HotPostCard } from "./HotPostCard";
 import { convertRegionTypeToKorean } from "@/lib/utils/regionUtils";
-import { getRegions } from "@/lib/api/fishingPointAPI";
-import { FishingPointLocation } from "@/types/fishingPointLocationType";
 
 interface HotPost {
   fishingTripPostId: number;
@@ -24,6 +22,7 @@ interface HotPost {
   postStatus: string;
   likeCount: number;
   commentCount: number;
+  regionType?: string;
 }
 
 // API 응답 인터페이스
@@ -40,21 +39,6 @@ export function HotPost() {
   const [hotPosts, setHotPosts] = useState<HotPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [regions, setRegions] = useState<FishingPointLocation[]>([]);
-
-  // 지역 정보 가져오기
-  useEffect(() => {
-    const fetchRegions = async () => {
-      try {
-        const regionsData = await getRegions();
-        setRegions(regionsData);
-      } catch (error) {
-        console.error("지역 정보를 가져오는 중 오류 발생:", error);
-      }
-    };
-
-    fetchRegions();
-  }, []);
 
   useEffect(() => {
     const fetchHotPosts = async () => {
@@ -69,13 +53,8 @@ export function HotPost() {
           // API 응답을 HotPost 형식으로 변환
           const transformedPosts: HotPost[] = response.map(
             (post: HotPostResponse) => {
-              // 지역 정보 찾기
-              const region = regions.find(
-                (r) => String(r.regionId) === String(post.regionId)
-              );
-              const regionName = region
-                ? region.regionName
-                : convertRegionTypeToKorean(post.regionType);
+              // 지역 이름은 regionType에서 직접 변환
+              const regionName = convertRegionTypeToKorean(post.regionType);
 
               return {
                 fishingTripPostId: post.fishingTripPostId,
@@ -88,32 +67,31 @@ export function HotPost() {
                 fishingDate: new Date().toISOString(), // 기본값 설정
                 fishPointDetailName: "", // 기본값 설정
                 fishPointName: regionName, // 지역 이름 사용
-                longitude: region ? region.longitude : 0, // 지역 정보에서 가져오기
-                latitude: region ? region.latitude : 0, // 지역 정보에서 가져오기
+                longitude: 0, // 기본값 설정
+                latitude: 0, // 기본값 설정
                 fileUrlList: post.imageUrl ? [post.imageUrl] : [], // 이미지 URL을 fileUrlList로 변환
                 postStatus: "RECRUITING", // 기본값 설정
                 likeCount: post.hotScore, // hotScore를 likeCount로 사용
                 commentCount: 0, // 기본값 설정
+                regionType: post.regionType, // regionType 추가
               };
             }
           );
 
           setHotPosts(transformedPosts);
         } else {
-          setError("핫포스트를 불러오는데 실패했습니다.");
+          setError("데이터 형식이 올바르지 않습니다.");
         }
-      } catch (err) {
-        console.error("핫포스트 로딩 중 오류:", err);
-        setError("핫포스트를 불러오는데 실패했습니다.");
+      } catch (error) {
+        console.error("핫 포스트를 가져오는 중 오류 발생:", error);
+        setError("핫 포스트를 불러오는데 실패했습니다.");
       } finally {
         setLoading(false);
       }
     };
 
-    if (regions.length > 0) {
-      fetchHotPosts();
-    }
-  }, [regions]);
+    fetchHotPosts();
+  }, []);
 
   if (loading) {
     return <div className="text-center py-8">핫포스트를 불러오는 중...</div>;
