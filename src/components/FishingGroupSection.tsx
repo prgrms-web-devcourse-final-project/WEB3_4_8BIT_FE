@@ -4,12 +4,12 @@ import React from "react";
 import Link from "next/link";
 import { Users } from "lucide-react";
 import MainFishGroupCard from "@/components/MainFishGroupCard";
-import {getNearFishingPoints, GroupFishPost} from "@/lib/api/groupFishingAPI";
-import {useQuery} from "@tanstack/react-query";
+import { getNearFishingPoints, GroupFishPost } from "@/lib/api/groupFishingAPI";
+import { useQuery } from "@tanstack/react-query";
 
 export default function FishingGroupSection() {
   const { data, isSuccess } = useQuery<GroupFishPost[]>({
-    queryKey: ['fishGroupMainPage'],
+    queryKey: ["fishGroupMainPage"],
     queryFn: getNearFishingPoints,
     staleTime: 1000 * 60 * 5,
   });
@@ -43,8 +43,12 @@ export default function FishingGroupSection() {
           )}
           {/* 오른쪽 카드 */}
           <div className="flex flex-col gap-6">
-            {isSuccess && data[1] && <MainFishGroupCard height={192} postData={data[1]} />}
-            {isSuccess && data[2] && <MainFishGroupCard height={192} postData={data[2]} />}
+            {isSuccess && data[1] && (
+              <MainFishGroupCard height={192} postData={data[1]} />
+            )}
+            {isSuccess && data[2] && (
+              <MainFishGroupCard height={192} postData={data[2]} />
+            )}
           </div>
         </div>
       </div>
