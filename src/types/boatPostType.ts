@@ -7,6 +7,7 @@ export interface ShipPostData {
   fileUrlList: string[];
   fishNameList: string[];
   reviewEverRate: number;
+  isLiked: boolean;
   reviewCount: number;
   createdAt: Date;
 }
