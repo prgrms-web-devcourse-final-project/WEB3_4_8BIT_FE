@@ -124,28 +124,33 @@ export default function ChatRoom({ roomData, handleBackToList }: ChatRoomProps) 
 
   const handleSendMessage = () => {
     if (stompClientRef.current && stompClientRef.current.connected) {
-        console.log('메시지 전송 시도');
-        const messageRequest = {
-            roomId: roomData.roomId,
-            content: previewImage ? "" : newMessage, // 이미지 전송 시 content는 빈 문자열
-            fileIds: previewImage ? uploadedFileIds : [], // 이미지가 있을 경우 uploadedFileIds 사용
-            type: previewImage ? "IMAGE" : "TALK", // 이미지 전송 시 타입을 IMAGE로 설정
-        };
+      // 메시지가 비어있거나 이전 메시지 전송 중이면 전송하지 않음
+      if (newMessage.trim() === "" || isUploading) {
+        return;
+      }
 
-        stompClientRef.current.publish({
-            destination: "/pub/chat/send",
-            body: JSON.stringify(messageRequest),
-        });
+      console.log('메시지 전송 시도');
+      const messageRequest = {
+          roomId: roomData.roomId,
+          content: previewImage ? "" : newMessage, // 이미지 전송 시 content는 빈 문자열
+          fileIds: previewImage ? uploadedFileIds : [], // 이미지가 있을 경우 uploadedFileIds 사용
+          type: previewImage ? "IMAGE" : "TALK", // 이미지 전송 시 타입을 IMAGE로 설정
+      };
 
-        // 전송 후 입력값 초기화
-        setNewMessage("");
-        setPreviewImage(null);
+      stompClientRef.current.publish({
+          destination: "/pub/chat/send",
+          body: JSON.stringify(messageRequest),
+      });
 
-        setTimeout(() => {
-          messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-        }, 100);
+      // 전송 후 입력값 초기화
+      setNewMessage("");
+      setPreviewImage(null);
+
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      }, 100);
     } else {
-        console.log('연결 안됨... 메시지 전송 실패');
+      console.log('연결 안됨... 메시지 전송 실패');
     }
   };
 
