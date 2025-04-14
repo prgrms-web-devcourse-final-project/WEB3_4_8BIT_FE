@@ -18,7 +18,6 @@ interface ChatRoomProps {
 export default function ChatRoom({ roomData, handleBackToList }: ChatRoomProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [messages, setMessages] = useState<ChatMessageResponse[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [isUploading, setIsUploading] = useState(false);
@@ -40,7 +39,6 @@ export default function ChatRoom({ roomData, handleBackToList }: ChatRoomProps) 
           console.log("받은 메시지 데이터:", res.content);
           setMessages(res.content.reverse()); 
           setNextCursorId(res.nextCursorId);
-          console.log("다음 커서 ID: ", res.nextCursorId);
         } else {
           console.error("메시지 데이터가 배열이 아닙니다:", res.content);
           setMessages([]);
@@ -124,9 +122,9 @@ export default function ChatRoom({ roomData, handleBackToList }: ChatRoomProps) 
   const handleSendMessage = () => {
     if (stompClientRef.current && stompClientRef.current.connected) {
       // 메시지가 비어있거나 이전 메시지 전송 중이면 전송하지 않음
-      if (newMessage.trim() === "" || isUploading) {
+      if (newMessage.trim() === "" && !previewImage && isUploading) {
         return;
-      }
+    }
 
       console.log('메시지 전송 시도');
       const messageRequest = {
@@ -163,10 +161,9 @@ export default function ChatRoom({ roomData, handleBackToList }: ChatRoomProps) 
           }, 10000);
       }
 
-      setIsInitialLoading(false);
-        setTimeout(() => {
-          messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-        }, 100);
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      }, 100);
     } else {
       console.log('연결 안됨... 메시지 전송 실패');
     }
