@@ -1,6 +1,5 @@
 import Image from "next/image";
 
-
 export default function BannerSection() {
   return (
     <div className="w-full h-[500px] relative overflow-hidden">
@@ -33,8 +32,7 @@ export default function BannerSection() {
               전국의 낚시 포인트부터
             </span>
             <span className="italic drop-shadow-[0_1px_1px_rgba(0,0,0,0.6)] inline-block animate-fade-in-up animation-delay-500">
-              , 실시간 날씨 정보로 더
-              나은 낚시를.
+              , 실시간 날씨 정보로 더 나은 낚시를.
             </span>
           </p>
         </div>
