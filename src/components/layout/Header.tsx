@@ -201,8 +201,8 @@ export default function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
         {/* 메뉴가 열렸을 때 배경 오버레이 */}
         {isMenuOpen && (
           <div
-            className="fixed left-0 right-0 bottom-0 bg-black bg-opacity-50 z-[9999]"
-            onClick={toggleMenu}
+            className="fixed w-[100vw] h-[100vh] top-0 left-0  bg-[rgba(0,0,0,0.5)] z-[9999]"
+            onClick={closeMenu}
           ></div>
         )}
       </div>
