@@ -1,5 +1,6 @@
 "use client";
 
+import { UserAPI } from "@/lib/api/userAPI";
 import { useUserStore } from "@/stores/userStore";
 import { Menu, User, X } from "lucide-react";
 import Image from "next/image";
@@ -44,7 +45,7 @@ export default function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
 
   const handleLogout = async () => {
     clearUser();
-    await fetch("/api/logout", { credentials: "include" });
+    await UserAPI.postLogout();
     router.push("/");
   };
   const toggleMenu = () => {

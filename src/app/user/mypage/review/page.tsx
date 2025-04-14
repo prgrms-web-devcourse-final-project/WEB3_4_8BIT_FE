@@ -18,13 +18,11 @@ export default async function Review() {
         Authorization: `${process.env.NEXT_ACCESS_TOKEN}`,
         "Content-Type": "application/json; charset=utf-8",
       },
-      cache: "no-cache",
-      next: { revalidate: 0 },
+      next: { tags: ["reviews"] },
     }
   );
   const responseData = await response.json();
   const reviews: UserReview[] = responseData.data.content;
-  console.log(reviews);
 
   return (
     <div className="space-y-6">
