@@ -24,6 +24,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import CurrentLocationWeather from "@/components/CurrentLocationWeather";
+import Image from "next/image";
 
 export default function Home() {
   const setUser = useUserStore((state) => state.setUser);
@@ -57,20 +58,66 @@ export default function Home() {
 
   return (
     <main>
-      <section className="relative w-[full] h-[550px] flex items-center justify-start">
-        <div className="absolute inset-0 bg-gradient-to-r from-gray-20 to-gray-40 opacity-90" />
-        <div className="absolute inset-0 bg-[url('/images/mainbanner.png')] bg-cover bg-center mix-blend-overlay" />
-        <div className="relative z-10 text-left sm:px-6 lg:px-8 xl:w-[1200px] w-full mx-auto px-4 xl:p-0 p-4">
-          <h1 className="md:text-title-1 font-semibold text-white mb-6 leading-tight text-title-2">
-            손끝에서 전해지는 짜릿한 순간,
-            <br />
-            미끼미끼에서 시작해보세요
-          </h1>
-          <p className="md:text-body-1 text-white/90 mb-8 leading-relaxed text-body-2">
-            낚시를 즐기는 모든 이들을 위한 종합 플랫폼 <br />
-            어류 도감부터 선상 낚시 예약까지 낚시에 필요한 모든 것
-          </p>
+      <section className="relative w-full h-[650px] flex items-center justify-start overflow-hidden">
+        {/* 배경 이미지 */}
+        <div className="absolute inset-0">
+          <Image
+            src="/images/mainbanner.png"
+            alt="메인 배너"
+            fill
+            className="object-cover scale-105 transition-transform duration-10000 hover:scale-110"
+            priority
+            sizes="100vw"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
+          {/* 동적 그라데이션 오버레이 */}
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-500/5 to-transparent animate-shimmer" />
         </div>
+
+        {/* 컨텐츠 */}
+        <div className="relative z-10 text-left sm:px-6 lg:px-8 xl:w-[1200px] w-full mx-auto px-4 xl:p-0 p-4">
+          <div className="max-w-2xl">
+            <div className="relative">
+              {/* 세로 그라데이션 바 */}
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-16 bg-gradient-to-b from-blue-400/80 to-blue-600/80 rounded-full"></div>
+
+              {/* 장식 요소 */}
+              <div className="absolute -left-4 top-0 w-1.5 h-1.5 bg-blue-400/80 rounded-full animate-float"></div>
+              <div className="absolute -left-4 top-8 w-1.5 h-1.5 bg-blue-500/80 rounded-full animate-float animation-delay-200"></div>
+              <div className="absolute -left-4 top-16 w-1.5 h-1.5 bg-blue-600/80 rounded-full animate-float animation-delay-400"></div>
+
+              <h1 className="text-5xl md:text-6xl font-bold text-white mb-6 pl-8 tracking-tight drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">
+                <span className="inline-block animate-fade-in-up">
+                  손끝에서 전해지는
+                </span>{" "}
+                <span className="text-blue-400 drop-shadow-[0_2px_2px_rgba(0,0,0,0.6)] inline-block animate-fade-in-up animation-delay-200">
+                  짜릿한 순간
+                </span>
+              </h1>
+            </div>
+
+            <p className="text-xl md:text-2xl text-white/90 mb-8 pl-8 leading-relaxed drop-shadow-[0_1px_1px_rgba(0,0,0,0.7)]">
+              <span className="drop-shadow-[0_1px_1px_rgba(0,0,0,0.7)] inline-block animate-fade-in-up animation-delay-400">
+                나만의 어류 도감부터 실시간 선상낚시 예약, 동출 메이트 찾기까지
+              </span>{" "}
+              <br />
+              <span className="drop-shadow-[0_1px_1px_rgba(0,0,0,0.7)] inline-block animate-fade-in-up animation-delay-400 mr-2">
+                손끝의 전율,
+              </span>
+              <span className="text-blue-300 font-semibold drop-shadow-[0_1px_1px_rgba(0,0,0,0.6)] inline-block animate-fade-in-up animation-delay-500">
+                {" "}
+                그 시작을 미끼미끼에서!
+              </span>
+            </p>
+          </div>
+        </div>
+
+        {/* 배경 장식 요소 */}
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/20 to-transparent" />
+
+        {/* 추가 장식 요소 */}
+        <div className="absolute bottom-8 right-8 w-32 h-32 bg-blue-500/5 rounded-full blur-2xl"></div>
+        <div className="absolute top-8 right-8 w-24 h-24 bg-blue-400/5 rounded-full blur-xl"></div>
       </section>
 
       <CurrentLocationWeather />

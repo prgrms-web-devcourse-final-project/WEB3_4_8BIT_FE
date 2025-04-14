@@ -3,7 +3,14 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getWeatherData } from "@/lib/api/weatherDataAPI";
-import { ThermometerSun, Wind, Sun, MapPin, Droplets } from "lucide-react";
+import {
+  ThermometerSun,
+  Wind,
+  Sun,
+  MapPin,
+  Droplets,
+  Cloud,
+} from "lucide-react";
 import { formatRoundOne, getUVIText } from "@/utils/weatherStatusFormater";
 import { WeatherResponse } from "@/types/weatherTypes";
 import WeatherCard from "./WeatherCard";
@@ -106,7 +113,12 @@ export default function CurrentLocationWeather() {
     <section className="w-full bg-white py-5 mt-6">
       <div className="max-w-7xl w-full mx-auto px-4">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">실시간 날씨 정보</h2>
+          <div className="flex items-center gap-2">
+            <Sun className="w-6 h-6 text-yellow-500" />
+            <h2 className="text-2xl font-bold text-gray-900">
+              실시간 날씨 정보
+            </h2>
+          </div>
           <div className="flex items-center gap-1 text-base text-gray-600">
             <MapPin className="w-4 h-4" />
             <span>{address}</span>
