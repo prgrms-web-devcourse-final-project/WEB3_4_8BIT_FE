@@ -12,6 +12,7 @@ import React, { useState, useEffect } from "react";
 import { getRegions } from "@/lib/api/fishingPointAPI";
 import { FishingPointLocation } from "@/types/fishingPointLocationType";
 import { useRouter } from "next/navigation";
+import { useCheckAuth } from "@/hooks/useCheckAuth";
 
 export function SearchBar({
   handleSearch,
@@ -24,6 +25,7 @@ export function SearchBar({
   const [regions, setRegions] = useState<FishingPointLocation[]>([]);
   const [selectedRegion, setSelectedRegion] = useState("all");
   const router = useRouter();
+  const checkAuth = useCheckAuth();
 
   useEffect(() => {
     const fetchRegions = async () => {
@@ -54,6 +56,7 @@ export function SearchBar({
   // 글쓰기 버튼 클릭 핸들러
   const handleWriteClick = () => {
     // 글쓰기 페이지로 바로 이동
+    if (!checkAuth()) return;
     router.push("/fishing-group/write");
   };
 

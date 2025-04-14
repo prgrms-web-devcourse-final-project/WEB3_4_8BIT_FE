@@ -28,6 +28,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { PostDetailContentProps, PostData } from "@/types/PostDetailType";
+import { useCheckAuth } from "@/hooks/useCheckAuth";
 
 export default function PostDetailContent({ postId }: PostDetailContentProps) {
   const router = useRouter();
@@ -40,6 +41,8 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
+
+  const checkAuth = useCheckAuth();
 
   // 참여 정보를 다시 불러오는 함수
   const fetchParticipationInfo = async () => {
@@ -85,6 +88,8 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
 
   // 좋아요 토글 함수 (낙관적 업데이트, 로깅 추가)
   const handleLikeToggle = async () => {
+    if (!checkAuth()) return;
+
     try {
       // 이전 상태 저장 (실패 시 롤백용)
       const previousIsLiked = isLiked;
