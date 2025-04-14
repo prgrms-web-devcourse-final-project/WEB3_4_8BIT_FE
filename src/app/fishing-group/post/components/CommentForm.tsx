@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { CommentFormProps } from "@/types/comment";
+import { useCheckAuth } from "@/hooks/useCheckAuth";
 
 export default function CommentForm({
   onSubmit,
@@ -9,8 +10,11 @@ export default function CommentForm({
   buttonText = "등록",
 }: CommentFormProps) {
   const [content, setContent] = useState("");
+  const checkAuth = useCheckAuth();
 
   const handleSubmit = async () => {
+    if (!checkAuth()) return;
+
     if (content.trim()) {
       await onSubmit(content);
       setContent("");

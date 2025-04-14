@@ -29,6 +29,7 @@ import {
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import useDebouncedRequest from "@/hooks/useDebouncedReques";
+import { useCheckAuth } from "@/hooks/useCheckAuth";
 
 export default function ReservationInfo({
   detailShip,
@@ -37,9 +38,12 @@ export default function ReservationInfo({
   detailShip: ShipFishingPostDetailData;
   reservationUnavailableDate: string[];
 }) {
+  const checkAuth = useCheckAuth();
+
   const router = useRouter();
 
   const [date, setDate] = useState<Date | undefined>(undefined);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [reservationData, setReservationData] =
     useState<ReservationRemainData | null>(null);
   const [selectedPeople, setSelectedPeople] = useState(1);
@@ -68,6 +72,8 @@ export default function ReservationInfo({
   }, [date, detailShip.shipFishingPostId]);
 
   const { trigger: handleReservation } = useDebouncedRequest(async () => {
+    if (!checkAuth()) return;
+
     const response = await postReservation(
       detailShip.shipFishingPostId,
       selectedPeople,
@@ -110,7 +116,7 @@ export default function ReservationInfo({
 
         <div>
           <h3 className="font-medium mb-3">날짜 선택</h3>
-          <Popover>
+          <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
@@ -126,7 +132,10 @@ export default function ReservationInfo({
               <Calendar
                 mode="single"
                 selected={date}
-                onSelect={setDate}
+                onSelect={(newDate) => {
+                  setDate(newDate);
+                  setIsCalendarOpen(false);
+                }}
                 initialFocus
                 locale={ko}
                 disabled={(date) => {

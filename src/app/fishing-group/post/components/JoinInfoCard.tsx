@@ -8,6 +8,7 @@ import { applyFishingTripRecruitment } from "@/lib/api/fishingTripRecruitmentAPI
 import { Button } from "@/components/ui/button";
 import { User } from "lucide-react";
 import useDebouncedRequest from "@/hooks/useDebouncedReques";
+import { useCheckAuth } from "@/hooks/useCheckAuth";
 
 interface JoinInfoCardProps {
   recruitmentCount: number;
@@ -35,6 +36,8 @@ export default function JoinInfoCard({
   // 참여 여부 및 모달 오픈 상태 관리
   const [isJoined, setIsJoined] = useState(isApplicant);
   const [showModal, setShowModal] = useState(false);
+
+  const checkAuth = useCheckAuth();
 
   // isApplicant prop이 변경될 때마다 isJoined 상태 업데이트
   useEffect(() => {
@@ -78,6 +81,11 @@ export default function JoinInfoCard({
     handleJoinSubmit();
   };
 
+  const modalOpen = () => {
+    if (!checkAuth()) return;
+    setShowModal(true);
+  };
+
   return (
     <>
       <div className="bg-white rounded-lg shadow p-4 border border-gray-70 space-y-4">
@@ -101,7 +109,7 @@ export default function JoinInfoCard({
         {/* 참여 신청 버튼 (신청 후에는 disabled 처리) */}
         {!isJoined && currentCount < recruitmentCount && (
           <button
-            onClick={() => setShowModal(true)}
+            onClick={modalOpen}
             className="w-full py-2 rounded-lg text-white bg-primary hover:bg-[#2f8ae0] cursor-pointer"
           >
             참여 신청하기

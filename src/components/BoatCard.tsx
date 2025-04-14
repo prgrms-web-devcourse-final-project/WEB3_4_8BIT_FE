@@ -16,6 +16,7 @@ import Image from "next/image";
 import { ShipPostData } from "@/types/boatPostType";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
+import { useCheckAuth } from "@/hooks/useCheckAuth";
 
 export default function BoatCard({ boatData }: { boatData: ShipPostData }) {
   const [shipPost, setShipPost] = useState<ShipPostData | null>(null);
@@ -23,6 +24,7 @@ export default function BoatCard({ boatData }: { boatData: ShipPostData }) {
   const [likeCount, setLikeCount] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const queryClient = useQueryClient();
+  const checkAuth = useCheckAuth();
 
   // 메인페이지에서 오류 발생
   if (!boatData) {
@@ -40,6 +42,8 @@ export default function BoatCard({ boatData }: { boatData: ShipPostData }) {
   const handleLikeToggle = async (e: React.MouseEvent) => {
     e.preventDefault(); // 링크 이벤트 전파 방지
     e.stopPropagation();
+
+    if (!checkAuth()) return;
 
     try {
       console.log("좋아요 토글 요청 시작:", {
