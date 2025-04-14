@@ -50,7 +50,7 @@ export default function ImageGallery({ imageList }: { imageList: string[] }) {
           </Button>
         </div>
         <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-2">
-          {imageList.map((_, index) => (
+          {images.map((_, index) => (
             <button
               key={index}
               className={`w-2 h-2 rounded-full cursor-pointer ${
@@ -64,7 +64,7 @@ export default function ImageGallery({ imageList }: { imageList: string[] }) {
 
       {/* 썸네일 이미지 */}
       <div className="flex space-x-2 overflow-x-auto p-2">
-        {imageList.map((image, index) => (
+        {images.map((image, index) => (
           <button
             key={index}
             className={`flex-shrink-0 w-20 h-20 cursor-pointer rounded-md overflow-hidden ${
