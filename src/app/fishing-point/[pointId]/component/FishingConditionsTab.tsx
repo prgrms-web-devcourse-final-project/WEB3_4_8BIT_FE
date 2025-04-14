@@ -76,6 +76,8 @@ export default function FishingConditionsTab({
     enabled: !!pointDetailData,
   });
 
+  console.log(pointDetailData!.latitude, pointDetailData!.longitude);
+
   const { data: tideChartData, isLoading: isTideChartDataLoading } = useQuery<
     DailyTideData[]
   >({

@@ -30,6 +30,7 @@ export default function TideChart({
 
   // 데이터 처리
   useEffect(() => {
+    console.log(tideChartData);
     if (!tideChartData) return;
 
     const tempTideData: TideChartData[] = [];
@@ -116,7 +117,7 @@ export default function TideChart({
         setLabelPositions(positions);
       }
     }
-  }, [chartData, currentTime]);
+  }, [chartData, currentTime, tideChartData]);
 
   if (!tideChartData) {
     return <div>물때 데이터를 불러오는 중입니다...</div>;

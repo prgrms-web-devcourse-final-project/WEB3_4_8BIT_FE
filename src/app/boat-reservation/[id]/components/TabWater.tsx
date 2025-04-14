@@ -26,20 +26,25 @@ export default function TabWater({ departurePort }: { departurePort: string }) {
   } | null>({
     queryKey: ["coordinates", departurePort],
     queryFn: () => getCoordinatesFromAddress(departurePort),
+    enabled: !!departurePort,
   });
 
   const { data: tideChartData, isLoading: tideChartLoading } = useQuery<
     DailyTideData[]
   >({
-    queryKey: ["tideChartData"],
+    queryKey: ["tideChartData", coordinates?.latitude, coordinates?.longitude],
     queryFn: () =>
-      getTideChartData(coordinates!.latitude, coordinates!.longitude),
+      getTideChartData(coordinates!.longitude, coordinates!.latitude),
     enabled: !!coordinates,
   });
 
   const { data: currentWeather, isLoading: currentWeatherLoading } =
     useQuery<WeatherResponse>({
-      queryKey: ["currentWeather"],
+      queryKey: [
+        "currentWeather",
+        coordinates?.longitude,
+        coordinates?.latitude,
+      ],
       queryFn: () =>
         getWeatherData(coordinates!.longitude, coordinates!.latitude),
       enabled: !!coordinates,
@@ -48,6 +53,8 @@ export default function TabWater({ departurePort }: { departurePort: string }) {
   if (tideChartLoading || currentWeatherLoading) {
     return <div>Loading...</div>;
   }
+
+  console.log(coordinates, departurePort, tideChartData, currentWeather);
 
   const tideInfo = tideChartData?.[1];
   return (
