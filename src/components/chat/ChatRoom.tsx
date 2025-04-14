@@ -26,6 +26,9 @@ export default function ChatRoom({ roomData, handleBackToList }: ChatRoomProps) 
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [uploadedFileIds, setUploadedFileIds] = useState<number[]>([]); 
   const [nextCursorId, setNextCursorId] = useState<string | null>(null);
+  const [messageCount, setMessageCount] = useState(0);
+  const [isBlocked, setIsBlocked] = useState(false);
+  const [blockTimeout, setBlockTimeout] = useState<ReturnType<typeof setTimeout> | undefined>(undefined);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const socketRef = useRef<any>(null);
   const stompClientRef = useRef<Client | null>(null);
@@ -46,10 +49,7 @@ export default function ChatRoom({ roomData, handleBackToList }: ChatRoomProps) 
       } catch (err) {
         console.error("기존 메시지 불러오기 실패", err);
       } finally {
-        setIsInitialLoading(false);
-        setTimeout(() => {
-          messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-        }, 100);
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
       }
     }
     fetchInitialMessages();
@@ -145,10 +145,29 @@ export default function ChatRoom({ roomData, handleBackToList }: ChatRoomProps) 
       // 전송 후 입력값 초기화
       setNewMessage("");
       setPreviewImage(null);
+      setMessageCount(prevCount => prevCount + 1);
 
-      setTimeout(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-      }, 100);
+      // 메시지 전송 횟수가 10회 이상이면 차단
+      if (messageCount > 10) { 
+          setIsBlocked(true);
+          clearTimeout(blockTimeout); 
+          setBlockTimeout(setTimeout(() => {
+              setIsBlocked(false); 
+              setMessageCount(0); 
+          }, 10000)); // 10초 동안 차단
+      }
+
+      // 10초 이내에 메시지 전송 횟수 초기화
+      if (messageCount === 0) {
+          setTimeout(() => {
+              setMessageCount(0);
+          }, 10000);
+      }
+
+      setIsInitialLoading(false);
+        setTimeout(() => {
+          messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        }, 100);
     } else {
       console.log('연결 안됨... 메시지 전송 실패');
     }
@@ -170,7 +189,7 @@ export default function ChatRoom({ roomData, handleBackToList }: ChatRoomProps) 
     try {
         const domain = "chat";
         const uploadedFileIds = await uploadImagesToS3(Array.from(files), domain); // presigned URL 요청 및 업로드
-        setUploadedFileIds(uploadedFileIds); // 추가된 부분
+        setUploadedFileIds(uploadedFileIds);
 
         // 업로드 후 미리보기 설정
         const reader = new FileReader();
@@ -178,7 +197,7 @@ export default function ChatRoom({ roomData, handleBackToList }: ChatRoomProps) 
             setPreviewImage(event.target?.result as string);
             setIsUploading(false);
         };
-        reader.readAsDataURL(files[0]); // 첫 번째 파일 미리보기 설정
+        reader.readAsDataURL(files[0]);
     } catch (error) {
         console.error("이미지 업로드 중 오류 발생:", error);
         setIsUploading(false);
@@ -194,6 +213,13 @@ export default function ChatRoom({ roomData, handleBackToList }: ChatRoomProps) 
 
   return (
     <div className="flex flex-col h-full">
+       {/* 차단 알림 */}
+       {isBlocked && (
+        <div className="bg-red-500 text-white p-2 text-center">
+          <p>잠시 후 다시 시도해 주세요.</p>
+        </div>
+      )}
+
       {/* 상단 헤더: 방 나가기, 방 정보 */}
       <div className="p-4 border-b flex justify-between items-center shrink-0">
         <div className="flex items-center">
