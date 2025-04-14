@@ -18,7 +18,7 @@ export default async function Review() {
         Authorization: `${process.env.NEXT_ACCESS_TOKEN}`,
         "Content-Type": "application/json; charset=utf-8",
       },
-      cache: "no-cache",
+      cache: "force-cache",
       next: { revalidate: 0 },
     }
   );
