@@ -55,6 +55,7 @@ export interface ChatMessageResponse {
   senderProfileImageUrl: string;
   content: string;
   fileUrls: string[];
+  isOwn: boolean;
   type: "TALK" | "IMAGE";
   createdAt: string;
 }

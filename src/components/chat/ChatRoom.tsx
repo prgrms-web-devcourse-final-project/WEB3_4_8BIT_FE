@@ -48,7 +48,6 @@ export default function ChatRoom({ roomData, handleBackToList }: ChatRoomProps) 
     fetchInitialMessages();
   }, [roomData.roomId]);
 
-
   useEffect(() => {
     // SockJS 옵션에 쿠키를 포함하도록 설정
     const sockJsOptions = {
@@ -68,17 +67,10 @@ export default function ChatRoom({ roomData, handleBackToList }: ChatRoomProps) 
         stompClientRef.current?.subscribe(`/topic/chat/${roomData.roomId}`, (message) => {
           try {
             const messageData = JSON.parse(message.body);
-            console.log("수신된 메시지 데이터:", messageData);
+            console.log("수신된 메시지 데이터:", messageData); // 메시지 데이터 확인
 
-            // 메시지 데이터 구조 확인 (messageData 또는 messageData.content)
-            const messageContent = messageData.content || messageData;
-
-            if (messageContent) {
-              console.log("처리할 메시지 내용:", messageContent);
-              setMessages((prev) => [...prev, messageContent]);
-            } else {
-              console.error("처리할 메시지 내용이 없습니다:", messageData);
-            }
+            // 메시지 추가
+            setMessages((prev) => [...prev, messageData]);
           } catch (error) {
             console.error("메시지 처리 중 오류 발생:", error, message.body);
           }
