@@ -3,7 +3,6 @@ import SockJS from "sockjs-client";
 import { Client } from "@stomp/stompjs";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, Send, Users, X, ImagePlus } from "lucide-react";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChatMessage } from "@/components/chat/ChatMessage";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
