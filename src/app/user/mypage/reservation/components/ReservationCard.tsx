@@ -1,12 +1,20 @@
-import {Card} from "@/components/ui/card";
-import {Calendar, Clock, FishSymbol, MapPin, Star, Trash2, Users, Eye} from "lucide-react";
-import {Badge} from "@/components/ui/badge";
-import {Button} from "@/components/ui/button";
-import React, {useState} from "react";
+import { Card } from "@/components/ui/card";
+import {
+  Calendar,
+  Clock,
+  FishSymbol,
+  MapPin,
+  Star,
+  Trash2,
+  Users,
+  Eye,
+} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import React, { useState } from "react";
 import Image from "next/image";
 import ReviewModal from "@/app/user/mypage/reservation/components/ReviewModal";
 import Link from "next/link";
-import {useRouter} from "next/navigation";
 
 export default function ReservationCard({
   postId,
@@ -24,31 +32,30 @@ export default function ReservationCard({
 }: {
   postId: number;
   reservationId: number;
-  title: string
-  date: string
-  time: string
-  location: string
-  people: number
-  price: number
-  status: "confirmed" | "completed" | "cancelled"
-  image: string
-  cancellationReason?: string
-  handleCancel: (id : number) => void
+  title: string;
+  date: string;
+  time: string;
+  location: string;
+  people: number;
+  price: number;
+  status: "confirmed" | "completed" | "cancelled";
+  image: string;
+  cancellationReason?: string;
+  handleCancel: (id: number) => void;
 }) {
-  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false)
-  const router = useRouter();
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
 
   const statusColors = {
     confirmed: "bg-green-100 text-green-800",
     completed: "bg-blue-100 text-blue-800",
     cancelled: "bg-red-100 text-red-800",
-  }
+  };
 
   const statusText = {
     confirmed: "예약 확정",
     completed: "이용 완료",
     cancelled: "예약 취소",
-  }
+  };
 
   return (
     <Card className="py-0">
@@ -84,7 +91,11 @@ export default function ReservationCard({
                 <span>{price.toLocaleString()}원</span>
               </div>
 
-              {cancellationReason && <div className="mt-3 text-sm text-red-600">취소 사유: {cancellationReason}</div>}
+              {cancellationReason && (
+                <div className="mt-3 text-sm text-red-600">
+                  취소 사유: {cancellationReason}
+                </div>
+              )}
             </div>
             <Badge className={statusColors[status]}>{statusText[status]}</Badge>
           </div>
@@ -97,18 +108,27 @@ export default function ReservationCard({
             </Link>
 
             {status === "confirmed" && (
-              <Button variant="outline" onClick={() => handleCancel(reservationId)} className="gap-2 text-red-600 hover:text-red-700 hover:bg-red-50 cursor-pointer">
+              <Button
+                variant="outline"
+                onClick={() => handleCancel(reservationId)}
+                className="gap-2 text-red-600 hover:text-red-700 hover:bg-red-50 cursor-pointer"
+              >
                 <Trash2 className="h-4 w-4" /> 취소
               </Button>
             )}
 
             {status === "completed" && (
               <>
-                <Button variant="outline" className="gap-2 cursor-pointer" onClick={() => setIsReviewModalOpen(true)}>
+                <Button
+                  variant="outline"
+                  className="gap-2 cursor-pointer"
+                  onClick={() => setIsReviewModalOpen(true)}
+                >
                   <Star className="h-4 w-4 text-amber-500" /> 리뷰 작성
                 </Button>
                 <Button className="gap-2 cursor-pointer">
-                  <FishSymbol className="h-4 w-4" />다시 예약하기
+                  <FishSymbol className="h-4 w-4" />
+                  다시 예약하기
                 </Button>
               </>
             )}
@@ -123,7 +143,6 @@ export default function ReservationCard({
           setIsReviewModalOpen={setIsReviewModalOpen}
         />
       )}
-
     </Card>
-  )
+  );
 }

@@ -1,21 +1,25 @@
-import React, {useEffect, useState} from "react";
-import {Input} from "@/components/ui/input";
-import {Label} from "@/components/ui/label";
-import {Button} from "@/components/ui/button";
-import {Star, X} from "lucide-react";
-import {Textarea} from "@/components/ui/textarea";
-import {UserReviewInput} from "@/types/user.interface";
+import React, { useEffect, useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Star, X } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { UserReviewInput } from "@/types/user.interface";
 import Image from "next/image";
-import {uploadImagesToS3} from "@/lib/api/uploadImageAPI";
-import {UserAPI} from "@/lib/api/userAPI";
+import { uploadImagesToS3 } from "@/lib/api/uploadImageAPI";
+import { UserAPI } from "@/lib/api/userAPI";
 
 interface ReviewModalProps {
-  reservationId : number;
-  postId : number;
+  reservationId: number;
+  postId: number;
   setIsReviewModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export default function ReviewModal({ reservationId, postId, setIsReviewModalOpen }: ReviewModalProps) {
+export default function ReviewModal({
+  reservationId,
+  postId,
+  setIsReviewModalOpen,
+}: ReviewModalProps) {
   const [rating, setRating] = useState<number>(0);
   const [hoverRating, setHoverRating] = useState<number>(0);
   const [content, setContent] = useState<string>("");
@@ -25,15 +29,15 @@ export default function ReviewModal({ reservationId, postId, setIsReviewModalOpe
   });
 
   const uploadImages = async () => {
-    return await uploadImagesToS3(imageFiles, 'profile');
-  }
+    return await uploadImagesToS3(imageFiles, "profile");
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       if (e.target.files.length + imageFiles.length > 5) {
-        alert('최대 5장만 업로드 가능합니다') // TODO 추후 alert 수정 필요
+        alert("최대 5장만 업로드 가능합니다"); // TODO 추후 alert 수정 필요
       }
-      const tempFile = [...imageFiles]
+      const tempFile = [...imageFiles];
       for (const file of e.target.files) {
         tempFile.push(file);
       }
@@ -56,13 +60,17 @@ export default function ReviewModal({ reservationId, postId, setIsReviewModalOpe
         reviewData.fileIdList = await uploadImages();
       }
 
-      console.log(reviewData);
-
-      const response = await UserAPI.postUserBoatReservationReview(reservationId, reviewData);
+      const response = await UserAPI.postUserBoatReservationReview(
+        reservationId,
+        reviewData
+      );
       if (response.success) {
-        alert('성공!') // TODO 추후 모달로 수정
+        await fetch("/user/mypage", {
+          method: "POST",
+        });
+        alert("성공!"); // TODO 추후 모달로 수정
       } else {
-        alert('리뷰 등록 오류') // TODO 추후 모달로 수정
+        alert("리뷰 등록 오류"); // TODO 추후 모달로 수정
       }
     } catch (error) {
       console.error(error);
@@ -84,7 +92,9 @@ export default function ReviewModal({ reservationId, postId, setIsReviewModalOpe
         <div className="flex justify-between">
           <div className="grid gap-1">
             <div className="font-bold text-xl">리뷰 작성</div>
-            <div className="text-gray-500">선상 낚시에 대한 경험을 공유해주세요!</div>
+            <div className="text-gray-500">
+              선상 낚시에 대한 경험을 공유해주세요!
+            </div>
           </div>
           <X
             className="cursor-pointer text-gray-500"
@@ -104,8 +114,14 @@ export default function ReviewModal({ reservationId, postId, setIsReviewModalOpe
                 onMouseLeave={() => setHoverRating(0)}
               >
                 <Star
-                  fill={(hoverRating || rating) >= value ? "currentColor" : "none"}
-                  className={`w-6 h-6 ${(hoverRating || rating) >= value ? "text-amber-500" : "text-gray-300"}`}
+                  fill={
+                    (hoverRating || rating) >= value ? "currentColor" : "none"
+                  }
+                  className={`w-6 h-6 ${
+                    (hoverRating || rating) >= value
+                      ? "text-amber-500"
+                      : "text-gray-300"
+                  }`}
                 />
               </button>
             ))}
@@ -120,14 +136,18 @@ export default function ReviewModal({ reservationId, postId, setIsReviewModalOpe
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="picture" className="text-md font-bold">사진 첨부</Label>
+          <Label htmlFor="picture" className="text-md font-bold">
+            사진 첨부
+          </Label>
           <Input
             id="picture"
             type="file"
             multiple
             onChange={handleFileChange}
           />
-          <div className="text-sm text-gray-500">최대 5장까지 업로드 가능합니다.</div>
+          <div className="text-sm text-gray-500">
+            최대 5장까지 업로드 가능합니다.
+          </div>
           {previewImages.length > 0 && (
             <div className="mt-2 grid grid-cols-3 gap-2">
               {previewImages.map((url, index) => (
@@ -146,10 +166,18 @@ export default function ReviewModal({ reservationId, postId, setIsReviewModalOpe
           )}
         </div>
         <div className="flex justify-end gap-2">
-          <Button variant="outline" className="cursor-pointer" onClick={() => setIsReviewModalOpen(false)}>
+          <Button
+            variant="outline"
+            className="cursor-pointer"
+            onClick={() => setIsReviewModalOpen(false)}
+          >
             취소
           </Button>
-          <Button type="submit" className="cursor-pointer" onClick={handleSubmit}>
+          <Button
+            type="submit"
+            className="cursor-pointer"
+            onClick={handleSubmit}
+          >
             리뷰 등록
           </Button>
         </div>
