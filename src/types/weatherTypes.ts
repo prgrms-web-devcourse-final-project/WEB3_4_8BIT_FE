@@ -95,4 +95,5 @@ export interface WeatherCardProps {
   currentTime: string;
   currentDate: string;
   valueColor?: string;
+  className?: string;
 }

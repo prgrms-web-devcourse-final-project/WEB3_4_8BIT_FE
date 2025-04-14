@@ -1,93 +1,138 @@
-"use client"
+"use client";
 
-import Image from "next/image"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Fish } from "lucide-react";
+import { useEffect } from "react";
 
 export default function LoginPage() {
-  const router = useRouter()
+  const router = useRouter();
 
-  const handleSocialLogin = async (provider: 'kakao' | 'naver' ) => {
+  // 배경 스타일을 body에 적용
+  useEffect(() => {
+    document.body.style.background =
+      "linear-gradient(to bottom right, #eff6ff, #e0f2fe, #ccfbf1)";
+    return () => {
+      document.body.style.background = "";
+    };
+  }, []);
+
+  const handleSocialLogin = async (provider: "kakao" | "naver") => {
     try {
-      if (provider === 'kakao') {
-        router.push("https://api.mikki.kr/oauth2/authorization/kakao")
-      } else if (provider === 'naver') {
-        router.push("https://api.mikki.kr/oauth2/authorization/naver")
+      if (provider === "kakao") {
+        router.push("https://api.mikki.kr/oauth2/authorization/kakao");
+      } else if (provider === "naver") {
+        router.push("https://api.mikki.kr/oauth2/authorization/naver");
       }
     } catch (error) {
       // TODO 추후 에러 처리 필요!
-      console.error(error)
+      console.error(error);
     }
   };
 
   return (
-    <div className="min-h-screen flex justify-center bg-white">
-      <Card className="w-[476px] h-[400px] mt-20">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">로그인</CardTitle>
-          <CardDescription>소셜 계정으로 간편하게 로그인하세요</CardDescription>
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden py-8">
+      {/* 배경 장식 요소 */}
+      <div className="absolute top-10 left-10 w-32 h-32 bg-blue-200 rounded-full opacity-20 blur-xl"></div>
+      <div className="absolute bottom-10 right-10 w-40 h-40 bg-teal-200 rounded-full opacity-20 blur-xl"></div>
+      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-cyan-200 rounded-full opacity-10 blur-3xl"></div>
+
+      <Card className="w-[520px] h-auto py-8 shadow-xl border-0 bg-white/90 backdrop-blur-sm">
+        <CardHeader className="text-center space-y-3 pb-2">
+          <div className="flex justify-center mb-3">
+            <div className="bg-gradient-to-r from-blue-500 to-cyan-500 p-4 rounded-full">
+              <Fish className="h-10 w-10 text-white" />
+            </div>
+          </div>
+          <CardTitle className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
+            로그인
+          </CardTitle>
+          <CardDescription className="text-gray-600 text-base">
+            소셜 계정으로 간편하게 로그인하세요
+          </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-5 px-8">
           <Button
             variant="outline"
-            className="w-full font-semibold text-md h-12 relative bg-[#FEE500] hover:bg-yellow-200 cursor-pointer"
+            className="w-full font-semibold text-md h-14 relative bg-[#FEE500] hover:bg-yellow-200 cursor-pointer shadow-md transition-all duration-300 hover:shadow-lg hover:scale-[1.02]"
             onClick={() => handleSocialLogin("kakao")}
           >
             <div className="flex gap-4">
               <Image
                 src="/icons/kakao.svg"
                 alt="Kakao Logo"
-                width={24}
-                height={24}
+                width={28}
+                height={28}
                 className="rounded-sm"
               />
-              <span className="flex-1 text-center">카카오로 로그인</span>
+              <span className="flex-1 text-center text-lg">
+                카카오로 로그인
+              </span>
             </div>
           </Button>
 
           <Button
             variant="outline"
-            className="w-full font-semibold text-md text-white h-12 relative bg-[#03c75b] hover:bg-green-400 hover:text-white cursor-pointer"
+            className="w-full font-semibold text-md text-white h-14 relative bg-[#03c75b] hover:bg-green-400 hover:text-white cursor-pointer shadow-md transition-all duration-300 hover:shadow-lg hover:scale-[1.02]"
             onClick={() => handleSocialLogin("naver")}
           >
             <div className="flex gap-4">
               <Image
                 src="/icons/naver.svg"
                 alt="Naver Logo"
-                width={24}
-                height={24}
+                width={28}
+                height={28}
               />
-              <span className="flex-1 text-center">네이버로 로그인</span>
+              <span className="flex-1 text-center text-lg">
+                네이버로 로그인
+              </span>
             </div>
           </Button>
 
           <div className="relative my-6">
-            <Separator />
-            <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white px-2 text-xs text-gray-500">
+            <Separator className="bg-gray-200" />
+            <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white px-4 text-sm text-gray-500 font-medium">
               또는
             </span>
           </div>
 
-          <div className="text-center text-sm text-gray-500">
-            <p>
+          <div className="text-center">
+            <p className="text-gray-600 text-base">
               아직 회원이 아니신가요?{" "}
-              <Link href="/auth/register" className="text-primary hover:text-sub-1 font-medium">
+              <Link
+                href="/auth/register"
+                className="text-blue-600 hover:text-blue-800 font-medium transition-colors"
+              >
                 회원가입
               </Link>
             </p>
           </div>
         </CardContent>
-        <CardFooter className="flex flex-col space-y-4">
-          <p className="text-xs text-center text-gray-500">
+        <CardFooter className="flex flex-col space-y-2 px-8 pt-2">
+          <p className="text-sm text-center text-gray-500">
             로그인함으로써 미끼미끼의{" "}
-            <Link href="/" className="underline">
+            <Link
+              href="/"
+              className="text-blue-600 hover:text-blue-800 underline"
+            >
               이용약관
             </Link>{" "}
             및{" "}
-            <Link href="/" className="underline">
+            <Link
+              href="/"
+              className="text-blue-600 hover:text-blue-800 underline"
+            >
               개인정보처리방침
             </Link>
             에 동의합니다.
@@ -95,6 +140,5 @@ export default function LoginPage() {
         </CardFooter>
       </Card>
     </div>
-  )
+  );
 }
-

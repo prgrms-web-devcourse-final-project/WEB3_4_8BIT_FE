@@ -3,14 +3,7 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getWeatherData } from "@/lib/api/weatherDataAPI";
-import {
-  ThermometerSun,
-  Wind,
-  Sun,
-  MapPin,
-  Droplets,
-  Cloud,
-} from "lucide-react";
+import { ThermometerSun, Wind, Sun, MapPin, Droplets } from "lucide-react";
 import { formatRoundOne, getUVIText } from "@/utils/weatherStatusFormater";
 import { WeatherResponse } from "@/types/weatherTypes";
 import WeatherCard from "./WeatherCard";
@@ -110,27 +103,27 @@ export default function CurrentLocationWeather() {
   const current = weatherData.current;
 
   return (
-    <section className="w-full bg-white py-5 mt-6">
-      <div className="max-w-7xl w-full mx-auto px-4">
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex items-center gap-2">
-            <Sun className="w-6 h-6 text-yellow-500" />
-            <h2 className="text-2xl font-bold text-gray-900">
+    <section className="w-full bg-white py-3 sm:py-5 mt-4 sm:mt-6">
+      <div className="max-w-7xl w-full mx-auto px-3 sm:px-4">
+        <div className="flex justify-between items-center mb-4 sm:mb-6">
+          <div className="flex items-center gap-1 sm:gap-2">
+            <Sun className="w-4 h-4 sm:w-6 sm:h-6 text-yellow-500" />
+            <h2 className="text-lg sm:text-2xl font-bold text-gray-900">
               실시간 날씨 정보
             </h2>
           </div>
-          <div className="flex items-center gap-1 text-base text-gray-600">
-            <MapPin className="w-4 h-4" />
-            <span>{address}</span>
+          <div className="flex items-center gap-1 text-gray-600">
+            <MapPin className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span className="text-xs sm:text-sm">{address}</span>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
           <WeatherCard
             title="기온"
             value={formatRoundOne(current.temp)}
             unit="°"
-            icon={<ThermometerSun className="w-10 h-10" />}
+            icon={<ThermometerSun className="w-6 h-6 sm:w-8 sm:h-8" />}
             iconColor="text-red-500"
             currentTime={currentTime}
             currentDate={currentDate}
@@ -139,7 +132,7 @@ export default function CurrentLocationWeather() {
             title="습도"
             value={current.humidity}
             unit="%"
-            icon={<Droplets className="w-10 h-10" />}
+            icon={<Droplets className="w-6 h-6 sm:w-8 sm:h-8" />}
             iconColor="text-blue-500"
             currentTime={currentTime}
             currentDate={currentDate}
@@ -148,7 +141,7 @@ export default function CurrentLocationWeather() {
             title="풍속"
             value={current.wind_speed}
             unit="m/s"
-            icon={<Wind className="w-10 h-10" />}
+            icon={<Wind className="w-6 h-6 sm:w-8 sm:h-8" />}
             iconColor="text-emerald-500"
             currentTime={currentTime}
             currentDate={currentDate}
@@ -156,7 +149,7 @@ export default function CurrentLocationWeather() {
           <WeatherCard
             title="자외선"
             value={getUVIText(current.uvi)}
-            icon={<Sun className="w-10 h-10" />}
+            icon={<Sun className="w-6 h-6 sm:w-8 sm:h-8" />}
             iconColor="text-yellow-500"
             currentTime={currentTime}
             currentDate={currentDate}
