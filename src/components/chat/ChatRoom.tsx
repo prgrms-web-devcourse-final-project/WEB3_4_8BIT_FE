@@ -33,7 +33,14 @@ export default function ChatRoom({ roomData, handleBackToList }: ChatRoomProps) 
     async function fetchInitialMessages() {
       try {
         const res = await ChatAPI.getRoomMessages(roomData.roomId);
-        setMessages(res.content);
+        // 유효한 메시지 객체만 필터링합니다
+        if (Array.isArray(res.content)) {
+          console.log("받은 메시지 데이터:", res.content);
+          setMessages(res.content);
+        } else {
+          console.error("메시지 데이터가 배열이 아닙니다:", res.content);
+          setMessages([]);
+        }
       } catch (err) {
         console.error("기존 메시지 불러오기 실패", err);
       }
@@ -41,22 +48,44 @@ export default function ChatRoom({ roomData, handleBackToList }: ChatRoomProps) 
     fetchInitialMessages();
   }, [roomData.roomId]);
 
-
   useEffect(() => {
-    socketRef.current = new SockJS("https://api.mikki.kr/ws/chat");
+    // SockJS 옵션에 쿠키를 포함하도록 설정
+    const sockJsOptions = {
+      transports: ['websocket', 'xhr-streaming', 'xhr-polling'],
+      withCredentials: true  // 이 부분이 중요: 쿠키를 포함시킴
+    };
+
+    socketRef.current = new SockJS("http://localhost:8080/ws/chat", null, sockJsOptions);
 
     stompClientRef.current = new Client({
       webSocketFactory: () => socketRef.current,
+      connectHeaders: {
+        // 필요한 경우 여기에 추가 헤더를 포함할 수 있음
+      },
       onConnect: (frame) => {
         console.log("STOMP 연결 성공:", frame);
         stompClientRef.current?.subscribe(`/topic/chat/${roomData.roomId}`, (message) => {
-          const messageData = JSON.parse(message.body);
-          setMessages((prev) => [...prev, messageData.content]);
+          try {
+            const messageData = JSON.parse(message.body);
+            console.log("수신된 메시지 데이터:", messageData); // 메시지 데이터 확인
+
+            // 메시지 추가
+            setMessages((prev) => [...prev, messageData]);
+          } catch (error) {
+            console.error("메시지 처리 중 오류 발생:", error, message.body);
+          }
         });
       },
       onDisconnect: () => {
         console.log("STOMP 연결 종료");
       },
+      // STOMP 연결에 대한 추가 옵션
+      beforeConnect: () => {
+        console.log("STOMP 연결 시도 중...");
+      },
+      onStompError: (frame) => {
+        console.error("STOMP 오류:", frame);
+      }
     });
 
     stompClientRef.current.activate();
@@ -69,7 +98,7 @@ export default function ChatRoom({ roomData, handleBackToList }: ChatRoomProps) 
 
   const handleSendMessage = () => {
     if (stompClientRef.current && stompClientRef.current.connected) {
-      console.log('하하하')
+      console.log('메시지 전송 시도');
       const messageRequest = {
         roomId: roomData.roomId,
         content: newMessage,
@@ -85,8 +114,9 @@ export default function ChatRoom({ roomData, handleBackToList }: ChatRoomProps) 
       // 메시지 전송 후 입력값 초기화
       setNewMessage("");
       setPreviewImage(null);
+    } else {
+      console.log('연결 안됨... 메시지 전송 실패');
     }
-    console.log('연결 안됨...')
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -119,6 +149,10 @@ export default function ChatRoom({ roomData, handleBackToList }: ChatRoomProps) 
     }
   };
 
+  // 메시지 배열 유효성 검사 (디버깅용 로그 포함)
+  console.log("현재 메시지 목록:", messages);
+  const validMessages = Array.isArray(messages) ? messages : [];
+
   return (
     <div className="flex flex-col h-full">
       {/* 상단 헤더: 방 나가기, 방 정보 */}
@@ -139,9 +173,16 @@ export default function ChatRoom({ roomData, handleBackToList }: ChatRoomProps) 
       {/* 채팅 메시지 스크롤 */}
       <ScrollArea className="flex-1 p-4 overflow-scroll">
         <div className="space-y-4">
-          {messages.map((message) => (
-            <ChatMessage key={message.messageId} message={message} />
-          ))}
+          {validMessages.map((message, index) => {
+            // 각 메시지에 messageId가 없는 경우 인덱스를 사용
+            const key = message.messageId ? `message-${message.messageId}` : `message-index-${index}`;
+            return (
+              <ChatMessage
+                key={key}
+                message={message}
+              />
+            );
+          })}
           <div ref={messagesEndRef} />
         </div>
       </ScrollArea>
@@ -150,7 +191,7 @@ export default function ChatRoom({ roomData, handleBackToList }: ChatRoomProps) 
       {previewImage && (
         <div className="p-2 border-t">
           <div className="relative inline-block">
-            <Image src={previewImage || "/placeholder.svg"} alt="Preview" className="h-20 rounded-md object-cover" />
+            <Image src={previewImage || "/placeholder.svg"} alt="Preview" width={80} height={80} className="h-20 rounded-md object-cover" />
             <Button variant="destructive" size="icon" className="absolute -top-2 -right-2 h-6 w-6 rounded-full" onClick={cancelImageUpload}>
               <X className="h-3 w-3" />
             </Button>

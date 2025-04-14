@@ -37,7 +37,14 @@ export interface ChatRoomData {
   targetName : string;
   targetType : string;
   participantCount : number;
-  lastMessage : null | string;
+  lastMessage: LastMessage | null;
+}
+
+export interface LastMessage {
+  content: string;
+  type: "TALK" | "IMAGE";
+  senderNickname: string;
+  createdAt: string;
 }
 
 export interface ChatMessageResponse {
@@ -48,6 +55,7 @@ export interface ChatMessageResponse {
   senderProfileImageUrl: string;
   content: string;
   fileUrls: string[];
+  isOwn: boolean;
   type: "TALK" | "IMAGE";
   createdAt: string;
 }

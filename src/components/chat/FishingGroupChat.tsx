@@ -75,7 +75,9 @@ export function FishingGroupChat() {
                       <span className="text-xs text-gray-500">총 {room.participantCount}명</span>
                     </div>
                     <p className="text-sm truncate text-gray-30">
-                      {room.lastMessage ? room.lastMessage : "메세지가 없습니다. 채팅을 시작해보세요!"}
+                      {room.lastMessage
+                        ? room.lastMessage.content
+                        : "메세지가 없습니다. 채팅을 시작해보세요!"}
                     </p>
                   </div>
                 </button>
