@@ -8,6 +8,7 @@ import { UserReviewInput } from "@/types/user.interface";
 import Image from "next/image";
 import { uploadImagesToS3 } from "@/lib/api/uploadImageAPI";
 import { UserAPI } from "@/lib/api/userAPI";
+import { toast } from "sonner";
 
 interface ReviewModalProps {
   reservationId: number;
@@ -45,7 +46,6 @@ export default function ReviewModal({
     }
   };
 
-  // 리뷰 제출 시 rating, content, postId 등 데이터를 준비 (사진 파일 업로드는 별도 처리)
   const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
     try {
       e.preventDefault();
@@ -65,20 +65,22 @@ export default function ReviewModal({
         reviewData
       );
       if (response.success) {
-        await fetch("/user/mypage", {
+        // 리뷰 작성 성공 후 캐시 무효화
+        await fetch("/api/revalidate", {
           method: "POST",
         });
-        alert("성공!"); // TODO 추후 모달로 수정
+        toast.success("리뷰가 등록되었습니다.");
       } else {
-        alert("리뷰 등록 오류"); // TODO 추후 모달로 수정
+        toast.error("리뷰 등록에 실패했습니다.");
       }
     } catch (error) {
-      console.error(error);
+      console.error("리뷰 등록 중 오류 발생:", error);
+      toast.error("리뷰 등록 중 오류가 발생했습니다.");
     } finally {
       setIsReviewModalOpen(false);
     }
   };
-  // 컴포넌트 언마운트 또는 미리보기 이미지 변경 시 생성했던 Object URL 해제
+
   useEffect(() => {
     console.log(previewImages);
     return () => {
