@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import { ChatMessageResponse, ChatRoomData } from "@/types/Chat.types";
 import { ChatAPI } from "@/lib/api/chatAPI";
+import { uploadImagesToS3 } from "@/lib/api/uploadImageAPI";
 
 interface ChatRoomProps {
   roomData: ChatRoomData;
@@ -21,6 +22,7 @@ export default function ChatRoom({ roomData, handleBackToList }: ChatRoomProps) 
   const [newMessage, setNewMessage] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [uploadedFileIds, setUploadedFileIds] = useState<number[]>([]); 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const socketRef = useRef<any>(null);
   const stompClientRef = useRef<Client | null>(null);
@@ -93,24 +95,24 @@ export default function ChatRoom({ roomData, handleBackToList }: ChatRoomProps) 
 
   const handleSendMessage = () => {
     if (stompClientRef.current && stompClientRef.current.connected) {
-      console.log('메시지 전송 시도');
-      const messageRequest = {
-        roomId: roomData.roomId,
-        content: newMessage,
-        fileIds: previewImage ? [] : [],
-        type: "TALK", // TEXT or IMAGE
-      };
+        console.log('메시지 전송 시도');
+        const messageRequest = {
+            roomId: roomData.roomId,
+            content: previewImage ? "" : newMessage, // 이미지 전송 시 content는 빈 문자열
+            fileIds: previewImage ? uploadedFileIds : [], // 이미지가 있을 경우 uploadedFileIds 사용
+            type: previewImage ? "IMAGE" : "TALK", // 이미지 전송 시 타입을 IMAGE로 설정
+        };
 
-      stompClientRef.current.publish({
-        destination: "/pub/chat/send",
-        body: JSON.stringify(messageRequest),
-      });
+        stompClientRef.current.publish({
+            destination: "/pub/chat/send",
+            body: JSON.stringify(messageRequest),
+        });
 
-      // 전송 후 입력값 초기화
-      setNewMessage("");
-      setPreviewImage(null);
+        // 전송 후 입력값 초기화
+        setNewMessage("");
+        setPreviewImage(null);
     } else {
-      console.log('연결 안됨... 메시지 전송 실패');
+        console.log('연결 안됨... 메시지 전송 실패');
     }
   };
 
@@ -122,19 +124,27 @@ export default function ChatRoom({ roomData, handleBackToList }: ChatRoomProps) 
   };
 
   // 파일 업로드 핸들러 (예시: 미리보기 기능 포함)
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
     setIsUploading(true);
 
-    setTimeout(() => {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setPreviewImage(event.target?.result as string);
+    try {
+        const domain = "chat";
+        const uploadedFileIds = await uploadImagesToS3(Array.from(files), domain); // presigned URL 요청 및 업로드
+        setUploadedFileIds(uploadedFileIds); // 추가된 부분
+
+        // 업로드 후 미리보기 설정
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            setPreviewImage(event.target?.result as string);
+            setIsUploading(false);
+        };
+        reader.readAsDataURL(files[0]); // 첫 번째 파일 미리보기 설정
+    } catch (error) {
+        console.error("이미지 업로드 중 오류 발생:", error);
         setIsUploading(false);
-      };
-      reader.readAsDataURL(file);
-    }, 1000);
+    }
   };
 
   const cancelImageUpload = () => {
@@ -143,9 +153,6 @@ export default function ChatRoom({ roomData, handleBackToList }: ChatRoomProps) 
       fileInputRef.current.value = "";
     }
   };
-
-  // 메시지 배열 유효성 검사 (디버깅용 로그 포함)
-  // console.log("현재 메시지 목록:", messages);
 
   return (
     <div className="flex flex-col h-full">
