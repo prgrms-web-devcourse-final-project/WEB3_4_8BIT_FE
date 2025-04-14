@@ -58,7 +58,7 @@ export default function Home() {
 
   return (
     <main>
-      <section className="relative w-full h-[650px] flex items-center justify-start overflow-hidden">
+      <section className="relative w-full h-[450px] md:h-[650px] flex items-center justify-start overflow-hidden">
         {/* 배경 이미지 */}
         <div className="absolute inset-0">
           <Image

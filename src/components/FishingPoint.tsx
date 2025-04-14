@@ -24,7 +24,7 @@ const FishingPoint = () => {
 
   return (
     <div className="flex flex-col md:flex-row items-center justify-center p-8  mx-auto max-w-7xl">
-      <div className="md:w-1/2 text-center md:text-left pr-6">
+      <div className="w-full md:w-1/2 text-left pr-6">
         <h2 className="text-3xl font-bold text-gray-900 mb-4">
           바다 낚시 포인트 지도
         </h2>
@@ -63,7 +63,7 @@ const FishingPoint = () => {
       </div>
 
       <div
-        className="md:w-1/2 mt-6 md:mt-0 flex justify-center items-center bg-white p-6 rounded-lg shadow-md cursor-pointer border-1 transition-all duration-300 hover:shadow-lg"
+        className="w-full md:w-1/2 mt-6 md:mt-0 flex justify-center items-center bg-white p-6 rounded-lg shadow-md cursor-pointer border-1 transition-all duration-300 hover:shadow-lg"
         onClick={handleMapClick}
       >
         <div className="w-full h-[300px] rounded-lg overflow-hidden border border-gray-200">

@@ -125,7 +125,7 @@ export default function CurrentLocationWeather() {
           </div>
         </div>
 
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <WeatherCard
             title="기온"
             value={formatRoundOne(current.temp)}
