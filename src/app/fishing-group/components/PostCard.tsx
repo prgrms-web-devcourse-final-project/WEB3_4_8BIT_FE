@@ -192,8 +192,8 @@ export function PostCard({
 
             {/* 하단 정보 영역 */}
             <div className="mt-4">
-              <div className="flex items-center justify-between text-sm text-gray-500">
-                <div className="flex items-center gap-x-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-sm text-gray-500 gap-2 sm:gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-x-4">
                   <span className="flex items-center gap-1">
                     <Calendar size={16} />
                     동출날짜: {date}
