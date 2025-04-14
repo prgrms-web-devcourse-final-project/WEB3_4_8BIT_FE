@@ -115,7 +115,7 @@ export function HotPost() {
   return (
     <div className="mb-12 relative">
       {/* 섹션 헤더 */}
-      <div className="relative py-12 mb-8">
+      <div className="relative py-4 mb-8">
         {/* 배경 그라데이션 효과 */}
         <div className="absolute inset-0 bg-gradient-to-r from-blue-50 via-white to-blue-50 opacity-50" />
         <div className="absolute inset-0 bg-[url('/images/pattern.png')] opacity-3" />
@@ -142,6 +142,22 @@ export function HotPost() {
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-blue-400">
                 지금 뜨는 동출 모집
               </span>
+              <div className="relative">
+                <svg
+                  width="32"
+                  height="32"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="text-blue-600 animate-pulse"
+                >
+                  <path
+                    d="M12 2L14.5 8.5L21 10L16.5 15L17.5 22L12 19L6.5 22L7.5 15L3 10L9.5 8.5L12 2Z"
+                    fill="currentColor"
+                  />
+                </svg>
+                <div className="absolute -inset-1 bg-blue-100 rounded-full blur-sm opacity-50" />
+              </div>
             </h2>
             <p className="text-sm text-gray-500">
               가장 많은 관심을 받고 있는 낚시 모임을 확인해보세요
