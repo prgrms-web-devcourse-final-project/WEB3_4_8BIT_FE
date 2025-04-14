@@ -1,5 +1,4 @@
 export const dynamic = "force-dynamic";
-import { toggleLike } from "@/lib/api/likeAPI";
 import FilterBox from "@/app/boat-reservation/components/FilterBox";
 import {
   ShipFishingPostParams,
@@ -8,6 +7,7 @@ import {
 import BoatList from "./components/BoatList";
 import SortBox from "./components/SortBox";
 import { cookies } from "next/headers";
+import Banner from "./components/Banner";
 
 async function getShipPosts(
   params?: ShipFishingPostParams
@@ -20,8 +20,6 @@ async function getShipPosts(
   const cookieHeader = cookieEntries
     .map((cookie) => `${cookie.name}=${cookie.value}`)
     .join("; ");
-
-  console.log(cookieHeader);
 
   try {
     const token = process.env.NEXT_PUBLIC_API_TOKEN || "default_token";
@@ -127,14 +125,7 @@ export default async function BoatReservation({
 
   return (
     <div className="min-h-screen">
-      <div className="bg-sky-700 text-white py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <h1 className="text-3xl font-bold mb-4">선상 낚시 예약</h1>
-          <p className="text-lg text-cyan-100 max-w-3xl">
-            전국 각지의 선상 낚시를 검색하고 예약해보세요!
-          </p>
-        </div>
-      </div>
+      <Banner />
 
       <div className="max-w-[1280px] mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">

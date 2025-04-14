@@ -14,6 +14,10 @@ import {
 } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Ship, XCircle } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { getShip, registerShip } from "@/lib/api/getShip";
+import { uploadImagesToS3 } from "@/lib/api/uploadImageAPI";
+import { useRouter } from "next/navigation";
 
 // 00분/30분 단위 시간 배열 생성 (00:00 ~ 23:30)
 const halfHourOptions = Array.from({ length: 48 }, (_, i) => {
@@ -24,18 +28,21 @@ const halfHourOptions = Array.from({ length: 48 }, (_, i) => {
 
 // 폼 데이터 타입 정의
 type FishingRegistrationForm = {
-  title: string;
+  subject: string;
+  content: string;
   price: number;
+  location: string;
   startTime: string;
   endTime: string;
-  maxPeople: number;
-  selectedShip: string;
-  departureRegion: string;
-  content: string;
+  maxGuestCount: number;
+  shipId: number;
+  fileIdList: number[];
+  fishIdList: number[];
+  unavailableDates: string[];
   selectedFiles: File[];
   previewUrls: string[];
-  unavailableDates: Date[];
-  selectedFishSpecies: string[];
+  selectedShip: string;
+  selectedFishSpecies: number[];
 };
 
 // 유효성 검사 오류 타입 정의
@@ -44,18 +51,23 @@ type ValidationErrors = {
 };
 
 export default function Page() {
+  const router = useRouter();
+
   const [formData, setFormData] = useState<FishingRegistrationForm>({
-    title: "",
+    subject: "",
+    content: "",
     price: 0,
+    location: "",
     startTime: "",
     endTime: "",
-    maxPeople: 2,
-    selectedShip: "",
-    departureRegion: "",
-    content: "",
+    maxGuestCount: 2,
+    shipId: 0,
+    fileIdList: [],
+    fishIdList: [],
+    unavailableDates: [],
     selectedFiles: [],
     previewUrls: [],
-    unavailableDates: [],
+    selectedShip: "",
     selectedFishSpecies: [],
   });
 
@@ -63,6 +75,11 @@ export default function Page() {
   const [errors, setErrors] = useState<ValidationErrors>({});
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const { data: getShipList } = useQuery({
+    queryKey: ["getShipList"],
+    queryFn: getShip,
+  });
 
   // 상태 업데이트 함수
   const updateFormData = (
@@ -88,12 +105,11 @@ export default function Page() {
     const newErrors: ValidationErrors = {};
 
     // 필수 필드 검사
-    if (!formData.title.trim()) newErrors.title = true;
+    if (!formData.subject.trim()) newErrors.subject = true;
     if (formData.price <= 0) newErrors.price = true;
     if (!formData.startTime) newErrors.startTime = true;
     if (!formData.endTime) newErrors.endTime = true;
     if (!formData.selectedShip) newErrors.selectedShip = true;
-    if (!formData.departureRegion.trim()) newErrors.departureRegion = true;
     if (!formData.content.trim()) newErrors.content = true;
     if (formData.selectedFiles.length === 0) newErrors.selectedFiles = true;
     if (formData.selectedFishSpecies.length === 0)
@@ -103,7 +119,7 @@ export default function Page() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
     const newFiles = Array.from(files);
@@ -116,11 +132,21 @@ export default function Page() {
       newFiles.splice(allowedCount);
     }
 
-    const updatedFiles = [...formData.selectedFiles, ...newFiles];
-    const urls = updatedFiles.map((file) => URL.createObjectURL(file));
+    try {
+      const uploadedFileIds = await uploadImagesToS3(newFiles, "fishing");
+      const updatedFiles = [...formData.selectedFiles, ...newFiles];
+      const urls = updatedFiles.map((file) => URL.createObjectURL(file));
 
-    updateFormData("selectedFiles", updatedFiles);
-    updateFormData("previewUrls", urls);
+      updateFormData("selectedFiles", updatedFiles);
+      updateFormData("previewUrls", urls);
+      updateFormData("fileIdList", [
+        ...formData.fileIdList,
+        ...uploadedFileIds,
+      ]);
+    } catch (error) {
+      console.error("이미지 업로드 중 오류 발생:", error);
+      alert("이미지 업로드에 실패했습니다.");
+    }
   };
 
   const removeImage = (index: number) => {
@@ -137,17 +163,18 @@ export default function Page() {
   };
 
   const handleFishSelect = (value: string) => {
-    if (!formData.selectedFishSpecies.includes(value)) {
+    const fishId = Number(value);
+    if (!formData.selectedFishSpecies.includes(fishId)) {
       updateFormData("selectedFishSpecies", [
         ...formData.selectedFishSpecies,
-        value,
+        fishId,
       ]);
     }
   };
 
-  const removeFishSpecies = (value: string) => {
+  const removeFishSpecies = (fishId: number) => {
     const updatedSpecies = formData.selectedFishSpecies.filter(
-      (species) => species !== value
+      (id) => id !== fishId
     );
     updateFormData("selectedFishSpecies", updatedSpecies);
   };
@@ -155,22 +182,51 @@ export default function Page() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 유효성 검사 실행
     if (!validateForm()) {
       alert("모든 필수 항목을 입력해주세요.");
       return;
     }
 
-    const response = await fetch("http://localhost:3000/api/boatPostMock", {
-      method: "POST",
-      body: JSON.stringify(formData),
-    });
+    if (!formData.selectedShip || !getShipList?.data) {
+      alert("선박을 선택해주세요.");
+      return;
+    }
 
-    if (response.ok) {
-      console.log(response);
-      alert("예약 게시글이 등록되었습니다.");
-    } else {
-      alert("예약 게시글 등록에 실패했습니다.");
+    const selectedShipId =
+      getShipList.data[Number(formData.selectedShip)].shipId;
+    if (!selectedShipId) {
+      alert("선박 정보가 올바르지 않습니다.");
+      return;
+    }
+
+    const requestData = {
+      subject: formData.subject,
+      content: formData.content,
+      price: formData.price,
+      location: formData.location,
+      startTime: formData.startTime,
+      endTime: formData.endTime,
+      maxGuestCount: formData.maxGuestCount,
+      shipId: selectedShipId,
+      fileIdList: formData.fileIdList,
+      fishIdList: formData.selectedFishSpecies,
+      unavailableDates: formData.unavailableDates.map(
+        (date) => date.toString().split("T")[0]
+      ),
+    };
+
+    try {
+      const response = await registerShip(requestData);
+
+      if (response.success) {
+        alert("예약 게시글이 등록되었습니다.");
+        router.push("/boat-reservation");
+      } else {
+        alert("예약 게시글 등록에 실패했습니다.");
+      }
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      alert("예약 게시글 등록 중 오류가 발생했습니다.");
     }
   };
 
@@ -202,21 +258,21 @@ export default function Page() {
             {/* 제목 */}
             <div>
               <label
-                htmlFor="title"
+                htmlFor="subject"
                 className="block mb-2 text-base font-medium text-gray-700"
               >
                 제목
               </label>
               <Input
-                id="title"
+                id="subject"
                 placeholder="게시글 제목을 입력해주세요"
-                value={formData.title}
-                onChange={(e) => updateFormData("title", e.target.value)}
+                value={formData.subject}
+                onChange={(e) => updateFormData("subject", e.target.value)}
                 className={`placeholder:text-base ${
-                  errors.title ? "border-red-500" : ""
+                  errors.subject ? "border-red-500" : ""
                 }`}
               />
-              {errors.title && (
+              {errors.subject && (
                 <p className="text-red-500 text-sm mt-1">제목을 입력해주세요</p>
               )}
             </div>
@@ -339,20 +395,20 @@ export default function Page() {
                   className="cursor-pointer"
                   onClick={() =>
                     updateFormData(
-                      "maxPeople",
-                      Math.max(1, formData.maxPeople - 1)
+                      "maxGuestCount",
+                      Math.max(1, formData.maxGuestCount - 1)
                     )
                   }
                 >
                   -
                 </Button>
-                <span className="text-lg">{formData.maxPeople}</span>
+                <span className="text-lg">{formData.maxGuestCount}</span>
                 <Button
                   type="button"
                   variant="outline"
                   className="cursor-pointer"
                   onClick={() =>
-                    updateFormData("maxPeople", formData.maxPeople + 1)
+                    updateFormData("maxGuestCount", formData.maxGuestCount + 1)
                   }
                 >
                   +
@@ -360,13 +416,20 @@ export default function Page() {
               </div>
             </div>
             {/* 선박 선택 */}
+            <div></div>
             <div>
               <label className="block mb-2 text-base font-medium text-gray-700">
                 선박 선택
               </label>
               <Select
                 value={formData.selectedShip}
-                onValueChange={(value) => updateFormData("selectedShip", value)}
+                onValueChange={(value) => {
+                  updateFormData("selectedShip", value);
+                  if (value && getShipList?.data) {
+                    const selectedShip = getShipList.data[Number(value)];
+                    updateFormData("location", selectedShip.departurePort);
+                  }
+                }}
               >
                 <SelectTrigger
                   className={`w-full cursor-pointer ${
@@ -379,9 +442,11 @@ export default function Page() {
                   />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="ship1">선박 1</SelectItem>
-                  <SelectItem value="ship2">선박 2</SelectItem>
-                  <SelectItem value="ship3">선박 3</SelectItem>
+                  {getShipList?.data.map((ship, index) => (
+                    <SelectItem key={ship.shipId} value={index.toString()}>
+                      {ship.shipName} ({ship.shipNumber})
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               {errors.selectedShip && (
@@ -391,27 +456,24 @@ export default function Page() {
             {/* 출항지역 */}
             <div>
               <label
-                htmlFor="departureRegion"
+                htmlFor="location"
                 className="block mb-2 text-base font-medium text-gray-700"
               >
                 출항지역
               </label>
               <Input
-                id="departureRegion"
-                placeholder="출항지역을 입력해주세요"
-                value={formData.departureRegion}
-                onChange={(e) =>
-                  updateFormData("departureRegion", e.target.value)
+                id="location"
+                value={
+                  formData.selectedShip
+                    ? getShipList?.data[Number(formData.selectedShip)]
+                        .departurePort
+                    : formData.location
                 }
                 className={`placeholder:text-base ${
-                  errors.departureRegion ? "border-red-500" : ""
+                  errors.location ? "border-red-500" : ""
                 }`}
+                readOnly
               />
-              {errors.departureRegion && (
-                <p className="text-red-500 text-sm mt-1">
-                  출항지역을 입력해주세요
-                </p>
-              )}
             </div>
           </div>
         </section>
@@ -524,20 +586,20 @@ export default function Page() {
                 align="start"
                 avoidCollisions={false}
               >
-                <SelectItem value="갑오징어">갑오징어</SelectItem>
-                <SelectItem value="문어">문어</SelectItem>
-                <SelectItem value="삼치">삼치</SelectItem>
-                <SelectItem value="우럭">우럭</SelectItem>
-                <SelectItem value="농어">농어</SelectItem>
-                <SelectItem value="참돔">참돔</SelectItem>
-                <SelectItem value="광어">광어</SelectItem>
-                <SelectItem value="대구">대구</SelectItem>
-                <SelectItem value="방어">방어</SelectItem>
-                <SelectItem value="가자미">가자미</SelectItem>
-                <SelectItem value="민어">민어</SelectItem>
-                <SelectItem value="전갱이">전갱이</SelectItem>
-                <SelectItem value="백조기">백조기</SelectItem>
-                <SelectItem value="쭈꾸미">쭈꾸미</SelectItem>
+                <SelectItem value="1">갑오징어</SelectItem>
+                <SelectItem value="2">문어</SelectItem>
+                <SelectItem value="3">삼치</SelectItem>
+                <SelectItem value="4">우럭</SelectItem>
+                <SelectItem value="5">농어</SelectItem>
+                <SelectItem value="6">참돔</SelectItem>
+                <SelectItem value="7">광어</SelectItem>
+                <SelectItem value="8">전갱이</SelectItem>
+                <SelectItem value="9">방어</SelectItem>
+                <SelectItem value="10">대구</SelectItem>
+                <SelectItem value="11">쭈꾸미</SelectItem>
+                <SelectItem value="12">민어</SelectItem>
+                <SelectItem value="13">가자미</SelectItem>
+                <SelectItem value="14">백조기</SelectItem>
               </SelectContent>
             </Select>
             {errors.selectedFishSpecies && (
@@ -546,19 +608,37 @@ export default function Page() {
           </div>
           {formData.selectedFishSpecies.length > 0 && (
             <div className="flex flex-wrap gap-2">
-              {formData.selectedFishSpecies.map((species) => (
-                <div
-                  key={species}
-                  className="relative bg-green-100 text-green-800 px-4 py-2 rounded text-base"
-                >
-                  {species}
-                  <XCircle
-                    size={16}
-                    className="absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2 text-red-500 cursor-pointer"
-                    onClick={() => removeFishSpecies(species)}
-                  />
-                </div>
-              ))}
+              {formData.selectedFishSpecies.map((fishId) => {
+                const fishName = {
+                  1: "갑오징어",
+                  2: "문어",
+                  3: "삼치",
+                  4: "우럭",
+                  5: "농어",
+                  6: "참돔",
+                  7: "광어",
+                  8: "전갱이",
+                  9: "방어",
+                  10: "대구",
+                  11: "쭈꾸미",
+                  12: "민어",
+                  13: "가자미",
+                  14: "백조기",
+                }[fishId];
+                return (
+                  <div
+                    key={fishId}
+                    className="relative bg-green-100 text-green-800 px-4 py-2 rounded text-base"
+                  >
+                    {fishName}
+                    <XCircle
+                      size={16}
+                      className="absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2 text-red-500 cursor-pointer"
+                      onClick={() => removeFishSpecies(fishId)}
+                    />
+                  </div>
+                );
+              })}
             </div>
           )}
         </section>
@@ -572,9 +652,14 @@ export default function Page() {
             <div>
               <Calendar
                 mode="multiple"
-                selected={formData.unavailableDates}
+                selected={formData.unavailableDates.map(
+                  (date) => new Date(date)
+                )}
                 onSelect={(days) =>
-                  updateFormData("unavailableDates", days || [])
+                  updateFormData(
+                    "unavailableDates",
+                    days?.map((date) => date.toISOString().split("T")[0]) || []
+                  )
                 }
                 className="w-full"
               />
@@ -592,7 +677,7 @@ export default function Page() {
                       key={idx}
                       className="relative bg-blue-100 text-blue-800 px-3 py-2 rounded text-base"
                     >
-                      <span>{date.toLocaleDateString()}</span>
+                      <span>{date}</span>
                       <XCircle
                         size={16}
                         className="absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2 text-red-500 cursor-pointer"
