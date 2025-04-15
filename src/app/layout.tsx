@@ -49,7 +49,7 @@ export default async function RootLayout({
         <Header isLoggedIn={isLoggedIn} />
         <Providers>
           <main className="mt-[90px]">{children}</main>
-          <FloatingChatButton />
+          {isLoggedIn && <FloatingChatButton />}
         </Providers>
         <Footer />
         <Toaster position="top-right" />

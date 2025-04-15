@@ -131,13 +131,13 @@ export default function CaptainMyPage() {
               <ActivityItem
                 key={reservation.reservationId}
                 icon={<Calendar className="h-5 w-5 text-cyan-600" />}
-                title={"예약자 이름: " + reservation.reservationName}
+                title={"예약자 이름: " + reservation.name}
                 description={
                   dayjs(reservation.reservationDate).format(
                     "YYYY-MM-DD 오전 HH:mm"
                   ) +
                   " / " +
-                  reservation.reservationPeopleCount +
+                  reservation.guestCount +
                   "명"
                 }
                 time={dayjs(reservation.createdAt).fromNow()}

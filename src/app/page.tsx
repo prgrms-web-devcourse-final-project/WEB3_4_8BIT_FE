@@ -19,6 +19,7 @@ import Image from "next/image";
 
 export default function Home() {
   const setUser = useUserStore((state) => state.setUser);
+  const clearUser = useUserStore((state) => state.clearUser);
   const user = useUserStore((state) => state.user);
   const router = useRouter();
 
@@ -35,10 +36,13 @@ export default function Home() {
     router.push("/auth/register");
   };
 
-  useEffect(
-    function setUserDataZustand() {
+  useEffect(() => {
+    async function setUserDataZustand() {
       if (isError) {
-        alert("error"); // TODO 추후 에러 처리 필요
+        alert("인증 과정에서 오류가 발생했습니다. 다시 로그인 해주세요.");
+        clearUser();
+        await UserAPI.postLogout();
+        router.push("/auth/login");
         return;
       }
 
@@ -46,9 +50,9 @@ export default function Home() {
         setUser(data);
         return;
       }
-    },
-    [isSuccess, setUser, data, isError]
-  );
+    }
+    setUserDataZustand();
+  }, [isSuccess, setUser, data, isError]);
 
   return (
     <main>
