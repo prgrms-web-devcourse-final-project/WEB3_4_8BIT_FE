@@ -203,7 +203,9 @@ export default function CaptainReservationPage() {
                               <div className="flex items-center gap-2 text-sm text-gray-500">
                                 <Clock className="h-4 w-4" />
                                 <span>
-                                  {dayjs(item.reservationDate).format("HH:mm")}
+                                  {dayjs(item.reservationDate).format(
+                                    "YYYY-MM-DD"
+                                  )}
                                 </span>
                                 <span>· 인원 {item.guestCount}명</span>
                               </div>
