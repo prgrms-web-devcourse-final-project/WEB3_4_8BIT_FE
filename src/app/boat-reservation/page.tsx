@@ -44,7 +44,7 @@ async function getShipPosts(
         process.env.NEXT_PUBLIC_API_URL
       }/ship-fishing-posts?${query.toString()}`,
       {
-        cache: "force-cache",
+        cache: "no-store",
         headers: {
           Cookie: cookieHeader,
           Authorization: token,
