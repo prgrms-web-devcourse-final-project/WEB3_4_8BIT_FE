@@ -32,7 +32,8 @@ interface HotPostResponse {
   regionId: number;
   regionType: string;
   imageUrl: string | null;
-  hotScore: number;
+  commentCount: number;
+  likeCount: number;
 }
 
 export function HotPost() {
@@ -71,8 +72,8 @@ export function HotPost() {
                 latitude: 0, // 기본값 설정
                 fileUrlList: post.imageUrl ? [post.imageUrl] : [], // 이미지 URL을 fileUrlList로 변환
                 postStatus: "RECRUITING", // 기본값 설정
-                likeCount: post.hotScore, // hotScore를 likeCount로 사용
-                commentCount: 0, // 기본값 설정
+                likeCount: post.likeCount, // hotScore를 likeCount로 사용
+                commentCount: post.commentCount, // 기본값 설정
                 regionType: post.regionType, // regionType 추가
               };
             }

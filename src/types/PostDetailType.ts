@@ -2,6 +2,7 @@ export interface PostDetailContentProps {
   postId: number;
 }
 
+// 상세 조회용 Type
 export interface PostData {
   fishingTripPostId: number;
   name: string;

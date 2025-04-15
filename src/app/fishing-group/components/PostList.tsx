@@ -3,6 +3,7 @@
 import { PostCard } from "./PostCard";
 import { useState, useEffect } from "react";
 import {
+  CursorRequestParams,
   getFishingPostsByCursor,
   Post as ApiPost,
 } from "@/lib/api/fishingPostAPI";
@@ -11,6 +12,7 @@ import { getRegions, getFishingRegion } from "@/lib/api/fishingPointAPI";
 import { FishingPointLocation } from "@/types/fishingPointLocationType";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
+import { ChevronDown } from "lucide-react";
 
 interface PostListProps {
   filter: PostFilter;
@@ -29,6 +31,10 @@ export function PostList({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sortType, setSortType] = useState<SortType>("createdAt");
+  const [pageSize, setPageSize] = useState(10);
+  const [hasMore, setHasMore] = useState(true);
+  const [cursorId, setCursorId] = useState<string | null>(null);
+  const [fieldValue, setFieldValue] = useState<string | null>(null);
 
   // 지역 정보를 TanStack Query로 가져오기
   const { data: regionsData = [] } = useQuery<FishingPointLocation[]>({
@@ -71,17 +77,17 @@ export function PostList({
     gcTime: 1000 * 60 * 60 * 24 * 7,
   });
 
-  const loadPosts = async () => {
+  const loadPosts = async (resetPosts = true) => {
     try {
       setLoading(true);
 
       const params = {
         order: "desc",
         sort: sortType,
-        type: "all",
-        fieldValue: null,
-        id: null,
-        size: 10,
+        type: "next",
+        fieldValue: fieldValue,
+        id: cursorId,
+        size: pageSize,
         status:
           filter === "recruiting"
             ? "RECRUITING"
@@ -90,24 +96,49 @@ export function PostList({
             : undefined,
         keyword: searchKeyword || undefined,
         regionId: selectedRegion !== "all" ? selectedRegion : undefined,
-      };
+      } as CursorRequestParams;
 
       const response = await getFishingPostsByCursor(params);
 
       if (response.success) {
-        const allPosts = response.data.content;
+        const newPosts = response.data.content;
         console.log(
           `게시물 ${
-            allPosts?.length || 0
+            newPosts?.length || 0
           }개를 불러왔습니다. (필터: ${filter}, 검색어: ${
             searchKeyword || "없음"
           }, 지역: ${selectedRegion})`
         );
 
-        if (allPosts && allPosts.length > 0) {
-          setPosts(allPosts);
+        if (newPosts && newPosts.length > 0) {
+          if (resetPosts) {
+            setPosts(newPosts);
+          } else {
+            setPosts((prevPosts) => [...prevPosts, ...newPosts]);
+          }
+
+          // 커서 업데이트 (마지막 아이템 기준)
+          if (newPosts.length > 0) {
+            const lastPost = newPosts[newPosts.length - 1];
+            console.log('왜 안들어와?');
+            console.log(lastPost);
+            if (sortType === 'createdAt') {
+              setFieldValue(lastPost.createdAt);
+              console.log(fieldValue);
+            } else {
+              setFieldValue(lastPost.popularityScore.toString());
+              console.log(fieldValue);
+            }
+            setCursorId(lastPost.fishingTripPostId.toString());
+          }
+
+          // 더 불러올 데이터가 있는지 확인
+          setHasMore(!response.data.isLast);
         } else {
-          setPosts([]);
+          if (resetPosts) {
+            setPosts([]);
+          }
+          setHasMore(false);
         }
       }
     } catch (error) {
@@ -120,11 +151,22 @@ export function PostList({
 
   useEffect(() => {
     setPosts([]);
+    setCursorId(null);
+    setHasMore(true);
     loadPosts();
   }, [filter, searchKeyword, selectedRegion, sortType]);
 
   const handleSortChange = (newSortType: SortType) => {
+    if (sortType === 'createdAt' && newSortType !== 'createdAt') {
+      setFieldValue(null);
+    } else {
+      setFieldValue(null);
+    }
     setSortType(newSortType);
+  };
+
+  const handleLoadMore = () => {
+    loadPosts(false);
   };
 
   if (loading && posts.length === 0) {
@@ -188,6 +230,20 @@ export function PostList({
           />
         ))}
       </div>
+
+      {hasMore && (
+        <div className="flex justify-center mt-8">
+          <Button
+            variant="outline"
+            className="flex items-center gap-2"
+            onClick={handleLoadMore}
+            disabled={loading}
+          >
+            <span>{loading ? "불러오는 중..." : "더보기"}</span>
+            <ChevronDown className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
