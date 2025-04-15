@@ -14,6 +14,7 @@ interface JoinInfoCardProps {
   recruitmentCount: number;
   currentCount: number;
   author: string;
+  authorProfileImgUrl: string;
   fishingTripPostId: number;
   isApplicant?: boolean;
   participants: Array<{
@@ -28,6 +29,7 @@ export default function JoinInfoCard({
   recruitmentCount,
   currentCount,
   author,
+  authorProfileImgUrl,
   fishingTripPostId,
   isApplicant = false,
   participants,
@@ -180,7 +182,16 @@ export default function JoinInfoCard({
           <h4 className="font-medium text-base mb-2 mt-4">작성자 정보</h4>
           <div className="flex items-center space-x-3 mb-4">
             <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200">
-              <div className="w-full h-full bg-gray-400 rounded-full" />
+              <Image
+                      src={authorProfileImgUrl}
+                      alt={author ?? "작성자 프로필"}
+                      width={32}
+                      height={32}
+                      className="w-8 h-8 rounded-full mr-2 object-cover"
+                      onError={(e) => {
+                        e.currentTarget.src = "/default-user.png";
+                      }}
+                    />
             </div>
             <div>
               <p className="font-medium text-base text-gray-700">{author}</p>
