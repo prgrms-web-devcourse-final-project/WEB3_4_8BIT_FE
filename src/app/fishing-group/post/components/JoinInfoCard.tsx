@@ -167,10 +167,10 @@ export default function JoinInfoCard({
             <p className="text-gray-500">참여자가 없습니다.</p>
           )}
 
-          {/* 신청 현황 보기 버튼 추가 */}
-          <button className="w-full py-2 mt-3 border border-gray-70 rounded-lg text-base hover:bg-gray-80 cursor-pointer">
-            신청 현황 보기
-          </button>
+          {/*/!* 신청 현황 보기 버튼 추가 *!/*/}
+          {/*<button className="w-full py-2 mt-3 border border-gray-70 rounded-lg text-base hover:bg-gray-80 cursor-pointer">*/}
+          {/*  신청 현황 보기*/}
+          {/*</button>*/}
         </div>
 
         {/* 작성자 정보 */}

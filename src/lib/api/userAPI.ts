@@ -260,4 +260,16 @@ export class UserAPI {
       throw error;
     }
   }
+
+  public static async getUserShipFishingPostLikeCount(): Promise<number> {
+    try {
+      const response = await apiInstance.get<APIResponse<number>>(
+        "/likes/count?targetType=SHIP_FISHING_POST"
+      );
+      return response.data.data;
+    } catch (error) {
+      console.error("getUserShipFishingPostLikeCount:", error);
+      throw error;
+    }
+  }
 }
