@@ -8,6 +8,7 @@ export interface ShipResponse {
     shipName: string;
     shipNumber: string;
     departurePort: string;
+    portName: string;
     restroomType: string;
     loungeArea: boolean;
     kitchenFacility: boolean;

@@ -67,6 +67,7 @@ export interface PostDetailShip {
   shipName: string;
   shipNumber: string;
   departurePort: string;
+  portName: string;
   restroomType: "공용 화장실" | "남/여 구분 화장실" | "없음";
   loungeArea: boolean; // 휴게실 여부
   kitchenFacility: boolean; // 주방 시설 여부

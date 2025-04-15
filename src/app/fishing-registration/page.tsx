@@ -26,6 +26,11 @@ const halfHourOptions = Array.from({ length: 48 }, (_, i) => {
   return `${hour}:${minute}`;
 });
 
+// 날짜를 문자열로 변환하는 헬퍼 함수
+const formatDateToString = (date) => {
+  return date.toLocaleDateString('fr-CA'); // YYYY-MM-DD 형식 반환
+};
+
 // 폼 데이터 타입 정의
 type FishingRegistrationForm = {
   subject: string;
@@ -158,7 +163,8 @@ export default function Page() {
   };
 
   const removeDate = (idx: number) => {
-    const updatedDates = formData.unavailableDates.filter((_, i) => i !== idx);
+    const updatedDates = [...formData.unavailableDates];
+    updatedDates.splice(idx, 1);
     updateFormData("unavailableDates", updatedDates);
   };
 
@@ -210,9 +216,7 @@ export default function Page() {
       shipId: selectedShipId,
       fileIdList: formData.fileIdList,
       fishIdList: formData.selectedFishSpecies,
-      unavailableDates: formData.unavailableDates.map(
-        (date) => date.toString().split("T")[0]
-      ),
+      unavailableDates: formData.unavailableDates, // 이미 올바른 형식으로 저장됨
     };
 
     try {
@@ -427,7 +431,7 @@ export default function Page() {
                   updateFormData("selectedShip", value);
                   if (value && getShipList?.data) {
                     const selectedShip = getShipList.data[Number(value)];
-                    updateFormData("location", selectedShip.departurePort);
+                    updateFormData("location", selectedShip.portName);
                   }
                 }}
               >
@@ -466,7 +470,7 @@ export default function Page() {
                 value={
                   formData.selectedShip
                     ? getShipList?.data[Number(formData.selectedShip)]
-                        .departurePort
+                        .portName
                     : formData.location
                 }
                 className={`placeholder:text-base ${
@@ -652,15 +656,25 @@ export default function Page() {
             <div>
               <Calendar
                 mode="multiple"
-                selected={formData.unavailableDates.map(
-                  (date) => new Date(date)
-                )}
-                onSelect={(days) =>
-                  updateFormData(
-                    "unavailableDates",
-                    days?.map((date) => date.toISOString().split("T")[0]) || []
-                  )
-                }
+                selected={formData.unavailableDates.map(dateStr => {
+                  // 문자열을 Date 객체로 변환
+                  const [year, month, day] = dateStr.split('-').map(Number);
+                  return new Date(year, month - 1, day); // month는 0-based
+                })}
+                onSelect={(dates) => {
+                  if (!dates || dates.length === 0) {
+                    updateFormData("unavailableDates", []);
+                    return;
+                  }
+
+                  // 새로 선택된 날짜들을 YYYY-MM-DD 형식으로 변환
+                  const newDates = dates.map(date => formatDateToString(date));
+
+                  // 중복 제거
+                  const uniqueDates = [...new Set(newDates)];
+
+                  updateFormData("unavailableDates", uniqueDates);
+                }}
                 className="w-full"
               />
             </div>
