@@ -1,6 +1,6 @@
 "use client";
 
-import React, {useEffect, useRef, useState} from "react";
+import React, { useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,15 +9,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { Plus, Upload } from "lucide-react";
 import Image from "next/image";
-import {useUserStore} from "@/stores/userStore";
-import {BoatData, BoatInputData, User} from "@/types/user.interface";
+import { useUserStore } from "@/stores/userStore";
+import { BoatData, BoatInputData } from "@/types/user.interface";
 import BoatFormCard from "@/app/auth/register/captain/components/BoatFormCard";
-import {UserAPI} from "@/lib/api/userAPI";
-import {useRouter} from "next/navigation";
-import {uploadImagesToS3} from "@/lib/api/uploadImageAPI";
+import { UserAPI } from "@/lib/api/userAPI";
+import { useRouter } from "next/navigation";
+import { uploadImagesToS3 } from "@/lib/api/uploadImageAPI";
 
 export default function CaptainRegisterPage() {
-  const userInfo = useUserStore(state => state.user);
+  const userInfo = useUserStore((state) => state.user);
   const [profileFile, setProfileFile] = useState<File | null>(null);
   const [nickname, setNickname] = useState("");
   const [shipLicenseNumber, setShipLicenseNumber] = useState("");
@@ -30,30 +30,30 @@ export default function CaptainRegisterPage() {
     nickname,
     description,
     shipLicenseNumber,
-  }
+  };
 
   const handleAddBoat = () => {
     if (boatsData.length === 5) {
-      alert('선박은 5개까지 추가 가능합니다')
+      alert("선박은 5개까지 추가 가능합니다");
       return;
     }
 
-    const newBoatInfo : BoatData = {
-      id : boatIndex.current,
-      shipName: '',
-      shipNumber: '',
-      departurePort: '',
-      passengerCapacity: '',
-      restroomType : 'NONE',
-      loungeArea : false,
-      kitchenFacility : false,
-      fishingChair : false,
-      passengerInsurance : false,
-      fishingGearRental : false,
-      mealProvided : false,
-      parkingAvailable : false,
-      isSaved : false,
-    }
+    const newBoatInfo: BoatData = {
+      id: boatIndex.current,
+      shipName: "",
+      shipNumber: "",
+      departurePort: "",
+      passengerCapacity: "",
+      restroomType: "NONE",
+      loungeArea: false,
+      kitchenFacility: false,
+      fishingChair: false,
+      passengerInsurance: false,
+      fishingGearRental: false,
+      mealProvided: false,
+      parkingAvailable: false,
+      isSaved: false,
+    };
     setBoatsData([...boatsData, newBoatInfo]);
     boatIndex.current += 1;
   };
@@ -75,58 +75,59 @@ export default function CaptainRegisterPage() {
     }
   };
 
-  const handleSubmit = async (e : React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    try{
+    try {
       const unsavedBoats = boatsData.filter((boat) => !boat.isSaved);
       if (unsavedBoats.length > 0) {
-        alert("모든 선박은 '선박 저장' 버튼을 눌러 저장한 후 가입 완료를 진행해주세요.");
+        alert(
+          "모든 선박은 '선박 저장' 버튼을 눌러 저장한 후 가입 완료를 진행해주세요."
+        );
         return;
       }
 
       const savedBoats = boatsData.filter((boat) => boat.isSaved);
       if (savedBoats.length < 1) {
-        alert("선박 정보는 추가해야 합니다!")
+        alert("선박 정보는 추가해야 합니다!");
         return;
       }
 
-      const boatSavePromises : Promise<any>[] = [];
+      const boatSavePromises: Promise<any>[] = [];
 
       for (const item of savedBoats) {
         const { id, isSaved, ...newItem } = item;
-        console.log(newItem);
         const promise = UserAPI.postCaptainBoatInfo(newItem);
-        boatSavePromises.push(promise)
+        boatSavePromises.push(promise);
       }
 
       const responses = await Promise.all(boatSavePromises);
-      const boatIds: number[] = responses.map(response => response['Location']);
+      const boatIds: number[] = responses.map(
+        (response) => response["Location"]
+      );
 
-      console.log(boatIds);
-
-      let imageFileIds : number[] = [];
+      let imageFileIds: number[] = [];
       if (profileFile) {
-        imageFileIds = await uploadImagesToS3([profileFile],'profile');
+        imageFileIds = await uploadImagesToS3([profileFile], "profile");
       }
 
-      const newFormData : BoatInputData = {...formData, shipList : boatIds}
+      const newFormData: BoatInputData = { ...formData, shipList: boatIds };
 
       if (imageFileIds.length > 0) {
-        newFormData['fileId'] = imageFileIds[0];
+        newFormData["fileId"] = imageFileIds[0];
       }
 
-      console.log(newFormData);
       const response = await UserAPI.postCaptainMemberInfo(newFormData);
-      console.log(response);
+
       if (response?.success) {
-        alert('선장님의 추가 정보 입력이 완료되었습니다!') // TODO 모달 수정
+        alert("선장님의 추가 정보 입력이 완료되었습니다!"); // TODO 모달 수정
         router.replace("/");
+        window.location.reload();
       }
     } catch (error) {
-      console.error('선장님 추가 정보 등록 에러', error);
+      console.error("선장님 추가 정보 등록 에러", error);
     }
-  }
+  };
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-10">
@@ -134,7 +135,8 @@ export default function CaptainRegisterPage() {
         <div className="text-center">
           <h1 className="text-xl font-bold">선장 회원 등록</h1>
           <p className="text-gray-500 text-sm mt-1">
-            선장님의 정보를 입력해주세요. 이메일, 전화번호, 이름은 수정이 불가합니다.
+            선장님의 정보를 입력해주세요. 이메일, 전화번호, 이름은 수정이
+            불가합니다.
           </p>
         </div>
 
@@ -146,7 +148,12 @@ export default function CaptainRegisterPage() {
             <div className="relative mb-4">
               <div className="w-30 h-30 relative rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
                 {profileUrl ? (
-                  <Image src={profileUrl} alt="Profile" fill className="object-cover" />
+                  <Image
+                    src={profileUrl}
+                    alt="Profile"
+                    fill
+                    className="object-cover"
+                  />
                 ) : (
                   <Upload className="h-8 w-8 text-gray-400" />
                 )}
@@ -170,9 +177,7 @@ export default function CaptainRegisterPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <Label className="block mb-2 text-sm font-medium">
-                이메일
-              </Label>
+              <Label className="block mb-2 text-sm font-medium">이메일</Label>
               <Input
                 id="email"
                 type="email"
@@ -183,9 +188,7 @@ export default function CaptainRegisterPage() {
               />
             </div>
             <div>
-              <Label className="block mb-2 text-sm font-medium">
-                전화번호
-              </Label>
+              <Label className="block mb-2 text-sm font-medium">전화번호</Label>
               <Input
                 id="phone"
                 type="phone"
@@ -196,9 +199,7 @@ export default function CaptainRegisterPage() {
               />
             </div>
             <div>
-              <Label className="block mb-2 text-sm font-medium">
-                이름
-              </Label>
+              <Label className="block mb-2 text-sm font-medium">이름</Label>
               <Input
                 id="name"
                 type="name"
@@ -256,7 +257,9 @@ export default function CaptainRegisterPage() {
           {/* 선박 정보 */}
           <section className="space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-base font-semibold">선박 정보 <span className="text-red-500">*</span></h2>
+              <h2 className="text-base font-semibold">
+                선박 정보 <span className="text-red-500">*</span>
+              </h2>
               <Button
                 variant="outline"
                 size="sm"
@@ -268,16 +271,17 @@ export default function CaptainRegisterPage() {
               </Button>
             </div>
 
-            {boatsData.map((boat,index) => (
+            {boatsData.map((boat, index) => (
               <BoatFormCard
                 key={boat.id}
                 index={index}
                 boatInfo={boat}
-                onBoatInfoChange={(updatedBoat) => handleBoatInfoChange(boat.id, updatedBoat)}
+                onBoatInfoChange={(updatedBoat) =>
+                  handleBoatInfoChange(boat.id, updatedBoat)
+                }
                 handleDeleteBoat={() => handleDeleteBoat(boat.id)}
               />
-              )
-            )}
+            ))}
           </section>
 
           <div className="pt-6 flex justify-end">

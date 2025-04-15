@@ -1,27 +1,34 @@
-"use client"
+"use client";
 
-import React, {useEffect} from "react"
+import React from "react";
 
-import { useState } from "react"
-import Image from "next/image"
-import { useRouter } from "next/navigation"
-import { Loader2, Plus, Upload } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Separator } from "@/components/ui/separator"
-import { Textarea } from "@/components/ui/textarea"
-import {UserAPI} from "@/lib/api/userAPI";
-import {uploadImagesToS3} from "@/lib/api/uploadImageAPI";
-import {NormalUserInputData, User} from "@/types/user.interface";
-import {useUserStore} from "@/stores/userStore";
+import { useState } from "react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { Loader2, Plus, Upload } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
+import { UserAPI } from "@/lib/api/userAPI";
+import { uploadImagesToS3 } from "@/lib/api/uploadImageAPI";
+import { NormalUserInputData } from "@/types/user.interface";
+import { useUserStore } from "@/stores/userStore";
 
 export default function UserRegistrationPage() {
-  const router = useRouter()
-  const userInfo = useUserStore(state => state.user);
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [profileFile, setProfileFile] = useState<File | null>(null)
+  const router = useRouter();
+  const userInfo = useUserStore((state) => state.user);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [profileFile, setProfileFile] = useState<File | null>(null);
   const [nickname, setNickname] = useState("");
   const [description, setDescription] = useState("");
   const profileUrl = profileFile ? URL.createObjectURL(profileFile) : null;
@@ -29,7 +36,7 @@ export default function UserRegistrationPage() {
   const formData = {
     nickname,
     description,
-  }
+  };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -39,35 +46,33 @@ export default function UserRegistrationPage() {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
+    e.preventDefault();
+    setIsSubmitting(true);
 
-    try{
-      let imageFileIds : number[] = [];
+    try {
+      let imageFileIds: number[] = [];
 
       if (profileFile) {
-        imageFileIds = await uploadImagesToS3([profileFile],'profile');
+        imageFileIds = await uploadImagesToS3([profileFile], "profile");
       }
 
-      const newFormData : NormalUserInputData = {...formData }
+      const newFormData: NormalUserInputData = { ...formData };
 
       if (imageFileIds.length > 0) {
-        newFormData['fileId'] = imageFileIds[0]
+        newFormData["fileId"] = imageFileIds[0];
       }
 
-      console.log("newForm data", newFormData)
       const response = await UserAPI.postMemberInfo(newFormData);
-      console.log(response)
       if (response?.success) {
-        alert('사용자의 추가 정보 입력이 완료되었습니다!') // TODO 모달 수정
+        alert("사용자의 추가 정보 입력이 완료되었습니다!"); // TODO 모달 수정
         router.replace("/");
+        window.location.reload();
       } else {
-
       }
     } catch (error) {
-      console.error('사용자 추가 정보 등록 에러', error);
+      console.error("사용자 추가 정보 등록 에러", error);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen py-12">
@@ -76,7 +81,9 @@ export default function UserRegistrationPage() {
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-bold">회원 등록</CardTitle>
             <CardDescription>추가 회원 정보를 입력해주세요</CardDescription>
-            <p className="text-sm text-gray-500 mt-1">이메일, 전화번호, 이름은 소셜 계정에서 가져온 정보입니다</p>
+            <p className="text-sm text-gray-500 mt-1">
+              이메일, 전화번호, 이름은 소셜 계정에서 가져온 정보입니다
+            </p>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -86,7 +93,12 @@ export default function UserRegistrationPage() {
                   <div className="relative mb-4">
                     <div className="w-30 h-30 rounded-full relative overflow-hidden bg-gray-200 flex items-center justify-center">
                       {profileUrl ? (
-                        <Image src={profileUrl} alt="Profile" fill className="object-cover" />
+                        <Image
+                          src={profileUrl}
+                          alt="Profile"
+                          fill
+                          className="object-cover"
+                        />
                       ) : (
                         <Upload className="h-8 w-8 text-gray-400" />
                       )}
@@ -110,9 +122,7 @@ export default function UserRegistrationPage() {
 
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="grid gap-2">
-                    <Label htmlFor="email">
-                      이메일
-                    </Label>
+                    <Label htmlFor="email">이메일</Label>
                     <Input
                       id="email"
                       type="email"
@@ -122,9 +132,7 @@ export default function UserRegistrationPage() {
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="phone">
-                      전화번호
-                    </Label>
+                    <Label htmlFor="phone">전화번호</Label>
                     <Input
                       id="phone"
                       type="tel"
@@ -134,9 +142,7 @@ export default function UserRegistrationPage() {
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="fullName">
-                      이름
-                    </Label>
+                    <Label htmlFor="fullName">이름</Label>
                     <Input
                       id="fullName"
                       required
@@ -176,10 +182,15 @@ export default function UserRegistrationPage() {
               </div>
 
               <CardFooter className="flex justify-end px-0 pt-4">
-                <Button type="submit" className="bg-primary cursor-pointer" disabled={isSubmitting}>
+                <Button
+                  type="submit"
+                  className="bg-primary cursor-pointer"
+                  disabled={isSubmitting}
+                >
                   {isSubmitting ? (
                     <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 처리 중...
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 처리
+                      중...
                     </>
                   ) : (
                     "가입 완료"
@@ -191,5 +202,5 @@ export default function UserRegistrationPage() {
         </Card>
       </div>
     </div>
-  )
+  );
 }

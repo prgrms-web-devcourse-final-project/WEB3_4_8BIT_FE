@@ -12,7 +12,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { Fish } from "lucide-react";
 import { useEffect } from "react";
 
@@ -99,25 +98,6 @@ export default function LoginPage() {
               </span>
             </div>
           </Button>
-
-          <div className="relative my-6">
-            <Separator className="bg-gray-200" />
-            <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white px-4 text-sm text-gray-500 font-medium">
-              또는
-            </span>
-          </div>
-
-          <div className="text-center">
-            <p className="text-gray-600 text-base">
-              아직 회원이 아니신가요?{" "}
-              <Link
-                href="/auth/register"
-                className="text-blue-600 hover:text-blue-800 font-medium transition-colors"
-              >
-                회원가입
-              </Link>
-            </p>
-          </div>
         </CardContent>
         <CardFooter className="flex flex-col space-y-2 px-8 pt-2">
           <p className="text-sm text-center text-gray-500">
