@@ -16,9 +16,9 @@ export interface PostData {
   fishingDate: string;
   fishingPointId: number;
   regionId: number;
+  fileUrlList: FileUrlMap;
+}
 
-  fileList?: Array<{ fileId: number; fileUrl: string }>;
-  fileIdList?: number[];
-  fileUrlList?: string[];
-  files?: Array<{ fileId: number; fileUrl: string }>;
+interface FileUrlMap {
+  [key: number]: string;
 }

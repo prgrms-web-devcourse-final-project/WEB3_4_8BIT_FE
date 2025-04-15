@@ -2,9 +2,10 @@ export interface PostDetailContentProps {
   postId: number;
 }
 
+// 상세 조회용 Type
 export interface PostData {
   fishingTripPostId: number;
-  name: string;
+  nickname: string;
   subject: string;
   content: string;
   currentCount: number;
@@ -15,9 +16,15 @@ export interface PostData {
   fishPointName: string;
   longitude: number;
   latitude: number;
-  fileUrlList: string[];
+  profileImgUrl: string;
+  fileUrlList: FileUrlMap;
   postStatus: string;
   likeCount: number;
   isLiked: boolean;
   isPostOwner: boolean;
 }
+
+interface FileUrlMap {
+  [key: number]: string;
+}
+

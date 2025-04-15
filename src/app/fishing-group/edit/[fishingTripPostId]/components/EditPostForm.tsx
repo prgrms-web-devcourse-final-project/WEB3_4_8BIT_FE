@@ -29,7 +29,6 @@ import { uploadImagesToS3 } from "@/lib/api/uploadImageAPI";
 import { getFishingPost, updateFishingPost } from "@/lib/api/fishingPostAPI";
 import { useRouter } from "next/navigation";
 import {
-  FileInfo,
   EditPostFormProps,
   PostData,
 } from "@/types/EditPostFormType";
@@ -42,7 +41,6 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
   const [memberCount, setMemberCount] = useState(2);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
-  const [existingFiles, setExistingFiles] = useState<FileInfo[]>([]);
   const [existingFileUrls, setExistingFileUrls] = useState<string[]>([]);
   const [existingFileIds, setExistingFileIds] = useState<number[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -57,11 +55,9 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
       try {
         setIsLoading(true);
         const response = await getFishingPost(postId);
-        console.log("📄 게시글 데이터 응답:", response);
 
         if (response.success) {
           const data = response.data as PostData;
-          console.log("📄 게시글 데이터 상세:", data);
 
           setTitle(data.subject);
           setContent(data.content);
@@ -77,27 +73,17 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
             setIsBoatFishing(data.isShipFish);
           }
 
-          let fileIds: number[] = [];
-          let fileUrls: string[] = [];
-          let fileInfos: FileInfo[] = [];
+          // fileUrlList 처리 (Map<Long, String>)
+          if (data.fileUrlList) {
+            // Object.values로 URL 배열 추출
+            const urls = Object.values(data.fileUrlList) as string[];
 
-          if (data.fileList && data.fileList.length > 0) {
-            fileInfos = data.fileList;
-            fileIds = data.fileList.map((f: FileInfo) => f.fileId);
-            fileUrls = data.fileList.map((f: FileInfo) => f.fileUrl);
-          } else if (data.files && data.files.length > 0) {
-            fileInfos = data.files;
-            fileIds = data.files.map((f: FileInfo) => f.fileId);
-            fileUrls = data.files.map((f: FileInfo) => f.fileUrl);
-          } else if (data.fileUrlList && data.fileUrlList.length > 0) {
-            fileUrls = data.fileUrlList;
-            fileIds = [];
-            fileInfos = [];
+            // Object.keys로 ID 배열 추출 (숫자로 변환)
+            const ids = Object.keys(data.fileUrlList).map(key => parseInt(key));
+
+            setExistingFileUrls(urls);
+            setExistingFileIds(ids);
           }
-
-          setExistingFiles(fileInfos);
-          setExistingFileUrls(fileUrls);
-          setExistingFileIds(fileIds);
         } else {
           alert("게시글을 불러오는데 실패했습니다.");
           router.push("/fishing-group");
@@ -134,25 +120,20 @@ export default function EditPostForm({ postId }: EditPostFormProps) {
 
   const removeImage = (index: number, isExisting: boolean = false) => {
     if (isExisting) {
-      if (existingFiles.length > 0) {
-        const updatedFiles = existingFiles.filter((_, i) => i !== index);
-        setExistingFiles(updatedFiles);
-        setExistingFileUrls(updatedFiles.map((f: FileInfo) => f.fileUrl));
-        setExistingFileIds(updatedFiles.map((f: FileInfo) => f.fileId));
-      } else {
-        const updatedExistingUrls = existingFileUrls.filter(
-          (_, i) => i !== index
-        );
-        setExistingFileUrls(updatedExistingUrls);
-        const updatedExistingIds = existingFileIds.filter(
-          (_, i) => i !== index
-        );
+      const updatedExistingUrls = existingFileUrls.filter(
+        (_, i) => i !== index
+      );
+      setExistingFileUrls(updatedExistingUrls);
 
-        setExistingFileIds(updatedExistingIds);
-      }
+      const updatedExistingIds = existingFileIds.filter(
+        (_, i) => i !== index
+      );
+      setExistingFileIds(updatedExistingIds);
     } else {
       const updatedFiles = selectedFiles.filter((_, i) => i !== index);
       setSelectedFiles(updatedFiles);
+
+      // 미리보기 URL 업데이트
       const updatedUrls = updatedFiles.map((file) => URL.createObjectURL(file));
       setPreviewUrls(updatedUrls);
     }

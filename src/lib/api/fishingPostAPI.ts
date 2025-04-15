@@ -8,7 +8,7 @@ export interface Post {
   content: string;
   currentCount: number;
   recruitmentCount: number;
-  createDate: string;
+  createdAt: string;
   fishingDate: string;
   fishPointDetailName: string;
   fishPointName: string;
@@ -23,6 +23,7 @@ export interface Post {
   commentCount: number;
   regionType: string | null;
   regionId: number;
+  popularityScore: number;
 }
 
 // PostCard 컴포넌트에서 사용하는 인터페이스
@@ -46,8 +47,15 @@ export interface PostCardProps {
 }
 
 export interface ApiResponseData {
-  content: Post[];
-  last: boolean;
+  timestamp: Date;
+  data: {
+    content: Post[];
+    pageSize: number;
+    numberOfElements: number;
+    isFirst: boolean;
+    isLast: boolean;
+  };
+  success: boolean;
 }
 
 // 게시글 목록 조회
@@ -208,7 +216,7 @@ export const getFishingPostsByCursor = async (
       params: filteredParams,
     });
     // 응답 타입 명시 (예시, 실제 API 응답 구조에 맞게 조정 필요)
-    return response.data as { success: boolean; data: ApiResponseData };
+    return response.data as ApiResponseData;
   } catch (error) {
     console.error("Failed to fetch posts by cursor.", error);
     throw error;

@@ -12,6 +12,7 @@ interface PostImagesProps {
 }
 
 export default function PostImages({ images }: PostImagesProps) {
+  console.log(images.length);
   if (!images || images.length === 0) return null;
 
   return (

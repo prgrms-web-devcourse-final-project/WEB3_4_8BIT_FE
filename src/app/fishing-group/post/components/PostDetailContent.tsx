@@ -29,6 +29,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { PostDetailContentProps, PostData } from "@/types/PostDetailType";
 import { useCheckAuth } from "@/hooks/useCheckAuth";
+import Image from "next/image";
 
 export default function PostDetailContent({ postId }: PostDetailContentProps) {
   const router = useRouter();
@@ -41,13 +42,13 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
 
   const checkAuth = useCheckAuth();
 
   // 참여 정보를 다시 불러오는 함수
   const fetchParticipationInfo = async () => {
     try {
-      console.log("참여 정보 조회 시작: postId=", postId);
       const participationResponse = await getPostParticipation(postId);
       if (participationResponse.success) {
         setParticipation(participationResponse.data);
@@ -70,6 +71,14 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
           // 좋아요 상태 초기화
           setIsLiked(postResponse.data.isLiked);
           setLikeCount(postResponse.data.likeCount || 0);
+
+          // fileUrlList 처리 (Map<Long, String>을 string[] 배열로 변환)
+          if (postResponse.data.fileUrlList) {
+            const urls = Object.values(postResponse.data.fileUrlList) as string[];
+
+            setImageUrls(urls);
+          }
+
           await fetchParticipationInfo(); // 참여 정보 초기 로딩
           setError(null);
         } else {
@@ -269,10 +278,22 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
 
             <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 md:mb-6 text-sm text-gray-500">
               <div className="flex items-center gap-2 mb-2 md:mb-0">
-                <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center">
-                  <span className="text-xs text-gray-600">이미지</span>
-                </div>
-                <span>{participation?.ownerNickname || post.name}</span>
+                {post.profileImgUrl ? (
+                  <div className="w-8 h-8 rounded-full overflow-hidden">
+                    <Image
+                      src={post.profileImgUrl}
+                      alt="프로필 이미지"
+                      width={32}
+                      height={32}
+                      className="object-cover w-full h-full"
+                    />
+                  </div>
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center">
+                    <span className="text-xs text-gray-600">프로필</span>
+                  </div>
+                )}
+                <span>{participation?.ownerNickname || post.nickname}</span>
                 <span>·</span>
                 <span>{new Date(post.createDate).toLocaleDateString()}</span>
               </div>
@@ -320,11 +341,12 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
               </div>
             </div>
 
-            {post.fileUrlList && post.fileUrlList.length > 0 ? (
-              <PostImages images={post.fileUrlList} />
+            {/* 게시글 이미지 표시 */}
+            {imageUrls.length > 0 ? (
+              <PostImages images={imageUrls} />
             ) : (
-              <div className="bg-gray-200 h-48 md:h-64 flex items-center justify-center">
-                <span className="text-gray-500">낚시 이미지 Placeholder</span>
+              <div className="bg-gray-200 h-48 md:h-64 flex items-center justify-center mb-6">
+                <span className="text-gray-500">등록된 낚시 이미지가 없습니다</span>
               </div>
             )}
 
@@ -378,7 +400,8 @@ export default function PostDetailContent({ postId }: PostDetailContentProps) {
           <JoinInfoCard
             recruitmentCount={post.recruitmentCount}
             currentCount={participation?.currentCount ?? post.currentCount}
-            author={post.name}
+            author={post.nickname}
+            authorProfileImgUrl={post.profileImgUrl}
             fishingTripPostId={post.fishingTripPostId}
             isApplicant={participation?.isApplicant || false}
             participants={participation?.participants || []}
