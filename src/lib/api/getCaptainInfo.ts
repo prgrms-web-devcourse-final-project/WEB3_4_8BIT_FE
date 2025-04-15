@@ -8,7 +8,7 @@ export interface CaptainInfoApiResponse {
     name: string;
     nickname: string;
     phone: string;
-    profileImg: string | null;
+    fileUrl: string | null;
     description: string;
     role: string;
     shipLicenseNumber: string;

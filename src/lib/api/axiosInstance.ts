@@ -1,7 +1,7 @@
 import axios from "axios";
 
 export const axiosInstance = axios.create({
-  baseURL: "https://api.mikki.kr/api/v1",
+  baseURL: "http://localhost:8080/api/v1",
   timeout: 5000,
   headers: {
     "Content-Type": "application/json",
@@ -11,7 +11,7 @@ export const axiosInstance = axios.create({
 
 // 인증이 필요없는 public API 호출을 위한 인스턴스
 export const publicAxiosInstance = axios.create({
-  baseURL: "https://api.mikki.kr/api/v1",
+  baseURL: "http://localhost:8080/api/v1",
   timeout: 5000,
   headers: {
     "Content-Type": "application/json",

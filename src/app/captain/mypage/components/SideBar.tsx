@@ -37,16 +37,18 @@ export function CaptainSidebar({
         <div className="flex flex-col items-center text-center">
           <Avatar className="h-24 w-24 mb-4">
             <AvatarImage
-              src={captainData?.data.profileImg || "/images/default.png"}
+              src={captainData?.data.fileUrl || "/images/default.png"}
               alt="Captain"
             />
             <AvatarFallback>선장님</AvatarFallback>
           </Avatar>
           <div className="flex flex-col items-start gap-1">
-            <h2 className="text-xl font-bold">{captainData?.data.name}</h2>
-            <p className="text-sm text-gray-500">
-              {captainData?.data.nickname}
-            </p>
+            <div className="text-center w-full">
+              <h2 className="text-xl font-bold">{captainData?.data.name}</h2>
+              <p className="text-sm text-gray-500">
+                {captainData?.data.nickname}
+              </p>
+            </div>
             <div className="flex items-center gap-2 text-sm text-gray-500 mt-2">
               <BadgeCheck className="h-4 w-4 text-green-500" />
               <span>{captainData?.data.shipLicenseNumber}</span>

@@ -31,7 +31,7 @@ export default function LoginPage() {
   const handleSocialLogin = async (provider: "kakao" | "naver") => {
     try {
       if (provider === "kakao") {
-        router.push("https://api.mikki.kr/oauth2/authorization/kakao");
+        router.push("http://localhost:8080/oauth2/authorization/kakao");
       } else if (provider === "naver") {
         router.push("https://api.mikki.kr/oauth2/authorization/naver");
       }
