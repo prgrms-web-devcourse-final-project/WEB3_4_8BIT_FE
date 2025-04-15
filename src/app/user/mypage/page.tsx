@@ -41,6 +41,12 @@ export default function UserMyPage() {
     queryFn : () => UserAPI.getUserFishEncyclopediaCount(),
   })
 
+  const {data : shipFishingPostCount, isSuccess : isShipFishingPostCountSuccess} = useQuery<number>({
+    queryKey : ['userMyPageShipFishingPostCount'],
+    queryFn : () => UserAPI.getUserShipFishingPostLikeCount(),
+  })
+
+
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">마이페이지</h1>
@@ -62,12 +68,14 @@ export default function UserMyPage() {
             icon={<Fish className="h-5 w-5 text-amber-500" />}
           />
         )}
-        <ActivityCard
-          title="선상 낚시"
-          value="8곳"
-          description="좋아요한 선상 낚시 리스트"
-          icon={<MapPin className="h-5 w-5 text-red-500" />}
-        />
+        {isShipFishingPostCountSuccess && (
+          <ActivityCard
+            title="선상 낚시"
+            value={shipFishingPostCount+'곳'}
+            description="좋아요한 선상 낚시 리스트"
+            icon={<MapPin className="h-5 w-5 text-red-500"/>}
+          />
+        )}
       </div>
 
       {/* 최근 활동 */}
