@@ -12,6 +12,8 @@ export const getCoordinatesFromAddress = async (
   address: string
 ): Promise<Coordinates | null> => {
   try {
+    console.log(`KakaoAK ${process.env.NEXT_PUBLIC_KAKAO_REST_API_KEY}`);
+    console.log(encodeURIComponent(address));
     const response = await fetch(
       `https://dapi.kakao.com/v2/local/search/address.json?query=${encodeURIComponent(
         address
