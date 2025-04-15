@@ -136,10 +136,6 @@ export default function JoinInfoCard({
           </button>
         )}
 
-        <button className="w-full py-2 border border-gray-70 rounded-lg text-base hover:bg-gray-80 cursor-pointer">
-          참여자 채팅방
-        </button>
-
         {/* 수정된 참여자 목록 */}
         <div className="mt-4">
           <h3 className="text-lg font-semibold mb-2">참여자 목록</h3>
