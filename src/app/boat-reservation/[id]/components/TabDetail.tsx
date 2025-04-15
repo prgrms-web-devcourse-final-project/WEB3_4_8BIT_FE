@@ -151,7 +151,7 @@ export default function TabDetail({
               <div>
                 <p className="font-medium">출항지</p>
                 <p className="text-gray-600">
-                  {detailShip.detailShip.departurePort}
+                  {detailShip.detailShip.portName}
                 </p>
               </div>
             </div>
