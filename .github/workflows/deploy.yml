@@ -10,6 +10,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
         
+      # 환경 변수 파일 생성
+      - name: Create .env file
+        run: |
+          cat > .env << EOF
+          NEXT_PUBLIC_BADANORI_API_KEY=${{ secrets.NEXT_PUBLIC_BADANORI_API_KEY }}
+          NEXT_PUBLIC_KAKAO_MAP_API_KEY=${{ secrets.NEXT_PUBLIC_KAKAO_MAP_API_KEY }}
+          NEXT_PUBLIC_OPENWEATHER_API_KEY=${{ secrets.NEXT_PUBLIC_OPENWEATHER_API_KEY }}
+          NEXT_PUBLIC_KAKAO_REST_API_KEY=${{ secrets.NEXT_PUBLIC_KAKAO_REST_API_KEY }}
+          NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}
+          EOF
+          
       # QEMU 설정 (멀티 아키텍처에 필요)
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
@@ -38,7 +49,7 @@ jobs:
           
       # 병렬 빌드 활성화 및 캐시 최적화
       - name: Build and push Docker image (Multi-arch)
-        uses: docker/build-push-action@v4  # 최신 버전 사용
+        uses: docker/build-push-action@v4
         with:
           context: .
           push: true
@@ -47,12 +58,8 @@ jobs:
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
           provenance: false  # 불필요한 SBOM 생성 방지
-          build-args: |
-            NEXT_PUBLIC_BADANORI_API_KEY=${{ secrets.NEXT_PUBLIC_BADANORI_API_KEY }}
-            NEXT_PUBLIC_KAKAO_MAP_API_KEY=${{ secrets.NEXT_PUBLIC_KAKAO_MAP_API_KEY }}
-            NEXT_PUBLIC_OPENWEATHER_API_KEY=${{ secrets.NEXT_PUBLIC_OPENWEATHER_API_KEY }}
-            NEXT_PUBLIC_KAKAO_REST_API_KEY=${{ secrets.NEXT_PUBLIC_KAKAO_REST_API_KEY }}
-            NEXT_PUBLIC_API_URL=${{secrets.NEXT_PUBLIC_API_URL}}
+          # .env 파일을 Docker 이미지로 복사하기 위한 설정 (Dockerfile에 의존)
+          # Dockerfile에서 COPY .env ./ 또는 유사한 명령이 있어야 함
             
       # 캐시 업데이트
       - name: Move cache
