@@ -23,9 +23,11 @@ import { UserAPI } from "@/lib/api/userAPI";
 import { uploadImagesToS3 } from "@/lib/api/uploadImageAPI";
 import { NormalUserInputData } from "@/types/user.interface";
 import { useUserStore } from "@/stores/userStore";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function UserRegistrationPage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const userInfo = useUserStore((state) => state.user);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [profileFile, setProfileFile] = useState<File | null>(null);
@@ -65,8 +67,8 @@ export default function UserRegistrationPage() {
       const response = await UserAPI.postMemberInfo(newFormData);
       if (response?.success) {
         alert("사용자의 추가 정보 입력이 완료되었습니다!"); // TODO 모달 수정
+        queryClient.invalidateQueries({ queryKey: ["userInfo"] });
         router.replace("/");
-        window.location.reload();
       } else {
       }
     } catch (error) {
