@@ -202,7 +202,10 @@ export default function ReservationInfo({
               {selectedPeople > 1 && (
                 <div className="flex justify-between text-gray-600">
                   <span>추가 인원 ({selectedPeople - 1}명)</span>
-                  <span>₩{(selectedPeople - 1) * detailShip.price}</span>
+                  <span>
+                    ₩
+                    {((selectedPeople - 1) * detailShip.price).toLocaleString()}
+                  </span>
                 </div>
               )}
 
