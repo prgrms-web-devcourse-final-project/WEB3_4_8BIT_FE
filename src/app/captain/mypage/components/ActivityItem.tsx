@@ -1,6 +1,12 @@
 import type React from "react";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
+import dayjs from "dayjs";
+import "dayjs/locale/ko";
+import relativeTime from "dayjs/plugin/relativeTime";
+
+dayjs.extend(relativeTime);
+dayjs.locale("ko");
 
 export default function ActivityItem({
   icon,
@@ -31,7 +37,7 @@ export default function ActivityItem({
           <p className="text-sm text-gray-500 mt-1">{description}</p>
         </div>
         <div className="flex items-center">
-          <p className="text-xs text-gray-400 mr-2">{time}</p>
+          <p className="text-xs text-gray-400 mr-2">{dayjs(time).fromNow()}</p>
           <ChevronRight className="h-4 w-4 text-gray-400" />
         </div>
       </div>

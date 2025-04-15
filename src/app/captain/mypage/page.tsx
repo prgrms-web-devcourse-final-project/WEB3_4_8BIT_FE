@@ -19,116 +19,167 @@ import {
 import Link from "next/link";
 import ActivityCard from "./components/ActivityCard";
 import ActivityItem from "./components/ActivityItem";
-import { CaptainSidebar } from "./components/SideBar";
+import { useQuery } from "@tanstack/react-query";
+import {
+  getCaptainDashboard,
+  getCaptainInfo,
+  getCaptainReservationList,
+  getCaptainPostList,
+} from "@/lib/api/getCaptainInfo";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+
+dayjs.extend(relativeTime);
+dayjs.locale("ko");
 
 export default function CaptainMyPage() {
+  const { data: captainData, isLoading: isCaptainLoading } = useQuery({
+    queryKey: ["captain"],
+    queryFn: () => getCaptainInfo(),
+  });
+
+  const { data: dashboardData, isLoading: isDashboardLoading } = useQuery({
+    queryKey: ["dashboard"],
+    queryFn: () => getCaptainDashboard(),
+  });
+
+  const { data: postListData, isLoading: isPostListLoading } = useQuery({
+    queryKey: ["postList"],
+    queryFn: () => getCaptainPostList(),
+  });
+
+  // 선박 게시글 아이디 리스트
+  const postIdList = postListData?.data.map((post) => post.shipFishingPostId);
+
+  // 예약 목록 가져오기
+  const { data: reservationListData, isLoading: isReservationListLoading } =
+    useQuery({
+      queryKey: ["reservationList"],
+      queryFn: async () => {
+        if (!captainData?.data.shipList) return null;
+
+        // 모든 선박의 예약 목록을 병렬로 가져옵니다
+        const reservationPromises = postIdList?.map((shipId) =>
+          getCaptainReservationList(shipId, true, 3)
+        );
+
+        const results = await Promise.all(reservationPromises!);
+
+        // 모든 결과를 하나의 배열로 합칩니다
+        return {
+          data: results.flatMap((result) => result.data),
+          timestamp: new Date().toISOString(),
+          success: true,
+        };
+      },
+      enabled: !!postIdList,
+    });
+  const nextReservations =
+    reservationListData?.data.flatMap((item) => item.content) || [];
+
+  if (
+    isCaptainLoading ||
+    isDashboardLoading ||
+    isReservationListLoading ||
+    isPostListLoading
+  ) {
+    return <div>Loading...</div>;
+  }
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 grid grid-cols-1 md:grid-cols-4 gap-8">
-      <div className="md:col-span-1">
-        <CaptainSidebar />
+    <div className="md:col-span-3 space-y-6">
+      <h1 className="text-2xl font-bold">대시보드</h1>
+
+      {/* 상단 카드 요약 */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <ActivityCard
+          title="예약 신청"
+          value={"" + dashboardData?.data.todayReservationCount}
+          description="최근 신청된 예약"
+          icon={<Calendar className="h-5 w-5 text-blue-500" />}
+        />
+        <ActivityCard
+          title="운영 선박"
+          value={"" + captainData?.data.shipList?.length}
+          description="등록된 선박 수"
+          icon={<Ship className="h-5 w-5 text-cyan-600" />}
+        />
+        <ActivityCard
+          title="작성 게시글"
+          value={"" + dashboardData?.data.writtenPostCount}
+          description="선상 낚시 커뮤니티"
+          icon={<ClipboardList className="h-5 w-5 text-green-500" />}
+        />
       </div>
 
-      <div className="md:col-span-3 space-y-6">
-        <h1 className="text-2xl font-bold">대시보드</h1>
-
-        {/* 상단 카드 요약 */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <ActivityCard
-            title="예약 신청"
-            value="3"
-            description="최근 신청된 예약"
-            icon={<Calendar className="h-5 w-5 text-blue-500" />}
-          />
-          <ActivityCard
-            title="운영 선박"
-            value="2"
-            description="등록된 선박 수"
-            icon={<Ship className="h-5 w-5 text-cyan-600" />}
-          />
-          <ActivityCard
-            title="작성 게시글"
-            value="5"
-            description="선상 낚시 커뮤니티"
-            icon={<ClipboardList className="h-5 w-5 text-green-500" />}
-          />
-        </div>
-
-        {/* 최근 예약 신청 */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle>최근 예약 신청</CardTitle>
-              <CardDescription>최근 예약 신청 내역입니다.</CardDescription>
+      {/* 최근 예약 신청 */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>최근 예약 신청</CardTitle>
+            <CardDescription>최근 예약 신청 내역입니다.</CardDescription>
+          </div>
+          <Link href="/captain/mypage/reservation">
+            <Button variant="ghost" size="sm" className="gap-1">
+              전체보기 <ChevronRight className="h-4 w-4" />
+            </Button>
+          </Link>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {nextReservations.length > 0 ? (
+            nextReservations.map((reservation) => (
+              <ActivityItem
+                key={reservation.reservationId}
+                icon={<Calendar className="h-5 w-5 text-cyan-600" />}
+                title={"예약자 이름: " + reservation.reservationName}
+                description={
+                  dayjs(reservation.reservationDate).format(
+                    "YYYY-MM-DD 오전 HH:mm"
+                  ) +
+                  " / " +
+                  reservation.reservationPeopleCount +
+                  "명"
+                }
+                time={dayjs(reservation.createdAt).fromNow()}
+                type="reservation"
+              />
+            ))
+          ) : (
+            <div className="text-center text-gray-500 py-5">
+              예약 신청이 없습니다.
             </div>
-            <Link href="/captain/mypage/reservation">
-              <Button variant="ghost" size="sm" className="gap-1">
-                전체보기 <ChevronRight className="h-4 w-4" />
-              </Button>
-            </Link>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <ActivityItem
-              icon={<Calendar className="h-5 w-5 text-cyan-600" />}
-              title="홍길동"
-              description="2023-12-25 오전 5:00 / 3명"
-              time="1일 전"
-              type="reservation"
-            />
-            <ActivityItem
-              icon={<Calendar className="h-5 w-5 text-cyan-600" />}
-              title="김철수"
-              description="2023-12-30 오전 6:00 / 2명"
-              time="3일 전"
-              type="reservation"
-            />
-            <ActivityItem
-              icon={<Calendar className="h-5 w-5 text-cyan-600" />}
-              title="이영희"
-              description="2024-01-10 오전 7:00 / 1명"
-              time="5일 전"
-              type="reservation"
-            />
-          </CardContent>
-        </Card>
+          )}
+        </CardContent>
+      </Card>
 
-        {/* 최근 게시글 */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle>최근 선상 낚시 게시글</CardTitle>
-              <CardDescription>나의 최신 게시글 목록입니다.</CardDescription>
-            </div>
-            <Link href="/captain/posts">
-              <Button variant="ghost" size="sm" className="gap-1">
-                전체보기 <ChevronRight className="h-4 w-4" />
-              </Button>
-            </Link>
-          </CardHeader>
-          <CardContent className="space-y-4">
+      {/* 최근 게시글 */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>작성한 선상 낚시 게시글</CardTitle>
+            <CardDescription>
+              작성한 선상 낚시 게시글 목록입니다.
+            </CardDescription>
+          </div>
+          <Link href="/captain/posts">
+            <Button variant="ghost" size="sm" className="gap-1">
+              전체보기 <ChevronRight className="h-4 w-4" />
+            </Button>
+          </Link>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {postListData?.data.map((post) => (
             <ActivityItem
+              key={post.shipFishingPostId}
               icon={<Users className="h-5 w-5 text-indigo-500" />}
-              title="11월 방어 대물 출조 모집합니다!"
-              description="11월 25일 (토) 새벽 5시 / 방어진항 출항, 장비 대여 가능"
-              time="2일 전"
+              title={post.subject}
+              description={post.location}
+              time={post.createdAt}
               type="post"
             />
-            <ActivityItem
-              icon={<Users className="h-5 w-5 text-indigo-500" />}
-              title="주말 감성돔 공략 같이 가실 분"
-              description="기장 동암항 오전 출항, 초보자 환영합니다."
-              time="6일 전"
-              type="post"
-            />
-            <ActivityItem
-              icon={<Users className="h-5 w-5 text-indigo-500" />}
-              title="조황 공유용 선상 낚시"
-              description="이번 주 출조 결과 공유합니다."
-              time="1주일 전"
-              type="post"
-            />
-          </CardContent>
-        </Card>
-      </div>
+          ))}
+        </CardContent>
+      </Card>
     </div>
   );
 }

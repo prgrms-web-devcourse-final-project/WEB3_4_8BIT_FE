@@ -15,6 +15,7 @@ import {
   Mail,
   BadgeCheck,
 } from "lucide-react";
+import { CaptainInfoApiResponse } from "@/lib/api/getCaptainInfo";
 
 const navItems = [
   { name: "대시보드", href: "/captain/mypage", icon: LayoutDashboard },
@@ -23,7 +24,11 @@ const navItems = [
   { name: "선박 정보", href: "/captain/mypage/ship-info", icon: Ship },
 ];
 
-export function CaptainSidebar() {
+export function CaptainSidebar({
+  captainData,
+}: {
+  captainData: CaptainInfoApiResponse;
+}) {
   const pathname = usePathname();
 
   return (
@@ -32,32 +37,36 @@ export function CaptainSidebar() {
         <div className="flex flex-col items-center text-center">
           <Avatar className="h-24 w-24 mb-4">
             <AvatarImage
-              src="/placeholder.svg?height=96&width=96"
+              src={captainData?.data.profileImg || "/images/default.png"}
               alt="Captain"
             />
             <AvatarFallback>선장님</AvatarFallback>
           </Avatar>
-          <h2 className="text-xl font-bold">김선장</h2>
-          <p className="text-sm text-gray-500 mt-1">선장님</p>
-          <div className="flex items-center gap-2 text-sm text-gray-500 mt-2">
-            <BadgeCheck className="h-4 w-4 text-green-500" />
-            <span>12345678</span>
+          <div className="flex flex-col items-start gap-1">
+            <h2 className="text-xl font-bold">{captainData?.data.name}</h2>
+            <p className="text-sm text-gray-500">
+              {captainData?.data.nickname}
+            </p>
+            <div className="flex items-center gap-2 text-sm text-gray-500 mt-2">
+              <BadgeCheck className="h-4 w-4 text-green-500" />
+              <span>{captainData?.data.shipLicenseNumber}</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-gray-500">
+              <Phone className="h-4 w-4 text-gray-400" />
+              <span>{captainData?.data.phone}</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-gray-500">
+              <Mail className="h-4 w-4 text-gray-400" />
+              <span>{captainData?.data.email}</span>
+            </div>
           </div>
-          <div className="flex items-center gap-2 text-sm text-gray-500">
-            <Phone className="h-4 w-4 text-gray-400" />
-            <span>010-1234-5678</span>
-          </div>
-          <div className="flex items-center gap-2 text-sm text-gray-500">
-            <Mail className="h-4 w-4 text-gray-400" />
-            <span>test@email.com</span>
-          </div>
-          <div className="mt-4 w-full">
+          {/* <div className="mt-4 w-full">
             <Link href="/captain/mypage/profile-edit">
               <Button variant="outline" className="w-full cursor-pointer">
                 프로필 수정
               </Button>
             </Link>
-          </div>
+          </div> */}
         </div>
       </Card>
 
@@ -89,8 +98,8 @@ export function CaptainSidebar() {
         </nav>
       </Card>
 
-      <Card>
-        <div className="p-4 space-y-3 font-medium">
+      <Card className="py-2">
+        <div className="px-4 space-y-3 font-medium">
           <Button
             variant="ghost"
             className="w-full justify-start cursor-pointer text-red-500 hover:text-red-600 hover:bg-red-50"
