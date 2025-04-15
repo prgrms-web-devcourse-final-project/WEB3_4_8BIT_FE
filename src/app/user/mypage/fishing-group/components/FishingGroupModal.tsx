@@ -1,111 +1,132 @@
-import {Calendar1, Check, Users, X} from "lucide-react";
-import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
-import {Badge} from "@/components/ui/badge";
-import {Button} from "@/components/ui/button";
+import { Calendar1, Check, Users, X } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import Modal from "@/components/Modal";
-import React, {useState} from "react";
-import {UserWrittenGroupFishing} from "@/types/user.interface";
-import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
-import {UserAPI} from "@/lib/api/userAPI";
+import React, { useState } from "react";
+import { UserWrittenGroupFishing } from "@/types/user.interface";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { UserAPI } from "@/lib/api/userAPI";
 import {
   getParticipants,
   ParticipantInfo,
   patchAcceptParticipant,
-  patchRefuseParticipant
+  patchRefuseParticipant,
 } from "@/lib/api/fishingTripRecruitmentAPI";
 
 interface FishingGroupModalProps {
-  data : UserWrittenGroupFishing;
-  isAuthor : boolean;
+  data: UserWrittenGroupFishing;
+  isAuthor: boolean;
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
 }
 
-export default function FishingGroupModal({ data, isAuthor, isOpen, setIsOpen }: FishingGroupModalProps) {
-  const { data: approvedUsers, isSuccess: isApprovedSuccess } = useQuery<ParticipantInfo[]>({
-    queryKey: ['participants', 'APPROVED'],
-    queryFn: () => getParticipants(data.fishingTripPostId, 'APPROVED'),
+export default function FishingGroupModal({
+  data,
+  isAuthor,
+  isOpen,
+  setIsOpen,
+}: FishingGroupModalProps) {
+  const { data: approvedUsers, isSuccess: isApprovedSuccess } = useQuery<
+    ParticipantInfo[]
+  >({
+    queryKey: ["participants", "APPROVED"],
+    queryFn: () => getParticipants(data.fishingTripPostId, "APPROVED"),
   });
 
-  const { data: pendingUsers, isSuccess: isPendingSuccess } = useQuery<ParticipantInfo[]>({
-    queryKey: ['participants', 'PENDING'],
-    queryFn: () => getParticipants(data.fishingTripPostId, 'PENDING'),
+  const { data: pendingUsers, isSuccess: isPendingSuccess } = useQuery<
+    ParticipantInfo[]
+  >({
+    queryKey: ["participants", "PENDING"],
+    queryFn: () => getParticipants(data.fishingTripPostId, "PENDING"),
   });
 
-  const { data: rejectedUsers, isSuccess: isRejectedSuccess } = useQuery<ParticipantInfo[]>({
-    queryKey: ['participants', 'REJECTED'],
-    queryFn: () => getParticipants(data.fishingTripPostId, 'REJECTED'),
+  const { data: rejectedUsers, isSuccess: isRejectedSuccess } = useQuery<
+    ParticipantInfo[]
+  >({
+    queryKey: ["participants", "REJECTED"],
+    queryFn: () => getParticipants(data.fishingTripPostId, "REJECTED"),
   });
 
   const queryClient = useQueryClient();
 
   const mutationReject = useMutation({
-    mutationFn : (recruitmentId : number) => {
-      return patchRefuseParticipant(recruitmentId)
+    mutationFn: (recruitmentId: number) => {
+      return patchRefuseParticipant(recruitmentId);
     },
-    onSuccess : () => {
-      queryClient.invalidateQueries({ queryKey: ['participants'] })
-    }
-  })
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["participants"] });
+    },
+  });
 
   const mutationAccept = useMutation({
-    mutationFn : (recruitmentId : number) => {
-      return patchAcceptParticipant(recruitmentId)
+    mutationFn: (recruitmentId: number) => {
+      return patchAcceptParticipant(recruitmentId);
     },
-    onSuccess : () => {
-      queryClient.invalidateQueries({ queryKey: ['participants'] })
-    }
-  })
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["participants"] });
+    },
+  });
 
   const handleAccept = (id: number) => {
     mutationAccept.mutate(id);
   };
 
-  const handleReject = (id : number) => {
+  const handleReject = (id: number) => {
     mutationReject.mutate(id);
   };
 
   return (
     <Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
-      <div className="mb-[8px]">
-        <h5 className="text-title-4 mb-[4px]">참여자 관리</h5>
-        <div className="flex items-center gap-2 text-gray-50">
-          <Calendar1 className="w-[14px] h-[14px]" />
-          <span className="text-body-2 text-body-4">
-            {data.subject}
-          </span>
+      <div className="space-y-4">
+        <div className="flex justify-between items-start">
+          <div className="space-y-2">
+            <h5 className="text-xl font-semibold">참여자 관리</h5>
+            <div className="flex items-center gap-2 text-gray-600">
+              <Calendar1 className="w-4 h-4" />
+              <span className="text-sm">{data.subject}</span>
+            </div>
+            <div className="flex items-center gap-2 text-gray-600">
+              <Users className="w-4 h-4" />
+              <span className="text-sm">
+                참여자 {data.currentCount}/{data.recruitmentCount}명
+              </span>
+            </div>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 rounded-full hover:bg-gray-100"
+            onClick={() => setIsOpen(false)}
+          >
+            <X className="h-4 w-4" />
+          </Button>
         </div>
-        <div className="flex items-center gap-2 text-gray-50">
-          <Users className="w-[14px] h-[14px]" />
-          <span className="text-body-2 text-body-4">참여자 {data.currentCount}/{data.recruitmentCount}명</span>
-        </div>
-      </div>
 
-      <Tabs defaultValue="waiting" className="w-full">
-        <TabsList>
-          <TabsTrigger value="waiting">
-            대기 중({pendingUsers?.length})
-          </TabsTrigger>
-          <TabsTrigger value="approved">
-            승인됨({approvedUsers?.length})
-          </TabsTrigger>
-          <TabsTrigger value="rejected">
-            거절됨({rejectedUsers?.length})
-          </TabsTrigger>
-        </TabsList>
-        <TabsContent value="waiting">
-          <div className="flex flex-col gap-4 p-[16px] h-[439px] overflow-y-auto">
-            {pendingUsers?.map((user) => (
+        <Tabs defaultValue="waiting" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="waiting">
+              대기 중({pendingUsers?.length || 0})
+            </TabsTrigger>
+            <TabsTrigger value="approved">
+              승인됨({approvedUsers?.length || 0})
+            </TabsTrigger>
+            <TabsTrigger value="rejected">
+              거절됨({rejectedUsers?.length || 0})
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="waiting" className="mt-4">
+            <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
+              {pendingUsers?.map((user) => (
                 <div
                   key={user.fishingTripRecruitmentId}
-                  className="flex justify-between gap-2 border border-amber-200 rounded-[8px] p-[16px]"
+                  className="flex items-start gap-4 p-4 border border-amber-200 rounded-lg bg-amber-50"
                 >
-                  <div>
-                    <div className="w-[40px] h-[40px] bg-gray-200 rounded-full"></div>
-                  </div>
-                  <div className="flex flex-col w-[80%]">
-                    <div className="flex items-center gap-4">
-                      <h6 className=" text-gray-30 text-title-5">
+                  <div className="w-10 h-10 bg-gray-200 rounded-full flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-2">
+                      <h6 className="font-medium text-gray-900">
                         {user.nickname}
                       </h6>
                       <Badge
@@ -115,141 +136,144 @@ export default function FishingGroupModal({ data, isAuthor, isOpen, setIsOpen }:
                         대기중
                       </Badge>
                     </div>
-                    <p className="text-body-4 text-gray-50">
+                    <p className="text-sm text-gray-600 mb-1">
                       경험: {user.fishingLevel}
                     </p>
-                    <p className="text-body-4 text-gray-30 mb-[4px]">
+                    <p className="text-sm text-gray-700 mb-2">
                       {user.introduction}
                     </p>
-                    <p className="text-body-5 text-gray-50">
+                    <p className="text-xs text-gray-500">
                       신청일: {new Date(user.createdAt).toLocaleDateString()}
                     </p>
                   </div>
-                  <div className="flex gap-2 w-[76px]">
-                    {isAuthor && (
-                      <>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="text-white bg-[#16A34A] gap-3 cursor-pointer"
-                          onClick={() => handleAccept(user.fishingTripRecruitmentId)}
-                        >
-                          <Check className="w-[14px] h-[14px]" />
-                          승인
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="text-[#dd4e4e] border-[#FEDDDD] cursor-pointer"
-                          onClick={() => handleReject(user.fishingTripRecruitmentId)}
-                        >
-                          <X className="w-[14px] h-[14px]" />
-                          거절
-                        </Button>
-                      </>
-                    )}
-                  </div>
+                  {isAuthor && (
+                    <div className="flex gap-2 flex-shrink-0">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-white bg-green-600 hover:bg-green-700 gap-1"
+                        onClick={() =>
+                          handleAccept(user.fishingTripRecruitmentId)
+                        }
+                      >
+                        <Check className="w-4 h-4" />
+                        승인
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-red-600 border-red-200 hover:bg-red-50 gap-1"
+                        onClick={() =>
+                          handleReject(user.fishingTripRecruitmentId)
+                        }
+                      >
+                        <X className="w-4 h-4" />
+                        거절
+                      </Button>
+                    </div>
+                  )}
                 </div>
               ))}
-          </div>
-        </TabsContent>
-        <TabsContent value="approved">
-          <div className="flex flex-col gap-4 p-[16px] h-[439px] overflow-y-auto">
-            {approvedUsers?.map((user) => (
+            </div>
+          </TabsContent>
+
+          <TabsContent value="approved" className="mt-4">
+            <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
+              {approvedUsers?.map((user) => (
                 <div
                   key={user.fishingTripRecruitmentId}
-                  className="flex justify-between gap-2 border border-[#DCFCE7] rounded-[8px] p-[16px]"
+                  className="flex items-start gap-4 p-4 border border-green-200 rounded-lg bg-green-50"
                 >
-                  <div>
-                    <div className="w-[40px] h-[40px] bg-gray-200 rounded-full"></div>
-                  </div>
-                  <div className="flex flex-col w-[80%]">
-                    <div className="flex items-center gap-4">
-                      <h6 className=" text-gray-30 text-title-5">
+                  <div className="w-10 h-10 bg-gray-200 rounded-full flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-2">
+                      <h6 className="font-medium text-gray-900">
                         {user.nickname}
                       </h6>
                       <Badge
                         variant="outline"
-                        className="bg-[#DCFCE7] text-[#166534] border-none"
+                        className="bg-green-200 text-green-800 border-none"
                       >
                         승인됨
                       </Badge>
                     </div>
-                    <p className="text-body-4 text-gray-50">
+                    <p className="text-sm text-gray-600 mb-1">
                       경험: {user.fishingLevel}
                     </p>
-                    <p className="text-body-4 text-gray-30 mb-[4px]">
+                    <p className="text-sm text-gray-700 mb-2">
                       {user.introduction}
                     </p>
-                    <p className="text-body-5 text-gray-50">
+                    <p className="text-xs text-gray-500">
                       신청일: {new Date(user.createdAt).toLocaleDateString()}
                     </p>
                   </div>
-                  <div className="w-[76px]">
-                    {isAuthor && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-[#dd4e4e] border-[#FEDDDD] gap-3 cursor-pointer"
-                        onClick={() => handleReject(user.fishingTripRecruitmentId)}
-                      >
-                        승인 취소
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              ))}
-          </div>
-        </TabsContent>
-        <TabsContent value="rejected">
-          <div className="flex flex-col gap-4 p-[16px] h-[439px] overflow-y-auto">
-            {rejectedUsers?.map((user) => (
-              <div
-                key={user.fishingTripRecruitmentId}
-                className="flex justify-between gap-2 border border-[#FEE2E2] rounded-[8px] p-[16px]"
-              >
-                <div>
-                  <div className="w-[40px] h-[40px] bg-gray-200 rounded-full"></div>
-                </div>
-                <div className="flex flex-col w-[80%]">
-                  <div className="flex items-center gap-4">
-                    <h6 className=" text-gray-30 text-title-5">
-                      {user.nickname}
-                    </h6>
-                    <Badge
-                      variant="outline"
-                      className="bg-[#FEE2E2] text-[#B91C1C] border-none"
-                    >
-                      거절됨
-                    </Badge>
-                  </div>
-                  <p className="text-body-4 text-gray-50">
-                    경험: {user.fishingLevel}
-                  </p>
-                  <p className="text-body-4 text-gray-30 mb-[4px]">
-                    {user.introduction}
-                  </p>
-                  <p className="text-body-5 text-gray-50">
-                    신청일: {new Date(user.createdAt).toLocaleDateString()}
-                  </p>
-                </div>
-                <div className="w-[76px]">
                   {isAuthor && (
                     <Button
                       variant="outline"
                       size="sm"
-                      className="text-gray-40 border-gray-70 gap-3 cursor-pointer"
-                      onClick={() => handleAccept(user.fishingTripRecruitmentId)}
+                      className="text-red-600 border-red-200 hover:bg-red-50 gap-1 flex-shrink-0"
+                      onClick={() =>
+                        handleReject(user.fishingTripRecruitmentId)
+                      }
                     >
+                      <X className="w-4 h-4" />
+                      승인 취소
+                    </Button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="rejected" className="mt-4">
+            <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
+              {rejectedUsers?.map((user) => (
+                <div
+                  key={user.fishingTripRecruitmentId}
+                  className="flex items-start gap-4 p-4 border border-red-200 rounded-lg bg-red-50"
+                >
+                  <div className="w-10 h-10 bg-gray-200 rounded-full flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-2">
+                      <h6 className="font-medium text-gray-900">
+                        {user.nickname}
+                      </h6>
+                      <Badge
+                        variant="outline"
+                        className="bg-red-200 text-red-800 border-none"
+                      >
+                        거절됨
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-gray-600 mb-1">
+                      경험: {user.fishingLevel}
+                    </p>
+                    <p className="text-sm text-gray-700 mb-2">
+                      {user.introduction}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      신청일: {new Date(user.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                  {isAuthor && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-green-600 border-green-200 hover:bg-green-50 gap-1 flex-shrink-0"
+                      onClick={() =>
+                        handleAccept(user.fishingTripRecruitmentId)
+                      }
+                    >
+                      <Check className="w-4 h-4" />
                       다시 승인
                     </Button>
                   )}
                 </div>
-              </div>
-            ))}
-          </div>
-        </TabsContent>
-      </Tabs>
+              ))}
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
     </Modal>
-  )
+  );
 }
