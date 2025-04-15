@@ -208,7 +208,10 @@ export default function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
                     </p>
                   )}
                   <button
-                    onClick={handleLogout}
+                    onClick={() => {
+                      handleLogout();
+                      closeMenu();
+                    }}
                     className="w-full bg-blue-600 hover:bg-blue-700 text-white text-[18px] px-[20px] py-[12px] rounded-full shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-105 paperlogy-6semibold"
                   >
                     <User className="w-[20px] h-[20px]" />
@@ -216,7 +219,11 @@ export default function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
                   </button>
                 </div>
               ) : (
-                <Link href="/auth/login" className="inline-block w-full">
+                <Link
+                  href="/auth/login"
+                  className="inline-block w-full"
+                  onClick={closeMenu}
+                >
                   <button className="w-full bg-blue-600 hover:bg-blue-700 text-white text-[18px] px-[20px] py-[12px] rounded-full shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-105 paperlogy-6semibold">
                     <User className="w-[20px] h-[20px]" />
                     로그인

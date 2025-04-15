@@ -133,9 +133,7 @@ export default function CaptainMyPage() {
                 icon={<Calendar className="h-5 w-5 text-cyan-600" />}
                 title={"예약자 이름: " + reservation.name}
                 description={
-                  dayjs(reservation.reservationDate).format(
-                    "YYYY-MM-DD 오전 HH:mm"
-                  ) +
+                  dayjs(reservation.reservationDate).format("YYYY-MM-DD") +
                   " / " +
                   reservation.guestCount +
                   "명"
