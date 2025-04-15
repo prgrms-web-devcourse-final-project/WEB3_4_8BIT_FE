@@ -148,9 +148,11 @@ export default function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
           {isLoggedIn ? (
             <>
               <div className="flex items-center gap-[8px]">
-                <p className="text-[14px] text-[#fff] paperlogy-6semibold">
-                  환영합니다, {user?.nickname}님!
-                </p>
+                {user?.isAddInfo && (
+                  <p className="text-[14px] text-[#fff] paperlogy-6semibold">
+                    환영합니다, {user?.nickname}님!
+                  </p>
+                )}
                 <div className="inline-block">
                   <button
                     onClick={handleLogout}
@@ -200,9 +202,11 @@ export default function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
             <div className="mb-8">
               {isLoggedIn ? (
                 <div className="flex flex-col items-center gap-[8px]">
-                  <p className="text-[16px] text-[#fff] paperlogy-6semibold">
-                    환영합니다, {user?.nickname} 님!
-                  </p>
+                  {user?.isAddInfo && (
+                    <p className="text-[16px] text-[#fff] paperlogy-6semibold">
+                      환영합니다, {user?.nickname} 님!
+                    </p>
+                  )}
                   <button
                     onClick={handleLogout}
                     className="w-full bg-blue-600 hover:bg-blue-700 text-white text-[18px] px-[20px] py-[12px] rounded-full shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-105 paperlogy-6semibold"
