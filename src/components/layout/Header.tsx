@@ -26,8 +26,14 @@ const menuItems: MenuItem[] = [
 export default function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [isClient, setIsClient] = useState(false);
   const user = useUserStore((state) => state.user);
   const setUser = useUserStore((state) => state.setUser);
+  const isCaptain = useUserStore((state) => state.isCaptain());
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -115,13 +121,24 @@ export default function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
                 <li key={item.path}>
                   <Link
                     href={item.path}
-                    className="text-[16px] lg:text-[18px] text-[#fff] paperlogy-6semibold cursor-pointer transition-all duration-300 hover:text-primary hover:scale-105 relative group"
+                    className="text-[14px] lg:text-[16px] text-[#fff] paperlogy-6semibold cursor-pointer transition-all duration-300 hover:text-primary hover:scale-105 relative group"
                   >
                     {item.name}
                     <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-primary transition-all duration-300 group-hover:w-full"></span>
                   </Link>
                 </li>
               ))}
+              {isClient && isCaptain && (
+                <li>
+                  <Link
+                    href="/captain/mypage"
+                    className="text-[14px] lg:text-[16px] text-[#fff] paperlogy-6semibold cursor-pointer transition-all duration-300 hover:text-primary hover:scale-105 relative group"
+                  >
+                    선장 대시보드
+                    <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-primary transition-all duration-300 group-hover:w-full"></span>
+                  </Link>
+                </li>
+              )}
             </ul>
           </nav>
         </div>
@@ -131,7 +148,7 @@ export default function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
           {isLoggedIn ? (
             <>
               <div className="flex items-center gap-[8px]">
-                <p className="text-[16px] text-[#fff] paperlogy-6semibold">
+                <p className="text-[14px] text-[#fff] paperlogy-6semibold">
                   환영합니다, {user?.nickname}님!
                 </p>
                 <div className="inline-block">
@@ -217,6 +234,16 @@ export default function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
                     <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-primary transition-all duration-300 group-hover:w-full"></span>
                   </li>
                 ))}
+                {isClient && isCaptain && (
+                  <li>
+                    <Link
+                      href="/captain/mypage"
+                      className="text-[16px] lg:text-[18px] text-[#fff] paperlogy-6semibold cursor-pointer transition-all duration-300 hover:text-primary hover:scale-105 relative group"
+                    >
+                      선장 대시보드
+                    </Link>
+                  </li>
+                )}
               </ul>
             </nav>
           </div>

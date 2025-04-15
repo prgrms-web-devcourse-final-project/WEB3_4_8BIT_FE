@@ -7,6 +7,7 @@ interface UserStore {
   setUser: (user: User | null) => void;
   clearUser: () => void;
   isLoggedIn: () => boolean;
+  isCaptain: () => boolean;
 }
 
 export const useUserStore = create<UserStore>()(
@@ -16,6 +17,7 @@ export const useUserStore = create<UserStore>()(
       setUser: (user) => set({ user }),
       clearUser: () => set({ user: null }),
       isLoggedIn: () => get().user !== null,
+      isCaptain: () => get().user?.role === "CAPTAIN",
     }),
     {
       name: "user-storage",

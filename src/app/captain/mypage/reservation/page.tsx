@@ -8,18 +8,37 @@ import {
   Clock,
   Users,
   Phone,
-  DollarSign,
   User as UserIcon,
+  DollarSign,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { CaptainSidebar } from "../components/SideBar";
+import { useQuery } from "@tanstack/react-query";
+import {
+  getCaptainPostList,
+  getCaptainReservationDetail,
+  getCaptainReservationList,
+} from "@/lib/api/getCaptainInfo";
+import dayjs from "dayjs";
+import "dayjs/locale/ko";
+import relativeTime from "dayjs/plugin/relativeTime";
+
+dayjs.extend(relativeTime);
+dayjs.locale("ko");
 
 interface Reservation {
-  date: string;
+  reservationId: number;
+  shipFishingPostId: number;
+  memberId: number;
   name: string;
-  time: string;
-  count: number;
+  phone: string;
+  reservationNumber: string;
+  guestCount: number;
   price: number;
+  totalPrice: number;
+  reservationDate: string;
+  reservationStatus: string;
+  createdAt: string;
+  modifiedAt: string;
 }
 
 export default function CaptainReservationPage() {
@@ -27,70 +46,108 @@ export default function CaptainReservationPage() {
   const [selectedReservation, setSelectedReservation] =
     useState<Reservation | null>(null);
 
-  const reservations: Reservation[] = [
-    {
-      date: "2023-11-27",
-      name: "홍길동",
-      time: "15:00",
-      count: 3,
-      price: 30000,
-    },
-    {
-      date: "2023-11-26",
-      name: "김철수",
-      time: "14:00",
-      count: 2,
-      price: 25000,
-    },
-    {
-      date: "2023-11-26",
-      name: "이영희",
-      time: "13:00",
-      count: 4,
-      price: 40000,
-    },
-    {
-      date: "2023-11-23",
-      name: "김철수",
-      time: "16:00",
-      count: 2,
-      price: 22000,
-    },
-    {
-      date: "2023-11-23",
-      name: "이영희",
-      time: "11:00",
-      count: 3,
-      price: 35000,
-    },
-    {
-      date: "2025-05-23",
-      name: "김영희",
-      time: "18:00",
-      count: 3,
-      price: 38000,
-    },
-  ];
+  const { data: postListData, isLoading: isPostListLoading } = useQuery({
+    queryKey: ["postList"],
+    queryFn: () => getCaptainPostList(),
+  });
 
-  const today = new Date();
+  // 선박 게시글 아이디 리스트
+  const postIdList = postListData?.data.map((post) => post.shipFishingPostId);
 
-  const upcoming = reservations.filter((r) => new Date(r.date) >= today);
-  const past = reservations.filter((r) => new Date(r.date) < today);
+  // 예약 목록 가져오기
+  const { data: reservationListData, isLoading: isReservationListLoading } =
+    useQuery({
+      queryKey: ["reservationList"],
+      queryFn: async () => {
+        if (!postIdList) return null;
 
-  const groupByDate = (data: Reservation[]) =>
-    data.reduce((acc, curr) => {
-      if (!acc[curr.date]) acc[curr.date] = [];
-      acc[curr.date].push(curr);
+        // 모든 선박의 예약 목록을 병렬로 가져옵니다
+        const reservationPromises = postIdList?.map((shipId) =>
+          getCaptainReservationList(shipId, true, 20)
+        );
+
+        const results = await Promise.all(reservationPromises!);
+
+        // 모든 결과를 하나의 배열로 합칩니다
+        return {
+          data: results.flatMap((result) => result.data),
+          timestamp: new Date().toISOString(),
+          success: true,
+        };
+      },
+      enabled: !!postIdList,
+    });
+
+  // 지난 예약 목록 가져오기
+  const {
+    data: prevReservationListData,
+    isLoading: isPrevReservationListLoading,
+  } = useQuery({
+    queryKey: ["prevReservationList"],
+    queryFn: async () => {
+      if (!postIdList) return null;
+
+      // 모든 선박의 예약 목록을 병렬로 가져옵니다
+      const reservationPromises = postIdList?.map((shipId) =>
+        getCaptainReservationList(shipId, false, 20)
+      );
+
+      const results = await Promise.all(reservationPromises!);
+
+      // 모든 결과를 하나의 배열로 합칩니다
+      return {
+        timestamp: new Date().toISOString(),
+        data: results.flatMap((result) => result.data),
+        success: true,
+      };
+    },
+    enabled: !!postIdList,
+  });
+
+  if (
+    isPostListLoading ||
+    isReservationListLoading ||
+    isPrevReservationListLoading
+  ) {
+    return <div>Loading...</div>;
+  }
+
+  const nextReservations =
+    reservationListData?.data.flatMap((item) => item.content) || [];
+
+  const prevReservations =
+    prevReservationListData?.data.flatMap((item) => item.content) || [];
+
+  // 날짜별로 예약 그룹화
+  const groupReservationsByDate = (reservations: Reservation[]) => {
+    const grouped = reservations.reduce((acc, reservation) => {
+      const date = dayjs(reservation.reservationDate).format("YYYY-MM-DD");
+      if (!acc[date]) {
+        acc[date] = [];
+      }
+      acc[date].push(reservation);
       return acc;
     }, {} as Record<string, Reservation[]>);
 
-  const groupedUpcoming = groupByDate(upcoming);
-  const groupedPast = groupByDate(past);
+    // 날짜순으로 정렬
+    return Object.entries(grouped)
+      .sort(([dateA], [dateB]) => dayjs(dateA).diff(dayjs(dateB)))
+      .map(([date, reservations]) => ({
+        date,
+        reservations,
+      }));
+  };
+
+  const groupedNextReservations = groupReservationsByDate(nextReservations);
+  const groupedPrevReservations = groupReservationsByDate(prevReservations);
+
+  const showReservationDetail = async (reservationId: number) => {
+    const response = await getCaptainReservationDetail(reservationId);
+    setSelectedReservation(response.data);
+  };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 grid grid-cols-1 md:grid-cols-4 gap-8">
-      <CaptainSidebar />
-
+    <>
       <div className="md:col-span-3 space-y-6">
         <h1 className="text-2xl font-bold">예약 관리</h1>
 
@@ -101,10 +158,10 @@ export default function CaptainReservationPage() {
         >
           <TabsList className="w-full grid grid-cols-2">
             <TabsTrigger value="upcoming" className="cursor-pointer">
-              예약 확정 ({upcoming.length})
+              예약 확정 ({nextReservations.length})
             </TabsTrigger>
             <TabsTrigger value="past" className="cursor-pointer">
-              지난 예약 ({past.length})
+              지난 예약 ({prevReservations.length})
             </TabsTrigger>
           </TabsList>
 
@@ -116,50 +173,59 @@ export default function CaptainReservationPage() {
                 고객이 신청한 예약을 확인하고 수락 또는 거절하세요.
               </p>
 
-              {Object.entries(groupedUpcoming).map(([date, items]) => (
-                <div key={date} className="space-y-4">
-                  <h3 className="text-sm font-semibold text-gray-600 flex items-center gap-1">
-                    <Calendar className="h-4 w-4" />
-                    {date}
-                  </h3>
-                  {items.map((item, index) => (
-                    <Card
-                      key={index}
-                      onClick={() => setSelectedReservation(item)}
-                      className="border p-4 hover:bg-gray-80 transition-colors duration-200 cursor-pointer"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className="p-2 bg-gray-100 rounded-md">
-                            <Users className="h-5 w-5 text-gray-500" />
-                          </div>
-                          <div className="space-y-1">
-                            <p className="font-semibold text-base">
-                              {item.name}
-                            </p>
-                            <div className="flex items-center gap-2 text-sm text-gray-500">
-                              <Clock className="h-4 w-4" />
-                              <span>{item.time}</span>
-                              <span>· 인원 {item.count}명</span>
+              {groupedNextReservations.length === 0 ? (
+                <div className="text-center text-gray-500 py-5">
+                  예약 신청이 없습니다.
+                </div>
+              ) : (
+                groupedNextReservations.map((group) => (
+                  <div key={group.date} className="space-y-4">
+                    <h3 className="text-lg font-semibold text-gray-700">
+                      {dayjs(group.date).format("YYYY년 MM월 DD일")}
+                    </h3>
+                    {group.reservations.map((item) => (
+                      <Card
+                        key={item.reservationId}
+                        onClick={() => {
+                          showReservationDetail(item.reservationId);
+                        }}
+                        className="border p-4 hover:bg-gray-80 transition-colors duration-200 cursor-pointer"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-4">
+                            <div className="p-2 bg-gray-100 rounded-md">
+                              <Users className="h-5 w-5 text-gray-500" />
+                            </div>
+                            <div className="space-y-1">
+                              <p className="font-semibold text-base">
+                                {item.name}
+                              </p>
+                              <div className="flex items-center gap-2 text-sm text-gray-500">
+                                <Clock className="h-4 w-4" />
+                                <span>
+                                  {dayjs(item.reservationDate).format("HH:mm")}
+                                </span>
+                                <span>· 인원 {item.guestCount}명</span>
+                              </div>
                             </div>
                           </div>
+                          <Button
+                            variant="default"
+                            size="sm"
+                            className="cursor-pointer"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              showReservationDetail(item.reservationId);
+                            }}
+                          >
+                            상세보기
+                          </Button>
                         </div>
-                        <Button
-                          variant="default"
-                          size="sm"
-                          className="cursor-pointer"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedReservation(item);
-                          }}
-                        >
-                          상세보기
-                        </Button>
-                      </div>
-                    </Card>
-                  ))}
-                </div>
-              ))}
+                      </Card>
+                    ))}
+                  </div>
+                ))
+              )}
             </div>
           </TabsContent>
 
@@ -171,50 +237,57 @@ export default function CaptainReservationPage() {
                 이미 완료된 예약 목록입니다.
               </p>
 
-              {Object.entries(groupedPast).map(([date, items]) => (
-                <div key={date} className="space-y-4">
-                  <h3 className="text-sm font-semibold text-gray-600 flex items-center gap-1">
-                    <Calendar className="h-4 w-4" />
-                    {date}
-                  </h3>
-                  {items.map((item, index) => (
-                    <Card
-                      key={index}
-                      onClick={() => setSelectedReservation(item)}
-                      className="border p-4 hover:bg-gray-80 transition-colors duration-200 cursor-pointer"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className="p-2 bg-gray-100 rounded-md">
-                            <Users className="h-5 w-5 text-gray-500" />
-                          </div>
-                          <div className="space-y-1">
-                            <p className="font-semibold text-base">
-                              {item.name}
-                            </p>
-                            <div className="flex items-center gap-2 text-sm text-gray-500">
-                              <Clock className="h-4 w-4" />
-                              <span>{item.time}</span>
-                              <span>· 인원 {item.count}명</span>
+              {groupedPrevReservations.length === 0 ? (
+                <div className="text-center text-gray-500 py-5">
+                  예약 신청이 없습니다.
+                </div>
+              ) : (
+                groupedPrevReservations.map((group) => (
+                  <div key={group.date} className="space-y-4">
+                    <h3 className="text-lg font-semibold text-gray-700">
+                      {dayjs(group.date).format("YYYY년 MM월 DD일")}
+                    </h3>
+                    {group.reservations.map((item) => (
+                      <Card
+                        key={item.reservationId}
+                        onClick={() => {
+                          showReservationDetail(item.reservationId);
+                        }}
+                        className="border p-4 hover:bg-gray-80 transition-colors duration-200 cursor-pointer"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-4">
+                            <div className="p-2 bg-gray-100 rounded-md">
+                              <Users className="h-5 w-5 text-gray-500" />
+                            </div>
+                            <div className="space-y-1">
+                              <p className="font-semibold text-base">
+                                {item.name}
+                              </p>
+                              <div className="flex items-center gap-2 text-sm text-gray-500">
+                                <Clock className="h-4 w-4" />
+                                <span>{item.reservationDate}</span>
+                                <span>· 인원 {item.guestCount}명</span>
+                              </div>
                             </div>
                           </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="cursor-pointer"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              showReservationDetail(item.reservationId);
+                            }}
+                          >
+                            상세보기
+                          </Button>
                         </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="cursor-pointer"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedReservation(item);
-                          }}
-                        >
-                          상세보기
-                        </Button>
-                      </div>
-                    </Card>
-                  ))}
-                </div>
-              ))}
+                      </Card>
+                    ))}
+                  </div>
+                ))
+              )}
             </div>
           </TabsContent>
         </Tabs>
@@ -257,14 +330,18 @@ export default function CaptainReservationPage() {
               <div className="flex items-center gap-2 text-base">
                 <Phone className="h-5 w-5 text-gray-600 shrink-0" />
                 <span className="font-semibold text-gray-800 w-20">연락처</span>
-                <span className="text-gray-600">010-1234-5678</span>
+                <span className="text-gray-600">
+                  {selectedReservation.phone}
+                </span>
               </div>
 
               <div className="flex items-center gap-2 text-base">
                 <Calendar className="h-5 w-5 text-gray-600 shrink-0" />
                 <span className="font-semibold text-gray-800 w-20">날짜</span>
                 <span className="text-gray-600">
-                  {selectedReservation.date}
+                  {dayjs(selectedReservation.reservationDate).format(
+                    "YYYY-MM-DD"
+                  )}
                 </span>
               </div>
 
@@ -272,21 +349,23 @@ export default function CaptainReservationPage() {
                 <Users className="h-5 w-5 text-gray-600 shrink-0" />
                 <span className="font-semibold text-gray-800 w-20">인원</span>
                 <span className="text-gray-600">
-                  {selectedReservation.count}명
+                  {selectedReservation.guestCount}명
                 </span>
               </div>
 
               <div className="flex items-center gap-2 text-base">
                 <DollarSign className="h-5 w-5 text-gray-600 shrink-0" />
-                <span className="font-semibold text-gray-800 w-20">금액</span>
+                <span className="font-semibold text-gray-800 w-20">
+                  총 가격
+                </span>
                 <span className="text-gray-600">
-                  {selectedReservation.price.toLocaleString()}원
+                  {selectedReservation.totalPrice.toLocaleString()}원
                 </span>
               </div>
             </div>
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
