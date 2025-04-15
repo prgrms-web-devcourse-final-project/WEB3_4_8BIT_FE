@@ -12,7 +12,7 @@ export default async function FishEncyclopedia() {
   const response = await fetch(
     "https://api.mikki.kr/api/v1/fishes/encyclopedias",
     {
-      cache: "force-cache",
+      cache: "no-store",
       headers: {
         Cookie: cookieHeader,
         // TODO 추후 쿠키로 통일해야함
