@@ -97,8 +97,7 @@ export default function ReservationInfo({
       <CardHeader>
         <CardTitle className="text-2xl">{detailShip.subject}</CardTitle>
         <CardDescription className="flex items-center">
-          <MapPin className="h-4 w-4 mr-1" />{" "}
-          {detailShip.detailShip.portName}
+          <MapPin className="h-4 w-4 mr-1" /> {detailShip.detailShip.portName}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -108,7 +107,6 @@ export default function ReservationInfo({
             <span className="font-medium">
               {detailShip.reviewEverRate.toFixed(1)}
             </span>
-            <span className="text-sm text-gray-500 ml-1">(1)</span>
           </div>
         </div>
 
