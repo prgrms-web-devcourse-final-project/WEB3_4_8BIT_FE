@@ -13,15 +13,6 @@ import { useQuery } from "@tanstack/react-query";
 import { UserAPI } from "@/lib/api/userAPI";
 import { useUserStore } from "@/stores/userStore";
 import { User } from "@/types/user.interface";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import CurrentLocationWeather from "@/components/CurrentLocationWeather";
 import Image from "next/image";
@@ -36,7 +27,7 @@ export default function Home() {
     queryFn: () => {
       if (!user) return null;
       else return UserAPI.getMemberInfo();
-    }, // TODO 추후 수정이 필요한지?
+    },
     staleTime: 1000 * 60 * 5,
   });
 
@@ -151,24 +142,29 @@ export default function Home() {
       <FishingGroupSection />
 
       {user?.isAddInfo === false && (
-        // TODO 추후 동현님 Modal 과 연동
-        <Dialog defaultOpen={true}>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>추가 정보를 등록해주세요</DialogTitle>
-              <DialogDescription>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 cursor-pointer">
+          <div
+            className="bg-white rounded-lg p-6 max-w-[425px] w-full mx-4"
+            onClick={handleMoveRegister}
+          >
+            <div className="text-center space-y-4">
+              <h2 className="text-xl font-semibold">
+                추가 정보를 등록해주세요
+              </h2>
+              <p className="text-gray-600">
                 회원님의 추가 정보를 입력하고
                 <br />
                 미끼미끼의 서비스를 더욱 알차게 이용해보세요!
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-              <Button className="cursor-pointer" onClick={handleMoveRegister}>
+              </p>
+              <button
+                className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors cursor-pointer"
+                onClick={handleMoveRegister}
+              >
                 등록하기
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </main>
   );
