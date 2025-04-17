@@ -1,103 +1,175 @@
+"use client";
+
+import React, { useEffect } from "react";
+import ActiveChatPointCard from "@/components/ActiveChatPointCard";
+import FishingPoint from "@/components/FishingPoint";
+import FishingPointCard from "@/components/FishingPointCard";
+import NearbyFishingPointCard from "@/components/NearbyFishingPointCard";
+import BoatCardSection from "@/components/BoatCardSection";
+import FishSection from "@/components/FishSection";
+import BoatReservationSection from "@/components/BoatReservationSection";
+import FishingGroupSection from "@/components/FishingGroupSection";
+import { useQuery } from "@tanstack/react-query";
+import { UserAPI } from "@/lib/api/userAPI";
+import { useUserStore } from "@/stores/userStore";
+import { User } from "@/types/user.interface";
+import { useRouter } from "next/navigation";
+import CurrentLocationWeather from "@/components/CurrentLocationWeather";
 import Image from "next/image";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const setUser = useUserStore((state) => state.setUser);
+  const clearUser = useUserStore((state) => state.clearUser);
+  const user = useUserStore((state) => state.user);
+  const router = useRouter();
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const { data, isError, isSuccess } = useQuery<User | null>({
+    queryKey: ["userInfo"],
+    queryFn: () => {
+      if (!user) return null;
+      else return UserAPI.getMemberInfo();
+    },
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const handleMoveRegister = () => {
+    router.push("/auth/register");
+  };
+
+  useEffect(() => {
+    async function setUserDataZustand() {
+      if (isError) {
+        alert("인증 과정에서 오류가 발생했습니다. 다시 로그인 해주세요.");
+        clearUser();
+        await UserAPI.postLogout();
+        router.push("/auth/login");
+        return;
+      }
+
+      if (isSuccess && data) {
+        setUser(data);
+        return;
+      }
+    }
+    setUserDataZustand();
+  }, [isSuccess, setUser, data, isError]);
+
+  return (
+    <main>
+      <section className="relative w-full h-[450px] md:h-[650px] flex items-center justify-start overflow-hidden">
+        {/* 배경 이미지 */}
+        <div className="absolute inset-0">
+          <Image
+            src="/images/mainbanner.png"
+            alt="메인 배너"
+            fill
+            className="object-cover scale-105 transition-transform duration-10000 hover:scale-110"
+            priority
+            sizes="100vw"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
+          {/* 동적 그라데이션 오버레이 */}
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-500/5 to-transparent animate-shimmer" />
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+
+        {/* 컨텐츠 */}
+        <div className="relative z-10 text-left sm:px-6 lg:px-8 xl:w-[1200px] w-full mx-auto px-4 xl:p-0 p-4">
+          <div className="max-w-2xl">
+            <div className="relative">
+              {/* 세로 그라데이션 바 */}
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-16 bg-gradient-to-b from-blue-400/80 to-blue-600/80 rounded-full"></div>
+
+              {/* 장식 요소 */}
+              <div className="absolute -left-4 top-0 w-1.5 h-1.5 bg-blue-400/80 rounded-full animate-float"></div>
+              <div className="absolute -left-4 top-8 w-1.5 h-1.5 bg-blue-500/80 rounded-full animate-float animation-delay-200"></div>
+              <div className="absolute -left-4 top-16 w-1.5 h-1.5 bg-blue-600/80 rounded-full animate-float animation-delay-400"></div>
+
+              <h1 className="text-5xl md:text-6xl font-bold text-white mb-6 pl-8 tracking-tight drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">
+                <span className="inline-block animate-fade-in-up">
+                  손끝에서 전해지는
+                </span>{" "}
+                <span className="text-blue-400 drop-shadow-[0_2px_2px_rgba(0,0,0,0.6)] inline-block animate-fade-in-up animation-delay-200">
+                  짜릿한 순간
+                </span>
+              </h1>
+            </div>
+
+            <p className="text-xl md:text-2xl text-white/90 mb-8 pl-8 leading-relaxed drop-shadow-[0_1px_1px_rgba(0,0,0,0.7)]">
+              <span className="drop-shadow-[0_1px_1px_rgba(0,0,0,0.7)] inline-block animate-fade-in-up animation-delay-400">
+                나만의 어류 도감부터 실시간 선상낚시 예약, 동출 메이트 찾기까지
+              </span>{" "}
+              <br />
+              <span className="drop-shadow-[0_1px_1px_rgba(0,0,0,0.7)] inline-block animate-fade-in-up animation-delay-400 mr-2">
+                손끝의 전율,
+              </span>
+              <span className="text-blue-300 font-semibold drop-shadow-[0_1px_1px_rgba(0,0,0,0.6)] inline-block animate-fade-in-up animation-delay-500">
+                {" "}
+                그 시작을 미끼미끼에서!
+              </span>
+            </p>
+          </div>
+        </div>
+
+        {/* 배경 장식 요소 */}
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/20 to-transparent" />
+
+        {/* 추가 장식 요소 */}
+        <div className="absolute bottom-8 right-8 w-32 h-32 bg-blue-500/5 rounded-full blur-2xl"></div>
+        <div className="absolute top-8 right-8 w-24 h-24 bg-blue-400/5 rounded-full blur-xl"></div>
+      </section>
+
+      <CurrentLocationWeather />
+
+      <FishingPoint />
+
+      {/* 3개의 카드 섹션 */}
+      <section className="py-5">
+        <div className="mx-auto max-w-7xl px-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <FishingPointCard />
+            <NearbyFishingPointCard />
+            <ActiveChatPointCard />
+          </div>
+        </div>
+      </section>
+
+      <BoatCardSection />
+
+      <section className="py-4">
+        <div className="mx-auto max-w-7xl px-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <BoatReservationSection />
+            <FishSection />
+          </div>
+        </div>
+      </section>
+      <FishingGroupSection />
+
+      {user?.isAddInfo === false && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 cursor-pointer">
+          <div
+            className="bg-white rounded-lg p-6 max-w-[425px] w-full mx-4"
+            onClick={handleMoveRegister}
+          >
+            <div className="text-center space-y-4">
+              <h2 className="text-xl font-semibold">
+                추가 정보를 등록해주세요
+              </h2>
+              <p className="text-gray-600">
+                회원님의 추가 정보를 입력하고
+                <br />
+                미끼미끼의 서비스를 더욱 알차게 이용해보세요!
+              </p>
+              <button
+                className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors cursor-pointer"
+                onClick={handleMoveRegister}
+              >
+                등록하기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </main>
   );
 }
